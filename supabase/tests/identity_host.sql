@@ -1,7 +1,9 @@
 begin;
-select plan(8);
+select plan(10);
 
-insert into auth.users (id, email) values ('aaaaaaaa-0000-0000-0000-000000000001', 'alice@example.com');
+insert into auth.users (id, email) values
+  ('aaaaaaaa-0000-0000-0000-000000000001', 'alice@example.com'),
+  ('bbbbbbbb-0000-0000-0000-000000000002', 'bob@example.com');
 
 select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-0000-0000-000000000001","role":"authenticated"}', true);
 set local role authenticated;
@@ -12,6 +14,8 @@ reset role;
 
 select is((select is_host from identity.profiles where user_id = 'aaaaaaaa-0000-0000-0000-000000000001'), true,
   'apply_host_sets_is_host');
+select is(identity.is_host('aaaaaaaa-0000-0000-0000-000000000001'), true, 'is_host_is_true_for_an_applied_host');
+select is(identity.is_host('bbbbbbbb-0000-0000-0000-000000000002'), false, 'is_host_is_false_for_everyone_else');
 select results_eq(
   $$select host_name, area, bio, ssm_number from identity.hosts where user_id = 'aaaaaaaa-0000-0000-0000-000000000001'$$,
   $$values ('Mei Studio', 'Bangsar', 'Pottery nights', null::text)$$,
