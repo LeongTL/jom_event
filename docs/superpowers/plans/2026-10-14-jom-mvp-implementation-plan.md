@@ -214,11 +214,11 @@ jom/
 - Produces: `reviews.reviews(id, booking_id unique, event_id, host_id, attendee_id, stars int 1..5, tags text[], body null, created_at)`; view `reviews.host_rating(host_id, average numeric(2,1), count int)`; `reviews.submit_review(p_booking_id uuid, p_stars int, p_tags text[], p_body text) returns uuid`; `reviews.host_reviews(p_host_id uuid, p_limit int default 20) returns table(attendee_first_name, stars, body, created_at)`; `reviews.my_reviews() returns setof`; `reviews.reviewable(p_booking_id uuid) returns boolean` (calls `bookings.is_attended(booking_id)` and `events.is_ended(event_id)`).
 - Allowed tags: `friendly_host`, `good_value`, `beginner_friendly`, `clean_venue`.
 
-- [ ] **Step 1: Write failing pgTAP tests.** `attended_guest_can_review_once`; `second_review_for_same_booking_raises`; `no_show_cannot_review`; `review_before_event_completed_raises`; `stars_outside_1_to_5_raise`; `unknown_tag_raises`; `body_with_contact_info_is_rejected`; `host_rating_averages_to_one_decimal`; `anon_can_read_host_reviews_but_not_attendee_ids`; `another_users_booking_cannot_be_reviewed`.
-- [ ] **Step 2: Run** `supabase test db`. Expected: FAIL.
-- [ ] **Step 3: Implement** the table, RLS, view and functions; add `bookings.is_attended(uuid)` and `events.is_ended(uuid)` helpers.
-- [ ] **Step 4: Run** `supabase test db`. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "feat(reviews): verified-attendee reviews and host rating"`.
+- [x] **Step 1: Write failing pgTAP tests.** `attended_guest_can_review_once`; `second_review_for_same_booking_raises`; `no_show_cannot_review`; `review_before_event_completed_raises`; `stars_outside_1_to_5_raise`; `unknown_tag_raises`; `body_with_contact_info_is_rejected`; `host_rating_averages_to_one_decimal`; `anon_can_read_host_reviews_but_not_attendee_ids`; `another_users_booking_cannot_be_reviewed`.
+- [x] **Step 2: Run** `supabase test db`. Expected: FAIL.
+- [x] **Step 3: Implement** the table, RLS, view and functions; add `bookings.is_attended(uuid)` and `events.is_ended(uuid)` helpers.
+- [x] **Step 4: Run** `supabase test db`. Expected: PASS.
+- [x] **Step 5: Commit** `git commit -am "feat(reviews): verified-attendee reviews and host rating"`.
 
 ### Task 11: Chat backend
 
@@ -228,11 +228,11 @@ jom/
 **Interfaces:**
 - Produces: `chat.threads(id, attendee_id, host_id, event_id null, last_message_at, unique(attendee_id, host_id))`, `chat.messages(id, thread_id, sender_id, body text check length 1..1000, created_at)`, `chat.thread_reads(thread_id, user_id, read_at)`; functions `chat.open_thread(p_host_id uuid, p_event_id uuid default null) returns uuid`, `chat.send_message(p_thread_id uuid, p_body text) returns chat.messages` (rejects when `shared.contains_contact_info`; notifies the other side with type `chat_message`), `chat.mark_thread_read(p_thread_id uuid)`, `chat.my_threads() returns table(thread_id, other_name, other_avatar, last_body, last_at, unread bool, event_title)`, `chat.unread_total() returns int`. Realtime is enabled on `chat.messages` and `identity.notifications`.
 
-- [ ] **Step 1: Write failing pgTAP tests.** `open_thread_twice_returns_same_thread`; `open_thread_requires_login`; `guest_can_message_host_without_booking`; `only_the_two_participants_can_read_or_send`; `send_rejects_phone_numbers_and_handles` (loops the Task 2 cases); `send_over_1000_chars_raises`; `send_notifies_other_side_unless_chat_pref_off`; `unread_flags_clear_after_mark_read`; `host_cannot_open_thread_with_self`.
-- [ ] **Step 2: Run** `supabase test db`. Expected: FAIL.
-- [ ] **Step 3: Implement** with RLS limited to participants and `publication supabase_realtime` additions.
-- [ ] **Step 4: Run** `supabase test db`. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "feat(chat): threads, messages, contact filter, unread"`.
+- [x] **Step 1: Write failing pgTAP tests.** `open_thread_twice_returns_same_thread`; `open_thread_requires_login`; `guest_can_message_host_without_booking`; `only_the_two_participants_can_read_or_send`; `send_rejects_phone_numbers_and_handles` (loops the Task 2 cases); `send_over_1000_chars_raises`; `send_notifies_other_side_unless_chat_pref_off`; `unread_flags_clear_after_mark_read`; `host_cannot_open_thread_with_self`.
+- [x] **Step 2: Run** `supabase test db`. Expected: FAIL.
+- [x] **Step 3: Implement** with RLS limited to participants and `publication supabase_realtime` additions.
+- [x] **Step 4: Run** `supabase test db`. Expected: PASS.
+- [x] **Step 5: Commit** `git commit -am "feat(chat): threads, messages, contact filter, unread"`.
 
 ### Task 12: Scheduled jobs, receipts, account deletion and seed data
 
