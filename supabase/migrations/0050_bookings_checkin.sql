@@ -153,13 +153,13 @@ as $$
    where b.event_id = p_event_id and b.status in ('confirmed', 'attended', 'no_show')
 $$;
 
-revoke all on function bookings.sign_ticket(uuid) from public;
-revoke all on function bookings.ticket_token(uuid) from public;
-revoke all on function bookings.check_in(uuid, text) from public;
-revoke all on function bookings.set_checked_in(uuid, boolean) from public;
-revoke all on function bookings.mark_no_shows(uuid) from public;
-revoke all on function bookings.attended_attendees(uuid) from public;
-revoke all on function bookings.settled_booking_ids(uuid) from public;
+revoke all on function bookings.sign_ticket(uuid) from public, anon, authenticated;
+revoke all on function bookings.ticket_token(uuid) from public, anon, authenticated;
+revoke all on function bookings.check_in(uuid, text) from public, anon, authenticated;
+revoke all on function bookings.set_checked_in(uuid, boolean) from public, anon, authenticated;
+revoke all on function bookings.mark_no_shows(uuid) from public, anon, authenticated;
+revoke all on function bookings.attended_attendees(uuid) from public, anon, authenticated;
+revoke all on function bookings.settled_booking_ids(uuid) from public, anon, authenticated;
 
 grant execute on function bookings.ticket_token(uuid) to authenticated;
 grant execute on function bookings.check_in(uuid, text) to authenticated;

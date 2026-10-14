@@ -67,9 +67,9 @@ begin
 end
 $$;
 
-revoke all on function payments.schedule_payout(uuid) from public;
-revoke all on function payments.host_payout_summary() from public;
-revoke all on function payments.event_earnings(uuid) from public;
+revoke all on function payments.schedule_payout(uuid) from public, anon, authenticated;
+revoke all on function payments.host_payout_summary() from public, anon, authenticated;
+revoke all on function payments.event_earnings(uuid) from public, anon, authenticated;
 
 grant execute on function payments.host_payout_summary() to authenticated;
 grant execute on function payments.event_earnings(uuid) to authenticated;

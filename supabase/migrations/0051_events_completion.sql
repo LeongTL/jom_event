@@ -70,9 +70,9 @@ begin
 end
 $$;
 
-revoke all on function events.finish_event(uuid) from public;
-revoke all on function events.complete_event(uuid) from public;
-revoke all on function events.auto_complete() from public;
+revoke all on function events.finish_event(uuid) from public, anon, authenticated;
+revoke all on function events.complete_event(uuid) from public, anon, authenticated;
+revoke all on function events.auto_complete() from public, anon, authenticated;
 
 grant execute on function events.complete_event(uuid) to authenticated;
 grant execute on function events.auto_complete() to service_role;
