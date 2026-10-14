@@ -6,10 +6,12 @@ insert into auth.users (id, email) values
   ('cccccccc-0000-0000-0000-000000000003', 'carol@example.com');
 update identity.profiles set is_host = true;
 
--- STUB until Task 6 defines the real bookings.seats_taken: delete these two lines then, and set the
--- seat count through real bookings instead.
-create or replace function bookings.seats_taken(event_id uuid) returns int language sql
-  as $$ select coalesce(nullif(current_setting('test.seats', true), '')::int, 0) $$;
+-- Sells seats through real bookings (postgres only): n seats as bookings of two people.
+create function pg_temp.sell(eid uuid, n int) returns void language sql as $$
+  insert into bookings.bookings (event_id, attendee_id, people, status, ticket_code, contact_name, contact_phone, amount_sen)
+  select eid, 'bbbbbbbb-0000-0000-0000-000000000002', 2, 'confirmed', 'T-' || gen_random_uuid()::text, 'Guest', '601', 0
+    from generate_series(1, n / 2) g
+$$;
 
 select set_config('t.base', jsonb_build_object(
   'title', 'Pottery night', 'description', 'Bring a mat to the studio',
@@ -47,7 +49,9 @@ select throws_ok($$select events.save_draft(jsonb_build_object('id', current_set
   'P0001', 'event_incomplete', 'published_event_cannot_lose_a_required_field');
 
 -- once guests have joined, date, venue, price, policy, categories, switch and area are locked
-select set_config('test.seats', '12', true);
+reset role;
+select pg_temp.sell(current_setting('t.eid')::uuid, 12);
+set local role authenticated;
 select throws_ok(
   format($$select events.save_draft(jsonb_build_object('id', current_setting('t.eid')) || %L::jsonb)$$, c.v),
   'P0001', 'locked_after_guests', 'published_event_with_guests_rejects_change_of_' || c.f)
@@ -94,7 +98,7 @@ select throws_ok($$select events.update_event(current_setting('t.eid')::uuid, 't
 reset role;
 
 select ok(events.has_guests(current_setting('t.eid')::uuid), 'has_guests_is_true_when_seats_are_taken');
-select set_config('test.seats', '0', true);
+delete from bookings.bookings;
 select ok(not events.has_guests(current_setting('t.eid')::uuid), 'has_guests_is_false_with_no_seats_taken');
 
 -- other hosts and closed events
