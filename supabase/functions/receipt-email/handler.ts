@@ -11,7 +11,6 @@ export interface ReceiptPayload {
 }
 
 export interface ReceiptDeps {
-  serviceKey: string;
   send(mail: { to: string; subject: string; text: string }): Promise<void>;
   log(line: string): void;
 }
@@ -52,6 +51,22 @@ export function buildReceipt(p: ReceiptPayload): { subject: string; text: string
   };
 }
 
+// True when the Authorization header carries a token whose role is service_role.
+// shortcut: this reads the role claim without checking the signature, because Supabase's gateway has already
+// verified it (verify_jwt is on for this function, pinned in config.toml). If verify_jwt were ever turned off,
+// anyone could forge this claim: keep it on, or verify the signature here before then.
+function isServiceRole(authorization: string | null): boolean {
+  const token = /^Bearer (\S+)$/.exec(authorization ?? '')?.[1];
+  const payload = token?.split('.')[1];
+  if (!payload) return false;
+  try {
+    const json = atob(payload.replaceAll('-', '+').replaceAll('_', '/').padEnd(Math.ceil(payload.length / 4) * 4, '='));
+    return JSON.parse(json)?.role === 'service_role';
+  } catch {
+    return false;
+  }
+}
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
@@ -61,10 +76,10 @@ const isReceipt = (b: Record<string, unknown>): b is Record<string, unknown> & R
   typeof b.people === 'number' && typeof b.amountSen === 'number' &&
   (b.email === null || typeof b.email === 'string') && (b.venue === null || typeof b.venue === 'string');
 
-// Called by the database (pg_net) right after a booking is confirmed. Only the service key may call it.
+// Called by the database (pg_net) right after a booking is confirmed. Only a service_role token may call it.
 export async function handleReceipt(req: Request, deps: ReceiptDeps): Promise<Response> {
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
-  if (req.headers.get('authorization') !== `Bearer ${deps.serviceKey}`) return json({ error: 'unauthorized' }, 401);
+  if (!isServiceRole(req.headers.get('authorization'))) return json({ error: 'unauthorized' }, 401);
 
   let body: Record<string, unknown>;
   try {

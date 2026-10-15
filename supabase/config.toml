@@ -418,3 +418,8 @@ enabled = true
 # The gateway cannot send a Supabase JWT; the webhook is authenticated by its HMAC signature instead.
 [functions.payment-webhook]
 verify_jwt = false
+
+# Only the database calls this, with a service_role token. The function reads the role claim and relies on the
+# gateway having verified the signature, so this must stay on.
+[functions.receipt-email]
+verify_jwt = true

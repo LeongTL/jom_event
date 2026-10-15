@@ -30,13 +30,19 @@ supabase config diff --workdir <dir containing supabase/config.toml> --project-r
 supabase config push --workdir <dir> --project-ref habundtbjgzkidwcaogw
 ```
 
+## Receipts
+
+On since 2026-10-15. The database stores the functions URL and the service-role key in Vault and calls `receipt-email`
+when a booking is confirmed. The function accepts any token whose role is `service_role` (the gateway has already checked
+the signature, so `verify_jwt` must stay on for it, pinned in `config.toml`). On staging it only logs the email, and a
+guest who signed in by phone has no email, so the answer is `skipped no_email`.
+
+To (re)store the two secrets, for example after resetting the project's JWT secret, run this yourself in a terminal
+where you are signed in to the CLI (it reads the key through your login and never prints it):
+`bash tools/dev/set_staging_receipt_secrets.sh`
+
 ## Not done yet
 
-- **Receipts are off.** The database only queues a receipt once `functions_url` and `service_role_key` exist in Vault.
-  In the dashboard SQL editor (the service role key is under Project Settings > API Keys):
-  `select vault.create_secret('https://habundtbjgzkidwcaogw.supabase.co/functions/v1', 'functions_url');`
-  `select vault.create_secret('<service role key>', 'service_role_key');`
-  On staging the receipt function only logs the email (`FLAVOR=staging`).
 - **Automatic redeploys** (`.github/workflows/deploy-staging.yml`) are switched off and have never run. To turn them on, add
   three repository secrets: `SUPABASE_ACCESS_TOKEN` (a personal token from supabase.com/dashboard/account/tokens),
   `STAGING_PROJECT_REF` (`habundtbjgzkidwcaogw`) and `STAGING_ANON_KEY` (the public key); then add the repository
