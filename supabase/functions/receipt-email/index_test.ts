@@ -13,11 +13,15 @@ const payload: ReceiptPayload = {
   ticketCode: 'KLS-48111',
 };
 
+// The gateway has already checked a token's signature (verify_jwt); the function checks which role it carries.
+const b64 = (o: unknown) => btoa(JSON.stringify(o)).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
+const jwt = (role: string) => `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ iss: 'supabase', role })}.signature`;
+const SERVICE = `Bearer ${jwt('service_role')}`;
+
 function deps(over: Partial<ReceiptDeps> = {}) {
   const sent: { to: string; subject: string; text: string }[] = [];
   const logged: string[] = [];
   const d: ReceiptDeps = {
-    serviceKey: 'service-key',
     send: (m) => (sent.push(m), Promise.resolve()),
     log: (l) => void logged.push(l),
     ...over,
@@ -25,7 +29,7 @@ function deps(over: Partial<ReceiptDeps> = {}) {
   return { d, sent, logged };
 }
 
-const call = (body: unknown, auth: string | null = 'Bearer service-key', method = 'POST') =>
+const call = (body: unknown, auth: string | null = SERVICE, method = 'POST') =>
   new Request('http://localhost/receipt-email', {
     method,
     headers: auth ? { authorization: auth, 'content-type': 'application/json' } : {},
@@ -53,12 +57,21 @@ Deno.test('receipt for one free spot says Free and 1 person', () => {
   assert(!text.includes('RM'));
 });
 
-Deno.test('receipt endpoint only answers to the service key', async () => {
+Deno.test('receipt endpoint only answers to a service_role token', async () => {
   const { d, sent } = deps();
   assertEquals((await handleReceipt(call(payload, null), d)).status, 401);
-  assertEquals((await handleReceipt(call(payload, 'Bearer someone-elses-token'), d)).status, 401);
-  assertEquals((await handleReceipt(call(payload, 'service-key'), d)).status, 401);
+  assertEquals((await handleReceipt(call(payload, `Bearer ${jwt('anon')}`), d)).status, 401);
+  assertEquals((await handleReceipt(call(payload, `Bearer ${jwt('authenticated')}`), d)).status, 401);
+  assertEquals((await handleReceipt(call(payload, 'Bearer not-a-token'), d)).status, 401);
+  assertEquals((await handleReceipt(call(payload, `Bearer ${jwt('service_role').split('.')[1]}`), d)).status, 401);
+  assertEquals((await handleReceipt(call(payload, jwt('service_role')), d)).status, 401); // no "Bearer"
   assertEquals(sent.length, 0);
+});
+
+Deno.test('receipt endpoint accepts any valid service_role token, so a reset of the project keys cannot break it', async () => {
+  const { d, sent } = deps();
+  assertEquals((await handleReceipt(call(payload, `Bearer ${jwt('service_role')}`), d)).status, 200);
+  assertEquals(sent.length, 1);
 });
 
 Deno.test('receipt endpoint only accepts POST', async () => {

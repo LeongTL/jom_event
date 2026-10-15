@@ -42,7 +42,10 @@ echo "== a signed-out visitor can browse"
 FEED=$(rpc events feed "" '{"p_tab":"now","p_lat":3.14,"p_lng":101.68,"p_km":50}')
 check "events.feed answers with a list of 9 or fewer" ok "$(echo "$FEED" | pyget "'ok' if isinstance(d, list) and len(d) <= 9 else 'bad'")"
 if [ "${EXPECT_SEEDED:-0}" = "1" ]; then
-  check "the seed is loaded (87 events in View all)" 87 "$(rpc events tab_counts "" '{"p_lat":3.14,"p_lng":101.68,"p_km":50}' | pyget "[r['n'] for r in d if r['tab']=='all'][0]")"
+  # The seed's times are relative to when it was loaded, so events that were live then finish as the hours pass:
+  # the 20 hosts never change, and View all shows nearly all of the 87.
+  check "the seed hosts are there (20 visible to a visitor)" 20 "$(json "$SUPABASE_URL/rest/v1/host_public?select=user_id" -H "apikey: $SUPABASE_ANON_KEY" -H 'Accept-Profile: identity' | pyget "len(d)")"
+  check "View all shows most of the seed events (at least 70)" yes "$(rpc events tab_counts "" '{"p_lat":3.14,"p_lng":101.68,"p_km":50}' | pyget "'yes' if [r['n'] for r in d if r['tab']=='all'][0] >= 70 else 'no'")"
 fi
 check "a visitor cannot save an event"               42501 "$(rpc identity toggle_save "" '{"event_id":"00000000-0000-0000-0000-000000000000"}' | pyget "d.get('code')")"
 check "a visitor cannot read bookings directly"      42501 "$(json "$SUPABASE_URL/rest/v1/bookings" -H "apikey: $SUPABASE_ANON_KEY" -H 'Accept-Profile: bookings' | pyget "d.get('code')")"
