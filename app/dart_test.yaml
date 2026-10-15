@@ -1,0 +1,5 @@
+# Tests that talk to the real staging backend are skipped unless asked for:
+#   flutter test --dart-define-from-file=env/staging.json --tags staging --run-skipped test/staging
+tags:
+  staging:
+    skip: "talks to the staging backend; run it by hand (see dart_test.yaml)"

@@ -7,8 +7,11 @@ import 'package:jom/app.dart';
 import 'package:jom/core/backend_check.dart';
 import 'package:jom/core/router/app_router.dart';
 import 'package:jom/core/theme/tokens.dart';
+import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:jom/shared/models/event_summary.dart';
 import 'package:jom/shared/widgets/shell.dart';
+
+import 'helpers/fake_auth.dart';
 
 final yoga = EventSummary.fromJson({
   'event_id': 'e1', 'title': 'Sunset Yoga Deck', 'glyph': '🧘', 'color_a': '#11998e', 'color_b': '#38ef7d',
@@ -27,6 +30,7 @@ Future<GoRouter> pumpApp(
   await t.pumpWidget(ProviderScope(
     overrides: [
       routerProvider.overrideWithValue(router),
+      authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: fakeSession(name: 'Mei'))), // signed in: these tests are about the app shell
       backendCheckProvider.overrideWith((ref) => (check ?? () async => sample)()),
       ...extra,
     ],
@@ -137,6 +141,7 @@ void main() {
       await t.pumpWidget(ProviderScope(
         overrides: [
           routerProvider.overrideWithValue(router),
+          authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: fakeSession(name: 'Mei'))),
           backendCheckProvider.overrideWith((ref) => Future<BackendCheck>.delayed(const Duration(seconds: 5), () => sample)),
         ],
         child: const JomApp(),
