@@ -245,11 +245,11 @@ jom/
 - Edge function `delete-account` (authenticated user only): deletes saved events, notifications, prefs, chat messages sent by the user; anonymises `profiles` (name `Deleted user`, phone null) and keeps bookings and payments rows (money records) with the attendee name blanked; removes the auth user; for a host with future events with bookings it refuses with `host_has_active_events`.
 - `seed.sql`: the 6 areas, 20 hosts, 87 events spread across Now, Night, Weekend and later (the prototype's counts), a mix of free and paid, categories, two with `none` and `7d` policies.
 
-- [ ] **Step 1: Write failing tests.** pgTAP: `cron_jobs_are_scheduled_with_expected_intervals` (reads `cron.job`); `seed_has_87_events_20_hosts_6_areas`; `seed_events_all_pass_contact_filter`. Deno: `delete_account_anonymises_profile_and_removes_personal_rows`; `delete_account_refuses_host_with_active_events`; `delete_account_requires_auth`.
-- [ ] **Step 2: Run** `supabase test db` and `deno test supabase/functions/delete-account`. Expected: FAIL.
-- [ ] **Step 3: Implement** the jobs, functions and seed.
-- [ ] **Step 4: Run** both. Expected: PASS. Then run `supabase db reset && supabase test db` once: the whole backend suite passes from scratch.
-- [ ] **Step 5: Commit** `git commit -am "feat: scheduled jobs, receipts, account deletion, seed"`.
+- [x] **Step 1: Write failing tests.** pgTAP: `cron_jobs_are_scheduled_with_expected_intervals` (reads `cron.job`); `seed_has_87_events_20_hosts_6_areas`; `seed_events_all_pass_contact_filter`. Deno: `delete_account_anonymises_profile_and_removes_personal_rows`; `delete_account_refuses_host_with_active_events`; `delete_account_requires_auth`.
+- [x] **Step 2: Run** `supabase test db` and `deno test supabase/functions/delete-account`. Expected: FAIL.
+- [x] **Step 3: Implement** the jobs, functions and seed.
+- [x] **Step 4: Run** both. Expected: PASS. Then run `supabase db reset && supabase test db` once: the whole backend suite passes from scratch.
+- [x] **Step 5: Commit** `git commit -am "feat: scheduled jobs, receipts, account deletion, seed"`.
 
 ### Task 12A: Staging project and deploy
 
