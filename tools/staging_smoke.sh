@@ -55,7 +55,10 @@ check "the test phone number signs in with the test code" yes "$([ -n "$TOKEN" ]
 
 if [ -n "$TOKEN" ] && [ "$TOKEN" != "?" ]; then
   echo "== what a signed-in user can and cannot do"
-  check "identity.unread_count answers 0 for a new user"   0     "$(rpc identity unread_count "$TOKEN" '{}')"
+  # the test account is shared and persistent, so compare with the real rows instead of assuming a fresh user
+  check "identity.unread_count matches the user's unread notifications" \
+        "$(json "$SUPABASE_URL/rest/v1/notifications?select=id&read_at=is.null" -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $TOKEN" -H 'Accept-Profile: identity' | pyget "len(d)")" \
+        "$(rpc identity unread_count "$TOKEN" '{}')"
   check "the profile was created by the sign-up trigger"   1     "$(json "$SUPABASE_URL/rest/v1/profiles?select=user_id" -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $TOKEN" -H 'Accept-Profile: identity' | pyget "len(d)")"
   check "identity.notify is not callable by a user"        42501 "$(rpc identity notify "$TOKEN" '{"user_id":"00000000-0000-0000-0000-000000000000","type":"payment","ref_type":null,"ref_id":null,"title":"x","body":null}' | pyget "d.get('code')")"
   check "a user cannot write events directly"              42501 "$(json -X POST "$SUPABASE_URL/rest/v1/events" -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $TOKEN" -H 'Content-Profile: events' -H 'Content-Type: application/json' -d '{"host_id":"00000000-0000-0000-0000-000000000000","title":"x"}' | pyget "d.get('code')")"
