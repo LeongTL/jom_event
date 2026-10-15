@@ -61,7 +61,7 @@ tools/staging_smoke.sh
 ## Checking it
 
 `tools/staging_smoke.sh` signs in with the test phone number and checks the open feed, the refusals and every function.
-`EXPECT_SEEDED=1 tools/staging_smoke.sh` also checks the 87 seed events. It reads the project URL and public key from the
+`EXPECT_SEEDED=1 tools/staging_smoke.sh` also checks the seed is there (20 hosts, most of the events still upcoming). It reads the project URL and public key from the
 git-ignored `app/env/staging.json`, which is what the app's `staging` flavor uses. The seed's times are relative to when
 it was loaded, so the Home tabs go stale. To refresh them, first delete the old seed events, then load the seed again
 (running it twice without deleting would double the events):
