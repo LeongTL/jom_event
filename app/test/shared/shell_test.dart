@@ -1,0 +1,71 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:jom/core/theme/tokens.dart';
+import 'package:jom/shared/widgets/shell.dart';
+
+Widget host(Widget bar) => MaterialApp(
+      theme: jomThemeData(JomTheme.now),
+      home: Scaffold(body: Align(alignment: Alignment.bottomCenter, child: bar)),
+    );
+
+void main() {
+  testWidgets('shell_shows_five_tabs_for_attendee_and_five_for_host', (t) async {
+    await t.pumpWidget(host(AttendeeTabs(currentIndex: 0, onTap: (_) {})));
+    for (final label in ['Explore', 'Saved', 'Bookings', 'Chat', 'Profile']) {
+      expect(find.text(label), findsOneWidget, reason: label);
+    }
+    expect(find.byKey(const Key('tab-bar')), findsOneWidget);
+
+    await t.pumpWidget(host(HostTabs(currentIndex: 0, onTap: (_) {})));
+    for (final label in ['Home', 'Events', 'Payouts', 'Chat', 'Profile']) {
+      expect(find.text(label), findsOneWidget, reason: label);
+    }
+    expect(find.text('Explore'), findsNothing);
+  });
+
+  testWidgets('the current tab is marked, the others are not', (t) async {
+    await t.pumpWidget(host(AttendeeTabs(currentIndex: 2, onTap: (_) {})));
+    expect(find.byKey(const Key('tab-on:Bookings')), findsOneWidget);
+    expect(find.byKey(const Key('tab-off:Explore')), findsOneWidget);
+    expect(find.byKey(const Key('tab-on:Explore')), findsNothing);
+  });
+
+  testWidgets('tapping a tab reports its position', (t) async {
+    final taps = <int>[];
+    await t.pumpWidget(host(AttendeeTabs(currentIndex: 0, onTap: taps.add)));
+    await t.tap(find.text('Saved'));
+    await t.tap(find.text('Profile'));
+    expect(taps, [1, 4]);
+  });
+
+  testWidgets('tab_badge_renders_count_and_hides_at_zero', (t) async {
+    await t.pumpWidget(host(AttendeeTabs(currentIndex: 0, onTap: (_) {}, chatBadge: 3)));
+    expect(find.byKey(const Key('tab-badge')), findsOneWidget);
+    expect(find.text('3'), findsOneWidget);
+
+    await t.pumpWidget(host(AttendeeTabs(currentIndex: 0, onTap: (_) {}, chatBadge: 0)));
+    expect(find.byKey(const Key('tab-badge')), findsNothing);
+  });
+
+  testWidgets('a big count reads 9+ so the badge stays small', (t) async {
+    await t.pumpWidget(host(AttendeeTabs(currentIndex: 0, onTap: (_) {}, chatBadge: 12)));
+    expect(find.text('9+'), findsOneWidget);
+  });
+
+  testWidgets('the host Chat tab has the badge slot too, and only on Chat', (t) async {
+    await t.pumpWidget(host(HostTabs(currentIndex: 0, onTap: (_) {}, chatBadge: 2)));
+    expect(find.byKey(const Key('tab-badge')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('tab-off:Chat')), matching: find.byKey(const Key('tab-badge'))), findsOneWidget);
+  });
+
+  testWidgets('the bar takes its colours from the active theme', (t) async {
+    await t.pumpWidget(MaterialApp(
+      theme: jomThemeData(JomTheme.weekend),
+      home: Scaffold(body: AttendeeTabs(currentIndex: 0, onTap: (_) {})),
+    ));
+    final box = t.widget<DecoratedBox>(find.byKey(const Key('tab-bar')));
+    expect((box.decoration as BoxDecoration).color, JomTokens.of(JomTheme.weekend).sheet);
+    final on = t.widget<AnimatedContainer>(find.byKey(const Key('tab-on:Explore')));
+    expect((on.decoration as BoxDecoration).color, JomTokens.of(JomTheme.weekend).accent);
+  });
+}
