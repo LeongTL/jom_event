@@ -25,9 +25,7 @@ jobs:
         with:
           version: latest
       - run: supabase start
-      - run: supabase db reset
-      - run: supabase test db
-      - run: tools/concurrency/last_seat.sh
+      - run: tools/test_db.sh
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
