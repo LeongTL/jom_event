@@ -262,11 +262,11 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 - Produces: a hosted Supabase staging project with all migrations, the four edge functions, the seed data and the test phone login; `AppConfig` values for the `staging` flavor.
 - Consumes: every migration and function from Tasks 1 to 12.
 
-- [ ] **Step 1: Write the failing check.** `tools/staging_smoke.sh` signs in with the test OTP over REST against `$SUPABASE_URL`, then calls `events.feed('now', 3.14, 101.68)` and expects 9 rows or fewer and no error; calls `identity.unread_count()` and expects `0`; calls `identity.notify` as the user and expects `42501`. Run it before deploying. Expected: FAIL (no staging project).
-- [ ] **Step 2: Create and link.** You create the Supabase staging project in the dashboard; run `supabase link --project-ref <ref>`.
-- [ ] **Step 3: Push and configure.** `supabase db push` (this also proves hosted Supabase allows the RLS event trigger, `pg_cron`, `pg_net` and Vault; if the event trigger is refused, replace it with a test-only check and ledger the ruling); `supabase functions deploy` for `payment-webhook`, `mock-gateway-pay`, `receipt-email`, `delete-account`; `supabase secrets set` for the webhook signing secret; store `ticket_secret` in Vault; in the dashboard set the test OTP (`+60123456789` = `123456`), expose the module schemas to the Data API, and add Google client IDs if available; load `seed.sql`.
-- [ ] **Step 4: Run** `tools/staging_smoke.sh` and `supabase db diff --linked` (expect no differences). Expected: PASS.
-- [ ] **Step 5: Add** `deploy-staging.yml` (on push to `main`: `supabase db push`, `supabase functions deploy`) and write `docs/release/staging.md`; commit `git commit -am "chore: staging project and deploy"`.
+- [x] **Step 1: Write the failing check.** `tools/staging_smoke.sh` signs in with the test OTP over REST against `$SUPABASE_URL`, then calls `events.feed('now', 3.14, 101.68)` and expects 9 rows or fewer and no error; calls `identity.unread_count()` and expects `0`; calls `identity.notify` as the user and expects `42501`. Run it before deploying. Expected: FAIL (no staging project).
+- [x] **Step 2: Create and link.** You create the Supabase staging project in the dashboard; run `supabase link --project-ref <ref>`.
+- [x] **Step 3: Push and configure.** `supabase db push` (this also proves hosted Supabase allows the RLS event trigger, `pg_cron`, `pg_net` and Vault; if the event trigger is refused, replace it with a test-only check and ledger the ruling); `supabase functions deploy` for `payment-webhook`, `mock-gateway-pay`, `receipt-email`, `delete-account`; `supabase secrets set` for the webhook signing secret; store `ticket_secret` in Vault; in the dashboard set the test OTP (`+60123456789` = `123456`), expose the module schemas to the Data API, and add Google client IDs if available; load `seed.sql`.
+- [x] **Step 4: Run** `tools/staging_smoke.sh` and `supabase db diff --linked` (expect no differences). Expected: PASS.
+- [x] **Step 5: Add** `deploy-staging.yml` (on push to `main`: `supabase db push`, `supabase functions deploy`) and write `docs/release/staging.md`; commit `git commit -am "chore: staging project and deploy"`.
 
 ## Phase 2: attendee app
 
