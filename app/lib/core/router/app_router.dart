@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/domain/auth_gate.dart';
+import '../../features/auth/presentation/profile_placeholder.dart';
+import '../../features/auth/presentation/signed_out_tab.dart';
 import '../../shared/widgets/shell.dart';
 import 'explore_placeholder.dart';
 import 'placeholder_screen.dart';
@@ -15,6 +18,16 @@ StatefulShellBranch _tab(String path, String title, {Widget? screen}) => Statefu
       GoRoute(path: path, builder: (context, state) => screen ?? PlaceholderScreen(title: title, tabBarBelow: true)),
     ]);
 
+/// A tab that belongs to an account: signed-out visitors see a sign-in prompt instead of [content].
+StatefulShellBranch _account(String path, String title, String prompt, {Widget? content}) => _tab(
+      path,
+      title,
+      screen: AuthGate(
+        signedOut: SignedOutTab(heading: prompt),
+        child: content ?? PlaceholderScreen(title: title, tabBarBelow: true),
+      ),
+    );
+
 /// Every route in the plan. The screens are placeholders until their own task builds them. A path nobody
 /// recognises goes to Explore.
 GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
@@ -25,10 +38,10 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
           builder: (context, state, shell) => JomShell(navigationShell: shell, host: false),
           branches: [
             _tab('/explore', 'Explore', screen: const ExplorePlaceholder()),
-            _tab('/saved', 'Saved'),
-            _tab('/bookings', 'Bookings'),
-            _tab('/chats', 'Chat'),
-            _tab('/profile', 'Profile'),
+            _account('/saved', 'Saved', 'Sign in to see your saved events'),
+            _account('/bookings', 'Bookings', 'Sign in to see your bookings'),
+            _account('/chats', 'Chat', 'Sign in to see your chats'),
+            _account('/profile', 'Profile', 'Sign in to see your profile', content: const ProfilePlaceholder()),
           ],
         ),
         _screen('/chats/:threadId', 'Chat thread'),

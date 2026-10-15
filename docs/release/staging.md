@@ -49,9 +49,24 @@ It needs the repository secrets `SUPABASE_ACCESS_TOKEN`, `STAGING_PROJECT_REF`, 
 `STAGING_DEPLOY_ENABLED=true` (all set). Set the variable to anything else to switch it off. Not yet seen: the run that
 comes from merging to `main` (the `workflow_run` trigger); the first merge after this one will show it.
 
+## Google sign-in
+
+Switched on 2026-10-15 in the Supabase dashboard (Authentication, Providers, Google) with a Google Cloud project named Jom.
+The **Web** OAuth client is configured and proven end to end with a real login in a browser, and its callback is
+`https://habundtbjgzkidwcaogw.supabase.co/auth/v1/callback`. Its client ID is also in the git-ignored `app/env/staging.json`
+as `GOOGLE_WEB_CLIENT_ID`. The client secret lives only in Supabase.
+
+Still to do, and why the app's Google button says "Google sign-in isn't set up on this device yet" for now:
+- an **iOS** OAuth client (bundle id `com.jom.jom`), its client ID passed to the app as `GOOGLE_IOS_CLIENT_ID`;
+- an **Android** OAuth client (package `com.jom.jom` plus the signing SHA-1; this Mac has no Java, so install Android Studio first).
+
+If the app name or bundle id changes at release (Task 25), these clients must be created again.
+
 ## Not done yet
 
-- **Google sign-in** is not set up (it needs OAuth client IDs, Task 14).
+- Google sign-in on a phone: the two clients above.
+- Phone sign-in only works for the test number (`+60123456789` = `123456`): staging uses a dummy SMS provider, so a real
+  number cannot receive a text. A real SMS provider is outside the MVP.
 
 ## Redeploying by hand (only needed if the automatic one is off or broken)
 
@@ -63,6 +78,10 @@ tools/staging_smoke.sh
 ```
 
 ## Checking it
+
+The Flutter app has its own real-backend test: `cd app && flutter test --dart-define-from-file=env/staging.json --tags staging --run-skipped test/staging`.
+It signs in with the test number, saves a name on the account and the profile, reads it back, puts the account back as it
+was (no name) and signs out. Supabase allows one text per number every 3 seconds, so run it once at a time.
 
 `tools/staging_smoke.sh` signs in with the test phone number and checks the open feed, the refusals and every function.
 `EXPECT_SEEDED=1 tools/staging_smoke.sh` also checks the seed is there (20 hosts, most of the events still upcoming). It reads the project URL and public key from the

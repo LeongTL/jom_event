@@ -294,11 +294,11 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 - Produces: `enum AuthReason { join, save, chat }`; `Future<bool> requireAuth(WidgetRef ref, BuildContext context, AuthReason why)` (returns true immediately when signed in; otherwise opens the sheet and, after success, resumes by returning true so the caller completes its action); `abstract class AuthRepository { Stream<Session?> get session; Future<void> signInWithGoogle(); Future<void> sendOtp(String phone); Future<void> verifyOtp(String phone, String code); Future<void> setName(String name); Future<void> signOut(); }`.
 - Sheet copy from the prototype: `join` → "Sign in to join / Free or paid, we need to know who is coming. Browsing stays open."; `save` → "Sign in to save / Saved events live in your account, so they follow you across phones."; `chat` → "Sign in to chat / Chat is between you and the host, so we need to know who you are."
 
-- [ ] **Step 1: Write failing tests.** `require_auth_returns_true_without_sheet_when_signed_in`; `require_auth_shows_heading_for_each_reason` (three headings); `after_successful_sign_in_the_pending_action_runs_once`; `phone_flow_with_test_otp_123456_signs_in`; `wrong_otp_shows_error_and_stays`; `first_sign_in_asks_for_name_then_continues`; `signed_out_saved_bookings_chat_profile_show_sign_in_prompt_with_the_two_buttons`; `browsing_explore_and_event_pages_needs_no_account`.
-- [ ] **Step 2: Run** `flutter test test/features/auth`. Expected: FAIL.
-- [ ] **Step 3: Implement** with `supabase_flutter` (Google via `google_sign_in` ID token; phone via `signInWithOtp`). Phone numbers are normalised to `+60`.
-- [ ] **Step 4: Run** the tests, then manually sign in on the `dev` flavor with the test number. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "feat(auth): sign-in sheet, phone otp, signed-out states"`.
+- [x] **Step 1: Write failing tests.** `require_auth_returns_true_without_sheet_when_signed_in`; `require_auth_shows_heading_for_each_reason` (three headings); `after_successful_sign_in_the_pending_action_runs_once`; `phone_flow_with_test_otp_123456_signs_in`; `wrong_otp_shows_error_and_stays`; `first_sign_in_asks_for_name_then_continues`; `signed_out_saved_bookings_chat_profile_show_sign_in_prompt_with_the_two_buttons`; `browsing_explore_and_event_pages_needs_no_account`.
+- [x] **Step 2: Run** `flutter test test/features/auth`. Expected: FAIL.
+- [x] **Step 3: Implement** with `supabase_flutter` (Google via `google_sign_in` ID token; phone via `signInWithOtp`). Phone numbers are normalised to `+60`.
+- [x] **Step 4: Run** the tests, then manually sign in on the `dev` flavor with the test number. Expected: PASS.
+- [x] **Step 5: Commit** `git commit -am "feat(auth): sign-in sheet, phone otp, signed-out states"`.
 
 ### Task 15: Home: tabs, odometer, pin map, dock and area sheet
 
