@@ -41,15 +41,19 @@ To (re)store the two secrets, for example after resetting the project's JWT secr
 where you are signed in to the CLI (it reads the key through your login and never prints it):
 `bash tools/dev/set_staging_receipt_secrets.sh`
 
+## Automatic redeploys
+
+On since 2026-10-15. Once ci passes on `main`, `.github/workflows/deploy-staging.yml` links the project, runs `supabase db push`,
+deploys the functions and runs `tools/staging_smoke.sh`. First run by hand (workflow_dispatch): all steps passed.
+It needs the repository secrets `SUPABASE_ACCESS_TOKEN`, `STAGING_PROJECT_REF`, `STAGING_ANON_KEY` and the variable
+`STAGING_DEPLOY_ENABLED=true` (all set). Set the variable to anything else to switch it off. Not yet seen: the run that
+comes from merging to `main` (the `workflow_run` trigger); the first merge after this one will show it.
+
 ## Not done yet
 
-- **Automatic redeploys** (`.github/workflows/deploy-staging.yml`) are switched off and have never run. To turn them on, add
-  three repository secrets: `SUPABASE_ACCESS_TOKEN` (a personal token from supabase.com/dashboard/account/tokens),
-  `STAGING_PROJECT_REF` (`habundtbjgzkidwcaogw`) and `STAGING_ANON_KEY` (the public key); then add the repository
-  variable `STAGING_DEPLOY_ENABLED` = `true`. After that, every merge to `main` that passes ci redeploys staging.
 - **Google sign-in** is not set up (it needs OAuth client IDs, Task 14).
 
-## Redeploying by hand
+## Redeploying by hand (only needed if the automatic one is off or broken)
 
 ```bash
 supabase link --project-ref habundtbjgzkidwcaogw
