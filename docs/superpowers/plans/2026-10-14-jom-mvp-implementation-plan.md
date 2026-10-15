@@ -279,11 +279,11 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 - Produces: `String formatMoney(int sen)` (`0 → 'Free'`, `4500 → 'RM 45'`, `4550 → 'RM 45.50'`); `enum JomTheme { now, night, weekend }` with `JomTokens` copied from the prototype's `.phone[data-t=...]` variables; `class GrainBackground extends StatelessWidget`; `final routerProvider = Provider<GoRouter>`; `class EventSummary { id, title, glyph, colorA, colorB, startsAt, endsAt, priceSen, area, distanceKm, isLive, spotsLeft, score }` with `fromJson`; bottom bars `AttendeeTabs` (Explore, Saved, Bookings, Chat, Profile with unread badge slot) and `HostTabs` (Home, Events, Payouts, Chat, Profile).
 - Routes: `/explore`, `/saved`, `/bookings`, `/chats`, `/chats/:threadId`, `/profile`, `/event/:id`, `/event/:id/checkout`, `/booking/:id/gateway`, `/booking/:id/processing`, `/booking/:id/failed`, `/booking/:id/ticket`, `/review/:bookingId`, `/host/:id`, `/notifications`, `/host-mode/home|events|events/:id|events/:id/edit|events/:id/scan|events/:id/checkin|events/:id/guests|new|payouts|payout-account|chats|profile`.
 
-- [ ] **Step 1: Write failing tests.** `formatMoney_free_whole_and_cents`; `tokens_match_prototype_for_each_theme` (golden values for `--bg` and accent of now, night, weekend copied from the HTML); `shell_shows_five_tabs_for_attendee_and_five_for_host`; `tab_badge_renders_count_and_hides_at_zero`; `router_redirects_unknown_path_to_explore`.
-- [ ] **Step 2: Run** `flutter test`. Expected: FAIL.
-- [ ] **Step 3: Implement** the files above; the grain is a cached noise shader or tiled image with `RepaintBoundary`.
-- [ ] **Step 4: Run** `flutter test && flutter analyze`. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "feat(app): theme tokens, router, money, shell"`.
+- [x] **Step 1: Write failing tests.** `formatMoney_free_whole_and_cents`; `tokens_match_prototype_for_each_theme` (golden values for `--bg` and accent of now, night, weekend copied from the HTML); `shell_shows_five_tabs_for_attendee_and_five_for_host`; `tab_badge_renders_count_and_hides_at_zero`; `router_redirects_unknown_path_to_explore`.
+- [x] **Step 2: Run** `flutter test`. Expected: FAIL.
+- [x] **Step 3: Implement** the files above; the grain is a cached noise shader or tiled image with `RepaintBoundary`.
+- [x] **Step 4: Run** `flutter test && flutter analyze`. Expected: PASS.
+- [x] **Step 5: Commit** `git commit -am "feat(app): theme tokens, router, money, shell"`.
 
 ### Task 14: Sign-in sheet, sign-up and signed-out states
 
