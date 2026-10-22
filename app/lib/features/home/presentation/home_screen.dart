@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -67,8 +69,11 @@ class HomeScreen extends ConsumerWidget {
                                   builder: (context, box) => FittedBox(
                                     fit: BoxFit.scaleDown,
                                     alignment: Alignment.topCenter,
+                                    // at least 520 tall: the spare height goes to the map, and a shorter
+                                    // screen scales the block down instead of overflowing
                                     child: SizedBox(
                                       width: box.maxWidth,
+                                      height: math.max(box.maxHeight, 520),
                                       child: _FeedBody(
                                         key: ValueKey((tab, c, sel.km)),
                                         feed: feed,
@@ -276,14 +281,16 @@ class _FeedBodyState extends ConsumerState<_FeedBody> {
           ),
         ),
         const SizedBox(height: 4),
-        PinMap(
-          key: const Key('pin-map'),
-          events: _events,
-          selected: _selected,
-          onTap: (i) => _controller.animateToPage(
-            i,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
+        Expanded(
+          child: PinMap(
+            key: const Key('pin-map'),
+            events: _events,
+            selected: _selected,
+            onTap: (i) => _controller.animateToPage(
+              i,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            ),
           ),
         ),
         if (_events.isNotEmpty)

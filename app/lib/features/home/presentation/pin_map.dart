@@ -19,22 +19,21 @@ class PinMap extends StatelessWidget {
   final ValueListenable<int> selected;
   final ValueChanged<int> onTap;
 
-  static const width = 340.0, height = 250.0, pinSize = 44.0;
+  static const pinSize = 44.0;
 
   @override
   Widget build(BuildContext context) {
     final k = context.jom;
     final offsets = layoutPins([for (final e in events) e.id]);
-    return SizedBox(
-      width: width,
-      height: height,
-      child: Stack(
+    // fills whatever room Home gives it; the pins sit around its centre
+    return LayoutBuilder(
+      builder: (context, c) => Stack(
         children: [
           Positioned.fill(child: CustomPaint(painter: _BackdropPainter(k.ink))),
           for (var i = 0; i < events.length; i++)
             Positioned(
-              left: width / 2 + offsets[i].dx - pinSize / 2,
-              top: height / 2 + offsets[i].dy - pinSize / 2,
+              left: c.maxWidth / 2 + offsets[i].dx - pinSize / 2,
+              top: c.maxHeight / 2 + offsets[i].dy - pinSize / 2,
               child: ValueListenableBuilder<int>(
                 valueListenable: selected,
                 builder: (context, sel, _) => _Pin(

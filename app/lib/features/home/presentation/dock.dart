@@ -29,7 +29,7 @@ class Dock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 144, // the prototype's dock: 20 above and below a 104 card, room for the lift
+      height: 136, // a 104 card with room above for the lift; the dock rests right on the dial
       child: PageView.builder(
         key: const Key('dock'),
         controller: controller,

@@ -243,6 +243,14 @@ void main() {
     expect(t.getBottomLeft(dial).dy, 852 - 96);
   });
 
+  testWidgets('the dock sits right on top of the dial, with the spare height going to the map (prototype)', (t) async {
+    await pumpHome(t);
+    final dockBottom = t.getBottomLeft(find.byKey(const Key('dock'))).dy;
+    final dialTop = t.getTopLeft(find.byKey(const Key('dial'))).dy;
+    expect(dockBottom, closeTo(dialTop, 1), reason: 'no empty band between the cards and the tab dial');
+    expect(t.getSize(find.byKey(const Key('pin-map'))).height, greaterThan(250), reason: 'the map takes the spare height');
+  });
+
   testWidgets('bell_shows_unread_badge', (t) async {
     await pumpHome(t, unread: 3);
     expect(find.descendant(of: find.byKey(const Key('bell')), matching: find.text('3')), findsOneWidget);
