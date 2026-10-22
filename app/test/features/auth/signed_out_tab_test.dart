@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jom/app.dart';
-import 'package:jom/core/backend_check.dart';
+import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
+import 'package:jom/features/home/data/home_repository.dart';
+import 'package:jom/features/home/domain/home_feed.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show Session;
 
 import '../../helpers/fake_auth.dart';
@@ -16,7 +18,9 @@ Future<GoRouter> pumpApp(WidgetTester t, FakeAuthRepository repo, {String locati
     overrides: [
       routerProvider.overrideWithValue(router),
       authRepositoryProvider.overrideWithValue(repo),
-      backendCheckProvider.overrideWith((ref) async => const BackendCheck(totalEvents: 87, now: [])),
+      homeFeedProvider.overrideWith((ref, q) async => HomeFeed(tab: q.tab, top9: const [], stats: const HeroStats(total: 0, live: 0, free: 0, closestKm: null))),
+      deviceLocationProvider.overrideWithValue(() async => null),
+      unreadCountProvider.overrideWith((ref) async => 0),
     ],
     child: const JomApp(),
   ));
@@ -51,7 +55,7 @@ void main() {
     final repo = FakeAuthRepository();
     await pumpApp(t, repo);
     expect(find.text('Explore'), findsWidgets);
-    expect(find.byKey(const Key('screen-title')), findsOneWidget);
+    expect(find.byKey(const Key('home-screen')), findsOneWidget);
     expect(find.text('Continue with Google'), findsNothing);
 
     await pumpApp(t, repo, location: '/event/e1');

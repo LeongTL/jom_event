@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jom/app.dart';
-import 'package:jom/core/backend_check.dart';
+import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
 import 'package:jom/core/theme/tokens.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
+import 'package:jom/features/home/data/home_repository.dart';
+import 'package:jom/features/home/domain/home_feed.dart';
+import 'package:jom/features/home/presentation/odometer.dart';
 import 'package:jom/shared/models/event_summary.dart';
 import 'package:jom/shared/widgets/shell.dart';
 
@@ -18,12 +21,13 @@ final yoga = EventSummary.fromJson({
   'starts_at': '2026-10-15T14:22:00+00:00', 'ends_at': '2026-10-15T15:37:00+00:00', 'price_sen': 2500,
   'area': 'Bangsar', 'distance_km': 0.93, 'is_live': false, 'spots_left': 16, 'score': 1.67,
 });
-final sample = BackendCheck(totalEvents: 87, now: [yoga]);
+const stats = HeroStats(total: 1, live: 0, free: 0, closestKm: .93);
+Future<HomeFeed> sampleFeed(HomeQuery q) async => HomeFeed(tab: q.tab, top9: [yoga], stats: stats);
 
 Future<GoRouter> pumpApp(
   WidgetTester t, {
   String location = '/explore',
-  Future<BackendCheck> Function()? check,
+  Future<HomeFeed> Function(HomeQuery)? feed,
   List<Override> extra = const [],
 }) async {
   final router = createRouter(initialLocation: location);
@@ -31,7 +35,9 @@ Future<GoRouter> pumpApp(
     overrides: [
       routerProvider.overrideWithValue(router),
       authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: fakeSession(name: 'Mei'))), // signed in: these tests are about the app shell
-      backendCheckProvider.overrideWith((ref) => (check ?? () async => sample)()),
+      homeFeedProvider.overrideWith((ref, q) => (feed ?? sampleFeed)(q)),
+      deviceLocationProvider.overrideWithValue(() async => null),
+      unreadCountProvider.overrideWith((ref) async => 0),
       ...extra,
     ],
     child: const JomApp(),
@@ -47,7 +53,7 @@ void main() {
   testWidgets('the app opens on Explore with the five attendee tabs', (t) async {
     final router = await pumpApp(t);
     expect(where(router), '/explore');
-    expect(title(t), 'Explore');
+    expect(find.byKey(const Key('home-screen')), findsOneWidget);
     for (final label in ['Explore', 'Saved', 'Bookings', 'Chat', 'Profile']) {
       expect(find.text(label), findsWidgets, reason: label);
     }
@@ -59,14 +65,18 @@ void main() {
       await t.tap(find.descendant(of: find.byKey(const Key('tab-bar')), matching: find.text(entry.key)));
       await t.pumpAndSettle();
       expect(where(router), entry.value, reason: entry.key);
-      expect(title(t), entry.key);
+      if (entry.value == '/explore') {
+        expect(find.byKey(const Key('home-screen')), findsOneWidget);
+      } else {
+        expect(title(t), entry.key);
+      }
     }
   });
 
   testWidgets('router_redirects_unknown_path_to_explore', (t) async {
     final router = await pumpApp(t, location: '/this/does/not/exist');
     expect(where(router), '/explore');
-    expect(title(t), 'Explore');
+    expect(find.byKey(const Key('home-screen')), findsOneWidget);
   });
 
   testWidgets('every route in the plan opens and is not bounced to Explore', (t) async {
@@ -76,17 +86,17 @@ void main() {
       '/host/h1', '/notifications', '/host-mode/home', '/host-mode/events', '/host-mode/events/e1',
       '/host-mode/events/e1/edit', '/host-mode/events/e1/scan', '/host-mode/events/e1/checkin',
       '/host-mode/events/e1/guests', '/host-mode/new', '/host-mode/payouts', '/host-mode/payout-account',
-      '/host-mode/chats', '/host-mode/profile',
+      '/host-mode/chats', '/host-mode/profile', '/all',
     ];
     for (final p in paths) {
       final router = await pumpApp(t, location: p);
       expect(where(router), p, reason: p);
-      expect(find.byKey(const Key('screen-title')), findsOneWidget, reason: p);
+      expect(find.byKey(Key(p == '/explore' ? 'home-screen' : 'screen-title')), findsOneWidget, reason: p);
     }
   });
 
   testWidgets('screens that are not tabs hide the tab bar', (t) async {
-    for (final p in ['/event/e1', '/event/e1/checkout', '/chats/t1', '/booking/b1/ticket', '/notifications', '/host-mode/new', '/host-mode/events/e1/scan']) {
+    for (final p in ['/event/e1', '/event/e1/checkout', '/chats/t1', '/booking/b1/ticket', '/notifications', '/all', '/host-mode/new', '/host-mode/events/e1/scan']) {
       await pumpApp(t, location: p);
       expect(find.byKey(const Key('tab-bar')), findsNothing, reason: p);
     }
@@ -122,18 +132,17 @@ void main() {
     expect(app.title, 'Jom');
   });
 
-  group('the Explore placeholder proves the app can read the backend', () {
-    testWidgets('it shows the live counts and the first events, priced with formatMoney', (t) async {
+  group('Home reads the backend through the app', () {
+    testWidgets('it shows the live feed: the count, the event and its price', (t) async {
       await pumpApp(t);
-      expect(find.text('Connected to the backend'), findsOneWidget);
-      expect(find.textContaining('87 events'), findsOneWidget);
       expect(find.text('Sunset Yoga Deck'), findsOneWidget);
       expect(find.textContaining('RM 25'), findsOneWidget);
+      expect(t.widget<Odometer>(find.byKey(const Key('odometer'))).value, 1);
     });
 
     testWidgets('it says so when the backend cannot be reached', (t) async {
-      await pumpApp(t, check: () async => throw Exception('offline'));
-      expect(find.text('Could not reach the backend'), findsOneWidget);
+      await pumpApp(t, feed: (q) async => throw Exception('offline'));
+      expect(find.textContaining('Could not load events'), findsOneWidget);
     });
 
     testWidgets('it shows a spinner while it waits', (t) async {
@@ -142,7 +151,9 @@ void main() {
         overrides: [
           routerProvider.overrideWithValue(router),
           authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: fakeSession(name: 'Mei'))),
-          backendCheckProvider.overrideWith((ref) => Future<BackendCheck>.delayed(const Duration(seconds: 5), () => sample)),
+          homeFeedProvider.overrideWith((ref, q) => Future<HomeFeed>.delayed(const Duration(seconds: 5), () => sampleFeed(q))),
+          deviceLocationProvider.overrideWithValue(() async => null),
+          unreadCountProvider.overrideWith((ref) async => 0),
         ],
         child: const JomApp(),
       ));
