@@ -7,24 +7,51 @@ String countdown(Duration d) {
   return '${(s ~/ 60).toString().padLeft(2, '0')}:${(s % 60).toString().padLeft(2, '0')}';
 }
 
-const _days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-const _months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const _months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// Kuala Lumpur is UTC+8 all year, whatever zone the phone is in.
+DateTime _kl(DateTime d) => d.toUtc().add(const Duration(hours: 8));
+
+String _time(DateTime kl) =>
+    '${kl.hour % 12 == 0 ? 12 : kl.hour % 12}:${kl.minute.toString().padLeft(2, '0')} ${kl.hour < 12 ? 'AM' : 'PM'}';
+
+int _dayDiff(DateTime startsAt, DateTime now) {
+  final s = _kl(startsAt), n = _kl(now);
+  return DateTime.utc(s.year, s.month, s.day).difference(DateTime.utc(n.year, n.month, n.day)).inDays;
+}
+
+/// "Today 8:00 PM", "Tomorrow 9:30 AM", "Sun 9:00 AM" (within the week) or "19 Jan 9:00 AM", in KL time.
+String whenLabel(DateTime startsAt, DateTime now) {
+  final s = _kl(startsAt), diff = _dayDiff(startsAt, now);
+  final day = switch (diff) {
+    0 => 'Today',
+    1 => 'Tomorrow',
+    < 7 => _days[s.weekday - 1],
+    _ => '${s.day} ${_months[s.month - 1]}',
+  };
+  return '$day ${_time(s)}';
+}
+
+/// "1 hour", "2 hours", "1 h 30 min", "45 min".
+String durationText(Duration d) {
+  final h = d.inHours, m = d.inMinutes % 60;
+  if (h == 0) return '$m min';
+  if (m == 0) return '$h ${h == 1 ? 'hour' : 'hours'}';
+  return '$h h $m min';
+}
 
 /// The small tag on a poster: HAPPENING, a ticking countdown under 2 hours, otherwise when it starts
-/// ("🌙 8:00 PM" tonight, "TOMORROW", "SAT 17 OCT"), in Kuala Lumpur time.
+/// ("🌙 8:00 PM" tonight, "SAT 2:00 PM", "19 JAN 9:00 AM"), in Kuala Lumpur time.
 String posterTag(EventSummary e, DateTime now) {
   final left = e.startsAt.difference(now);
   if (e.isLive || left <= Duration.zero) return 'HAPPENING';
   if (left < const Duration(hours: 2)) return '⏱ in ${countdown(left)}';
-  DateTime kl(DateTime d) => d.toUtc().add(const Duration(hours: 8));
-  final s = kl(e.startsAt), n = kl(now);
-  final dayDiff = DateTime.utc(s.year, s.month, s.day).difference(DateTime.utc(n.year, n.month, n.day)).inDays;
-  if (dayDiff == 0) {
-    final h = s.hour % 12 == 0 ? 12 : s.hour % 12;
-    final time = '$h:${s.minute.toString().padLeft(2, '0')} ${s.hour < 12 ? 'AM' : 'PM'}';
-    return s.hour >= 18 ? '🌙 $time' : time;
+  if (_dayDiff(e.startsAt, now) == 0) {
+    final s = _kl(e.startsAt);
+    return s.hour >= 18 ? '🌙 ${_time(s)}' : _time(s);
   }
-  return dayDiff == 1 ? 'TOMORROW' : '${_days[s.weekday - 1]} ${s.day} ${_months[s.month - 1]}';
+  return whenLabel(e.startsAt, now).replaceFirst('Tomorrow', _days[_kl(e.startsAt).weekday - 1]).toUpperCase();
 }
 
 /// The host's refund promise as the event pages and checkout word it.

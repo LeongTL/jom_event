@@ -146,7 +146,7 @@ void main() {
       expect(sec, inInclusiveRange(38, 42));
       expect(tag('h'), startsWith('⏱ in 1h 3'));
       expect(tag('t'), '🌙 8:00 PM');
-      expect(tag('x'), 'SAT 12 JAN');
+      expect(tag('x'), 'SAT 9:00 AM');
       await t.pump(const Duration(seconds: 1));
       expect(tag('s'), '⏱ in 17:${(sec - 1).toString().padLeft(2, '0')}', reason: 'the countdown ticks each second');
     });
@@ -232,6 +232,8 @@ void main() {
       expect(find.text('Bangsar'), findsOneWidget);
       expect(find.text('1.2 km away'), findsOneWidget);
       expect(find.text('Bring a mat.'), findsOneWidget);
+      expect(find.text('Sat 9:00 AM'), findsOneWidget);
+      expect(find.text('2 hours'), findsOneWidget);
     });
 
     testWidgets('paid_event_page_shows_cancel_policy_text_per_policy', (t) async {

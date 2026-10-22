@@ -62,18 +62,6 @@ class _Round extends StatelessWidget {
       );
 }
 
-String _longDate(DateTime d) {
-  final s = d.toUtc().add(const Duration(hours: 8));
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return '${days[s.weekday - 1]} ${s.day} ${months[s.month - 1]}';
-}
-
-String _clock(DateTime d) {
-  final s = d.toUtc().add(const Duration(hours: 8));
-  return '${s.hour % 12 == 0 ? 12 : s.hour % 12}:${s.minute.toString().padLeft(2, '0')} ${s.hour < 12 ? 'AM' : 'PM'}';
-}
-
 class _Page extends ConsumerWidget {
   const _Page(this.d);
   final EventDetail d;
@@ -102,8 +90,8 @@ class _Page extends ConsumerWidget {
             ]),
           ),
         );
-    final when = live ? 'Happening now' : _longDate(e.startsAt);
-    final whenSmall = live ? 'until ${_clock(e.endsAt)}' : _clock(e.startsAt);
+    final when = live ? 'Now' : whenLabel(e.startsAt, now);
+    final whenSmall = live ? 'until ${whenLabel(e.endsAt, now).split(' ').skip(1).join(' ')}' : durationText(e.endsAt.difference(e.startsAt));
 
     Widget soft(Widget child, {Key? key, VoidCallback? onTap}) => GestureDetector(
           key: key,
@@ -167,13 +155,13 @@ class _Page extends ConsumerWidget {
         ),
       ],
       const SizedBox(height: 18),
-      Row(children: [
+      IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         fact('🗓', when, whenSmall),
         const SizedBox(width: 8),
         fact('📍', e.area ?? '—', km),
         const SizedBox(width: 8),
         paid ? fact('🎟', formatMoney(e.priceSen), 'per person') : fact('🆓', 'Free', 'entry'),
-      ]),
+      ])),
       const SizedBox(height: 18),
       if (!paid)
         Opacity(

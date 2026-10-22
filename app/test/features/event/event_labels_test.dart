@@ -36,11 +36,28 @@ void main() {
       expect(posterTag(at('2030-01-09T12:00:00Z'), now), '🌙 8:00 PM'); // 20:00 KL
     });
     test('earlier today with no moon', () => expect(posterTag(at('2030-01-09T09:00:00Z'), now), '5:00 PM'));
-    test('tomorrow', () => expect(posterTag(at('2030-01-10T01:00:00Z'), now), 'TOMORROW'));
-    test('later days by name', () => expect(posterTag(at('2030-01-12T01:00:00Z'), now), 'SAT 12 JAN'));
-    test('after midnight in KL counts as the next day even when UTC is still today', () {
-      expect(posterTag(at('2030-01-09T17:00:00Z'), now), 'TOMORROW'); // 01:00 on the 10th in KL
+    test('tomorrow and the days after, by weekday and time', () {
+      expect(posterTag(at('2030-01-10T01:00:00Z'), now), 'THU 9:00 AM');
+      expect(posterTag(at('2030-01-12T06:00:00Z'), now), 'SAT 2:00 PM');
     });
+    test('a week or more away, by date and time', () => expect(posterTag(at('2030-01-19T01:00:00Z'), now), '19 JAN 9:00 AM'));
+    test('after midnight in KL counts as the next day even when UTC is still today', () {
+      expect(posterTag(at('2030-01-09T17:00:00Z'), now), 'THU 1:00 AM'); // 01:00 on the 10th in KL
+    });
+  });
+
+  test('whenLabel is the day and the time', () {
+    expect(whenLabel(DateTime.utc(2030, 1, 9, 12), now), 'Today 8:00 PM');
+    expect(whenLabel(DateTime.utc(2030, 1, 10, 1, 30), now), 'Tomorrow 9:30 AM');
+    expect(whenLabel(DateTime.utc(2030, 1, 13, 1), now), 'Sun 9:00 AM');
+    expect(whenLabel(DateTime.utc(2030, 1, 19, 1), now), '19 Jan 9:00 AM');
+  });
+
+  test('durationText reads like the prototype', () {
+    expect(durationText(const Duration(hours: 1)), '1 hour');
+    expect(durationText(const Duration(hours: 2)), '2 hours');
+    expect(durationText(const Duration(hours: 1, minutes: 30)), '1 h 30 min');
+    expect(durationText(const Duration(minutes: 45)), '45 min');
   });
 
   test('cancelPolicyText says it per policy', () {
