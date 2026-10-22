@@ -8,6 +8,7 @@ import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
 import 'package:jom/core/theme/tokens.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
+import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/home/domain/home_feed.dart';
 import 'package:jom/features/home/presentation/odometer.dart';
@@ -15,6 +16,7 @@ import 'package:jom/shared/models/event_summary.dart';
 import 'package:jom/shared/widgets/shell.dart';
 
 import 'helpers/fake_auth.dart';
+import 'helpers/fake_events.dart';
 
 final yoga = EventSummary.fromJson({
   'event_id': 'e1', 'title': 'Sunset Yoga Deck', 'glyph': '🧘', 'color_a': '#11998e', 'color_b': '#38ef7d',
@@ -35,6 +37,7 @@ Future<GoRouter> pumpApp(
     overrides: [
       routerProvider.overrideWithValue(router),
       authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: fakeSession(name: 'Mei'))), // signed in: these tests are about the app shell
+      eventRepositoryProvider.overrideWithValue(FakeEvents()),
       homeFeedProvider.overrideWith((ref, q) => (feed ?? sampleFeed)(q)),
       deviceLocationProvider.overrideWithValue(() async => null),
       unreadCountProvider.overrideWith((ref) async => 0),
@@ -67,6 +70,8 @@ void main() {
       expect(where(router), entry.value, reason: entry.key);
       if (entry.value == '/explore') {
         expect(find.byKey(const Key('home-screen')), findsOneWidget);
+      } else if (entry.value == '/saved') {
+        expect(find.byKey(const Key('saved-screen')), findsOneWidget);
       } else {
         expect(title(t), entry.key);
       }
@@ -91,7 +96,8 @@ void main() {
     for (final p in paths) {
       final router = await pumpApp(t, location: p);
       expect(where(router), p, reason: p);
-      expect(find.byKey(Key(p == '/explore' ? 'home-screen' : 'screen-title')), findsOneWidget, reason: p);
+      final screen = {'/explore': 'home-screen', '/saved': 'saved-screen', '/all': 'view-all', '/event/e1': 'event-screen'}[p] ?? 'screen-title';
+      expect(find.byKey(Key(screen)), findsOneWidget, reason: p);
     }
   });
 

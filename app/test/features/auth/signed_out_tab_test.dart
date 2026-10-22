@@ -6,11 +6,13 @@ import 'package:jom/app.dart';
 import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
+import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/home/domain/home_feed.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show Session;
 
 import '../../helpers/fake_auth.dart';
+import '../../helpers/fake_events.dart';
 
 Future<GoRouter> pumpApp(WidgetTester t, FakeAuthRepository repo, {String location = '/explore'}) async {
   final router = createRouter(initialLocation: location);
@@ -18,6 +20,7 @@ Future<GoRouter> pumpApp(WidgetTester t, FakeAuthRepository repo, {String locati
     overrides: [
       routerProvider.overrideWithValue(router),
       authRepositoryProvider.overrideWithValue(repo),
+      eventRepositoryProvider.overrideWithValue(FakeEvents()),
       homeFeedProvider.overrideWith((ref, q) async => HomeFeed(tab: q.tab, top9: const [], stats: const HeroStats(total: 0, live: 0, free: 0, closestKm: null))),
       deviceLocationProvider.overrideWithValue(() async => null),
       unreadCountProvider.overrideWith((ref) async => 0),
@@ -59,7 +62,7 @@ void main() {
     expect(find.text('Continue with Google'), findsNothing);
 
     await pumpApp(t, repo, location: '/event/e1');
-    expect(t.widget<Text>(find.byKey(const Key('screen-title'))).data, 'Event');
+    expect(find.byKey(const Key('event-screen')), findsOneWidget);
     expect(find.text('Continue with Google'), findsNothing);
   });
 
@@ -75,7 +78,7 @@ void main() {
     await t.enterText(find.byKey(const Key('otp-field')), '123456');
     await t.tap(find.text('Verify'));
     await t.pumpAndSettle();
-    expect(t.widget<Text>(find.byKey(const Key('screen-title'))).data, 'Saved');
+    expect(find.byKey(const Key('saved-screen')), findsOneWidget);
     expect(find.text('Sign in to see your saved events'), findsNothing);
   });
 
@@ -116,7 +119,7 @@ void main() {
     final slow = _SlowAuth();
     final router = createRouter(initialLocation: '/saved');
     await t.pumpWidget(ProviderScope(
-      overrides: [routerProvider.overrideWithValue(router), authRepositoryProvider.overrideWithValue(slow)],
+      overrides: [routerProvider.overrideWithValue(router), authRepositoryProvider.overrideWithValue(slow), eventRepositoryProvider.overrideWithValue(FakeEvents()), deviceLocationProvider.overrideWithValue(() async => null)],
       child: const JomApp(),
     ));
     await t.pump(const Duration(milliseconds: 50));
@@ -124,7 +127,7 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await t.pump(const Duration(seconds: 2));
     await t.pumpAndSettle();
-    expect(find.byKey(const Key('screen-title')), findsOneWidget); // signed in after all
+    expect(find.byKey(const Key('saved-screen')), findsOneWidget); // signed in after all
   });
 }
 

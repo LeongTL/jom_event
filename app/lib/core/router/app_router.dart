@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/domain/auth_gate.dart';
 import '../../features/auth/presentation/profile_placeholder.dart';
 import '../../features/auth/presentation/signed_out_tab.dart';
+import '../../features/event/presentation/event_screen.dart';
+import '../../features/event/presentation/saved_screen.dart';
+import '../../features/event/presentation/view_all_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../shared/widgets/shell.dart';
 import 'placeholder_screen.dart';
@@ -38,15 +41,15 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
           builder: (context, state, shell) => JomShell(navigationShell: shell, host: false),
           branches: [
             _tab('/explore', 'Explore', screen: const HomeScreen()),
-            _account('/saved', 'Saved', 'Sign in to see your saved events'),
+            _account('/saved', 'Saved', 'Sign in to see your saved events', content: const SavedScreen()),
             _account('/bookings', 'Bookings', 'Sign in to see your bookings'),
             _account('/chats', 'Chat', 'Sign in to see your chats'),
             _account('/profile', 'Profile', 'Sign in to see your profile', content: const ProfilePlaceholder()),
           ],
         ),
         _screen('/chats/:threadId', 'Chat thread'),
-        _screen('/all', 'View all'),
-        _screen('/event/:id', 'Event'),
+        GoRoute(path: '/all', builder: (context, state) => const ViewAllScreen()),
+        GoRoute(path: '/event/:id', builder: (context, state) => EventScreen(id: state.pathParameters['id']!)),
         _screen('/event/:id/checkout', 'Checkout'),
         _screen('/booking/:id/gateway', 'Gateway'),
         _screen('/booking/:id/processing', 'Confirming payment'),
