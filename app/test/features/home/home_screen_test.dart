@@ -5,11 +5,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jom/core/location.dart';
 import 'package:jom/core/theme/tokens.dart';
+import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/home/domain/home_feed.dart';
 import 'package:jom/features/home/presentation/home_screen.dart';
 import 'package:jom/features/home/presentation/odometer.dart';
 import 'package:jom/shared/models/event_summary.dart';
+
+import '../../helpers/fake_auth.dart';
 
 EventSummary ev(int i, {bool live = false}) => EventSummary.fromJson({
       'event_id': 'e$i', 'title': 'Event $i', 'glyph': '🎉', 'color_a': '#11998e', 'color_b': '#38ef7d',
@@ -31,6 +34,7 @@ Future<void> pumpHome(
   List<HomeQuery>? queries,
   LatLng? device,
   int unread = 0,
+  String? name = 'Mei',
   List<Override> extra = const [],
 }) async {
   t.view.physicalSize = const Size(1179, 2556);
@@ -50,6 +54,7 @@ Future<void> pumpHome(
       }),
       deviceLocationProvider.overrideWithValue(() async => device),
       unreadCountProvider.overrideWith((ref) async => unread),
+      authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: name == null ? null : fakeSession(name: name))),
       ...extra,
     ],
     child: Consumer(builder: (context, ref, _) => MaterialApp.router(theme: jomThemeData(ref.watch(jomThemeProvider)), routerConfig: router)),
@@ -57,6 +62,8 @@ Future<void> pumpHome(
   await t.pumpAndSettle();
 }
 
+// The headline is one line of rich text: the odometer tiles, then these words.
+Finder hero(String words) => find.textContaining(words, findRichText: true);
 Finder pin(int i) => find.byKey(Key('pin-e$i'));
 Finder card(int i) => find.byKey(Key('card-e$i'));
 // A side card is mostly off-screen, so tap its visible left edge rather than its centre.
@@ -76,7 +83,7 @@ void main() {
       await t.tap(pin(i)); // pin i brings its own card to the middle
       await t.pumpAndSettle();
       expect(card(i), findsOneWidget, reason: 'card $i');
-      expect(scaleOf(t, i), closeTo(1.0, .001), reason: 'card $i is centred');
+      expect(scaleOf(t, i), closeTo(1.06, .001), reason: 'card $i is centred');
     }
   });
 
@@ -86,7 +93,7 @@ void main() {
     await t.tap(pin(1));
     await t.pumpAndSettle();
     expect(identical(t.element(card(1)), before), isTrue, reason: 'the same card element, not a rebuilt one');
-    expect(scaleOf(t, 1), closeTo(1.0, .001));
+    expect(scaleOf(t, 1), closeTo(1.06, .001));
     expect(scaleOf(t, 0), lessThan(1.0));
   });
 
@@ -101,10 +108,10 @@ void main() {
 
   testWidgets('centred_card_is_lifted_and_neighbours_step_aside', (t) async {
     await pumpHome(t);
-    expect(scaleOf(t, 0), closeTo(1.0, .001));
-    expect(scaleOf(t, 1), lessThan(1.0));
-    expect(lift(t, 0).transform.getTranslation().y, lessThan(0), reason: 'the middle card is lifted');
-    expect(lift(t, 1).transform.getTranslation().x, greaterThan(0), reason: 'the card on the right steps further right');
+    expect(scaleOf(t, 0), closeTo(1.06, .001));
+    expect(scaleOf(t, 1), closeTo(.96, .001));
+    expect(lift(t, 0).transform.getTranslation().y, closeTo(-12, .001), reason: 'the middle card is lifted 12');
+    expect(lift(t, 1).transform.getTranslation().x, closeTo(10, .001), reason: 'the card on the right steps 10 further right');
     await t.tap(pin(2));
     await t.pumpAndSettle();
     expect(lift(t, 1).transform.getTranslation().x, lessThan(0), reason: 'now it is on the left, so it steps left');
@@ -122,28 +129,28 @@ void main() {
     await tapSide(t, 1);
     await t.pumpAndSettle();
     expect(find.textContaining('EVENT'), findsNothing, reason: 'a side card only moves to the middle, it does not open');
-    expect(scaleOf(t, 1), closeTo(1.0, .001));
+    expect(scaleOf(t, 1), closeTo(1.06, .001));
     expect(find.byKey(const Key('pin-sel-e1')), findsOneWidget);
   });
 
   testWidgets('hero_wording_per_tab', (t) async {
     await pumpHome(t);
     expect(t.widget<Odometer>(find.byKey(const Key('odometer'))).value, 9);
-    expect(find.text('things are happening near you'), findsOneWidget);
+    expect(hero('things are happening near you'), findsOneWidget);
     await t.tap(find.text('Night'));
     await t.pumpAndSettle();
-    expect(find.text('ways to spend your night'), findsOneWidget);
+    expect(hero('ways to spend your night'), findsOneWidget);
     await t.tap(find.text('Weekend'));
     await t.pumpAndSettle();
-    expect(find.text('things to do this weekend'), findsOneWidget);
+    expect(hero('things to do this weekend'), findsOneWidget);
     await t.tap(find.text('Now'));
     await t.pumpAndSettle();
-    expect(find.text('things are happening near you'), findsOneWidget);
+    expect(hero('things are happening near you'), findsOneWidget);
   });
 
   testWidgets('hero says "thing" for exactly one event', (t) async {
     await pumpHome(t, events: [nine.first], stats: const HeroStats(total: 1, live: 1, free: 1, closestKm: 1.0));
-    expect(find.text('thing is happening near you'), findsOneWidget);
+    expect(hero('thing is happening near you'), findsOneWidget);
     expect(find.textContaining('1 happening now'), findsOneWidget);
   });
 
@@ -193,6 +200,47 @@ void main() {
     await t.tap(find.text('All'));
     await t.pumpAndSettle();
     expect(find.text('VIEW ALL'), findsOneWidget);
+  });
+
+  testWidgets('the sky is the prototype\'s own gradient for each tab, not the theme colours', (t) async {
+    await pumpHome(t);
+    Color top() => ((t.widget<DecoratedBox>(find.byKey(const Key('home-sky'))).decoration as BoxDecoration).gradient as LinearGradient).colors.first;
+    Color bottom() => ((t.widget<DecoratedBox>(find.byKey(const Key('home-sky'))).decoration as BoxDecoration).gradient as LinearGradient).colors.last;
+    expect((top(), bottom()), (const Color(0xFF1A0F3D), const Color(0xFFFF9A62)), reason: 'Now: dark purple down to orange');
+    await t.tap(find.text('Night'));
+    await t.pumpAndSettle();
+    expect((top(), bottom()), (const Color(0xFF050816), const Color(0xFF2A1F5C)), reason: 'Night');
+    await t.tap(find.text('Weekend'));
+    await t.pumpAndSettle();
+    expect((top(), bottom()), (const Color(0xFF59B8FF), const Color(0xFFFFF0C9)), reason: 'Weekend: sky blue to cream');
+  });
+
+  testWidgets('the eyebrow line sits above the headline and follows the tab', (t) async {
+    await pumpHome(t);
+    expect(find.byKey(const Key('eyebrow')), findsOneWidget);
+    expect(t.widget<Text>(find.byKey(const Key('eyebrow'))).data, matches(RegExp(r'^[A-Z]{3} · \d{1,2}:\d{2} (AM|PM)$')));
+    await t.tap(find.text('Night'));
+    await t.pumpAndSettle();
+    expect(t.widget<Text>(find.byKey(const Key('eyebrow'))).data, endsWith('TONIGHT'));
+  });
+
+  testWidgets('the stats line says "best 9 shown" when the area has more than nine events', (t) async {
+    await pumpHome(t, stats: const HeroStats(total: 22, live: 7, free: 10, closestKm: .5));
+    expect(find.textContaining('best 9 shown'), findsOneWidget);
+  });
+
+  testWidgets('a signed-in visitor sees their initial next to the bell; a signed-out one sees none', (t) async {
+    await pumpHome(t, name: 'Mei');
+    expect(t.widget<Text>(find.descendant(of: find.byKey(const Key('avatar')), matching: find.byType(Text))).data, 'M');
+    await pumpHome(t, name: null);
+    expect(find.byKey(const Key('avatar')), findsNothing);
+  });
+
+  testWidgets('the tab dial is 44 tall and ends 96px above the bottom edge, just over the tab bar', (t) async {
+    await pumpHome(t);
+    final dial = find.byKey(const Key('dial'));
+    expect(t.getSize(dial).height, 44);
+    expect(t.getBottomLeft(dial).dy, 852 - 96);
   });
 
   testWidgets('bell_shows_unread_badge', (t) async {

@@ -18,6 +18,23 @@ void main() {
     });
   });
 
+  group('heroEyebrow is the small line above the headline, in KL time', () {
+    final wed = DateTime.utc(2026, 10, 14, 11, 42); // Wed 7:42 PM in KL
+
+    test('Now: weekday and the time', () => expect(heroEyebrow(JomTheme.now, wed), 'WED · 7:42 PM'));
+    test('Night: weekday and TONIGHT', () => expect(heroEyebrow(JomTheme.night, wed), 'WED · TONIGHT'));
+    test('Weekend from midweek: the coming Saturday and Sunday', () => expect(heroEyebrow(JomTheme.weekend, wed), 'SAT 17 – SUN 18 OCT'));
+    test('Weekend on a Sunday: this weekend', () => expect(heroEyebrow(JomTheme.weekend, DateTime.utc(2026, 10, 18, 3)), 'SAT 17 – SUN 18 OCT'));
+    test('Weekend across a month end names both months', () => expect(heroEyebrow(JomTheme.weekend, DateTime.utc(2026, 10, 28, 3)), 'SAT 31 OCT – SUN 1 NOV'));
+    test('a UTC evening that is already tomorrow in KL', () => expect(heroEyebrow(JomTheme.now, DateTime.utc(2026, 10, 14, 17, 5)), 'THU · 1:05 AM'));
+  });
+
+  test('heroSub adds "best N shown" when there are more events than the nine shown', () {
+    const s = HeroStats(total: 22, live: 7, free: 10, closestKm: .5);
+    expect(heroSub(s, shown: 9), '7 happening now · 10 free · closest 0.5 km · best 9 shown');
+    expect(heroSub(s, shown: 22), '7 happening now · 10 free · closest 0.5 km');
+  });
+
   test('heroTail keeps each tab\'s own wording, singular for one', () {
     expect(heroTail(JomTheme.now, 9), 'things are happening near you');
     expect(heroTail(JomTheme.night, 9), 'ways to spend your night');

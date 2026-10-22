@@ -106,6 +106,19 @@ void main() {
     }
   });
 
+  testWidgets('the floating tab bar sits 22px above the bottom edge, like the prototype, even with a home indicator', (t) async {
+    // 852 points tall with the iPhone's 47 / 34 points of safe area. Wider than a phone on purpose: the test
+    // font's letters are so wide that "Bookings" would wrap inside a phone-narrow tab.
+    t.view.physicalSize = const Size(800, 852);
+    t.view.devicePixelRatio = 1;
+    t.view.padding = const FakeViewPadding(top: 47, bottom: 34);
+    t.view.viewPadding = const FakeViewPadding(top: 47, bottom: 34);
+    addTearDown(t.view.reset);
+    await pumpApp(t);
+    expect(t.getBottomLeft(find.byKey(const Key('tab-bar'))).dy, 852 - 22);
+    expect(t.getSize(find.byKey(const Key('tab-bar'))).height, 62);
+  });
+
   testWidgets('host mode has its own five tabs', (t) async {
     final router = await pumpApp(t, location: '/host-mode/home');
     expect(title(t), 'Host home');

@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -185,7 +184,7 @@ class JomShell extends ConsumerWidget {
           Positioned(
             left: 24,
             right: 24,
-            bottom: math.max(16, MediaQuery.paddingOf(context).bottom),
+            bottom: 22, // the prototype's .tabs: 22px from the bottom edge, over the home indicator
             child: bar,
           ),
         ]),
