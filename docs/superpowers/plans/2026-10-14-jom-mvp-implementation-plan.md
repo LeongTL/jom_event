@@ -324,11 +324,11 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 - Produces: `EventRepository { Future<List<EventSummary>> listAll(String category, LatLng at, int km); Future<EventDetail> detail(String id); }`; `EventDetail` (summary plus description, venue, host, rating, count, `cancelPolicy`, `sourceUrl`, `isBookable`); `final savedProvider = AsyncNotifierProvider<SavedController, Set<String>>` with `Future<void> toggle(String eventId)` that calls `requireAuth(why: save)` then `identity.toggle_save`, updating every heart (poster, hero, bottom bar) from the same set; label rules `countdown(Duration)` → `⏱ in 17:42` under 2 hours (ticks each second), `⏱ in 1h 32m` beyond.
 - Page choice: `isBookable` → paid page with "Join · RM 30"; otherwise the free page with "Join · Free".
 
-- [ ] **Step 1: Write failing tests.** `view_all_has_category_chips_with_counts_and_sections_for_all`; `selecting_a_chip_shows_only_that_grid`; `poster_tags_happening_countdown_under_2h_clock_otherwise`; `tapping_heart_signed_out_opens_sign_in_save_then_saves_after_signing_in`; `heart_state_is_shared_between_poster_hero_and_bottom_bar`; `double_tap_does_not_duplicate`; `saved_tab_lists_hearted_events_and_greys_ended_with_Ended_tag`; `paid_event_page_shows_cancel_policy_text_per_policy` (24h/48h/7d → "Free cancellation up to … before", none → "No refunds once booked"); `free_page_shows_source_card_and_opens_url`; `get_directions_launches_maps_uri`; `join_signed_out_opens_sign_in_join_then_goes_to_checkout`; `message_button_requires_sign_in_chat_then_opens_thread`.
-- [ ] **Step 2: Run** `flutter test test/features/event`. Expected: FAIL.
-- [ ] **Step 3: Implement** the files (`url_launcher` for maps and source link).
-- [ ] **Step 4: Run** the tests. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "feat(event): view all, event pages, hearts, saved"`.
+- [x] **Step 1: Write failing tests.** `view_all_has_category_chips_with_counts_and_sections_for_all`; `selecting_a_chip_shows_only_that_grid`; `poster_tags_happening_countdown_under_2h_clock_otherwise`; `tapping_heart_signed_out_opens_sign_in_save_then_saves_after_signing_in`; `heart_state_is_shared_between_poster_hero_and_bottom_bar`; `double_tap_does_not_duplicate`; `saved_tab_lists_hearted_events_and_greys_ended_with_Ended_tag`; `paid_event_page_shows_cancel_policy_text_per_policy` (24h/48h/7d → "Free cancellation up to … before", none → "No refunds once booked"); `free_page_shows_source_card_and_opens_url`; `get_directions_launches_maps_uri`; `join_signed_out_opens_sign_in_join_then_goes_to_checkout`; `message_button_requires_sign_in_chat_then_opens_thread`.
+- [x] **Step 2: Run** `flutter test test/features/event`. Expected: FAIL.
+- [x] **Step 3: Implement** the files (`url_launcher` for maps and source link).
+- [x] **Step 4: Run** the tests. Expected: PASS.
+- [x] **Step 5: Commit** `git commit -am "feat(event): view all, event pages, hearts, saved"`.
 
 ### Task 17: Checkout, payment, ticket, cancellation and Bookings
 
