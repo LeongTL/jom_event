@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/domain/auth_gate.dart';
 import '../../features/auth/presentation/profile_placeholder.dart';
 import '../../features/auth/presentation/signed_out_tab.dart';
+import '../../features/home/presentation/home_screen.dart';
 import '../../shared/widgets/shell.dart';
-import 'explore_placeholder.dart';
 import 'placeholder_screen.dart';
 
 /// A full-screen route with no tab bar.
@@ -37,7 +37,7 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) => JomShell(navigationShell: shell, host: false),
           branches: [
-            _tab('/explore', 'Explore', screen: const ExplorePlaceholder()),
+            _tab('/explore', 'Explore', screen: const HomeScreen()),
             _account('/saved', 'Saved', 'Sign in to see your saved events'),
             _account('/bookings', 'Bookings', 'Sign in to see your bookings'),
             _account('/chats', 'Chat', 'Sign in to see your chats'),
@@ -45,6 +45,7 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
           ],
         ),
         _screen('/chats/:threadId', 'Chat thread'),
+        _screen('/all', 'View all'),
         _screen('/event/:id', 'Event'),
         _screen('/event/:id/checkout', 'Checkout'),
         _screen('/booking/:id/gateway', 'Gateway'),
