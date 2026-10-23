@@ -33,6 +33,12 @@ String whenLabel(DateTime startsAt, DateTime now) {
   return '$day ${_time(s)}';
 }
 
+/// "Sun 18 Oct · 9:00 AM", for lists of bookings.
+String fullWhen(DateTime startsAt) {
+  final s = _kl(startsAt);
+  return '${_days[s.weekday - 1]} ${s.day} ${_months[s.month - 1]} · ${_time(s)}';
+}
+
 /// "1 hour", "2 hours", "1 h 30 min", "45 min".
 String durationText(Duration d) {
   final h = d.inHours, m = d.inMinutes % 60;

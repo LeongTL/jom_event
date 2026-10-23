@@ -8,12 +8,14 @@ import 'package:jom/core/launcher.dart';
 import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
+import 'package:jom/features/booking/data/booking_repository.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/event/domain/event_detail.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/home/domain/home_feed.dart';
 
 import '../../helpers/fake_auth.dart';
+import '../../helpers/fake_bookings.dart';
 import '../../helpers/fake_events.dart';
 
 late FakeEvents events;
@@ -35,6 +37,7 @@ Future<GoRouter> pumpApp(WidgetTester t, {String location = '/all', bool signedI
       routerProvider.overrideWithValue(router),
       authRepositoryProvider.overrideWithValue(auth),
       eventRepositoryProvider.overrideWithValue(events),
+      bookingRepositoryProvider.overrideWithValue(FakeBookings()),
       nowProvider.overrideWithValue(() => clock.add(t.binding.clock.now().difference(start))), // the test's clock starts at 14:00 KL
       launchUrlProvider.overrideWithValue((u) async {
         launched.add(u);
@@ -287,14 +290,14 @@ void main() {
       await t.pumpAndSettle();
       expect(find.text('Sign in to join'), findsOneWidget);
       await signInWithPhone(t);
-      expect(t.widget<Text>(find.byKey(const Key('screen-title'))).data, 'Checkout');
+      expect(find.byKey(const Key('checkout-screen')), findsOneWidget);
     });
 
     testWidgets('join signed in goes straight to checkout', (t) async {
       await pumpApp(t, location: '/event/a', repo: FakeEvents(details: {'a': detailOf(a)}));
       await t.tap(find.byKey(const Key('join')));
       await t.pumpAndSettle();
-      expect(t.widget<Text>(find.byKey(const Key('screen-title'))).data, 'Checkout');
+      expect(find.byKey(const Key('checkout-screen')), findsOneWidget);
     });
 
     testWidgets('message_button_requires_sign_in_chat_then_opens_thread', (t) async {

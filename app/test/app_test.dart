@@ -8,6 +8,7 @@ import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
 import 'package:jom/core/theme/tokens.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
+import 'package:jom/features/booking/data/booking_repository.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/home/domain/home_feed.dart';
@@ -16,6 +17,7 @@ import 'package:jom/shared/models/event_summary.dart';
 import 'package:jom/shared/widgets/shell.dart';
 
 import 'helpers/fake_auth.dart';
+import 'helpers/fake_bookings.dart';
 import 'helpers/fake_events.dart';
 
 final yoga = EventSummary.fromJson({
@@ -31,6 +33,7 @@ Future<GoRouter> pumpApp(
   String location = '/explore',
   Future<HomeFeed> Function(HomeQuery)? feed,
   List<Override> extra = const [],
+  bool settle = true, // the Processing screen spins forever, so a route that shows it cannot settle
 }) async {
   final router = createRouter(initialLocation: location);
   await t.pumpWidget(ProviderScope(
@@ -38,6 +41,7 @@ Future<GoRouter> pumpApp(
       routerProvider.overrideWithValue(router),
       authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: fakeSession(name: 'Mei'))), // signed in: these tests are about the app shell
       eventRepositoryProvider.overrideWithValue(FakeEvents()),
+      bookingRepositoryProvider.overrideWithValue(FakeBookings()..byId['b1'] = bk('b1', status: 'processing')),
       homeFeedProvider.overrideWith((ref, q) => (feed ?? sampleFeed)(q)),
       deviceLocationProvider.overrideWithValue(() async => null),
       unreadCountProvider.overrideWith((ref) async => 0),
@@ -45,7 +49,12 @@ Future<GoRouter> pumpApp(
     ],
     child: const JomApp(),
   ));
-  await t.pumpAndSettle();
+  if (settle) {
+    await t.pumpAndSettle();
+  } else {
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 500));
+  }
   return router;
 }
 
@@ -72,6 +81,8 @@ void main() {
         expect(find.byKey(const Key('home-screen')), findsOneWidget);
       } else if (entry.value == '/saved') {
         expect(find.byKey(const Key('saved-screen')), findsOneWidget);
+      } else if (entry.value == '/bookings') {
+        expect(find.byKey(const Key('bookings-screen')), findsOneWidget);
       } else {
         expect(title(t), entry.key);
       }
@@ -94,9 +105,13 @@ void main() {
       '/host-mode/chats', '/host-mode/profile', '/all',
     ];
     for (final p in paths) {
-      final router = await pumpApp(t, location: p);
+      final router = await pumpApp(t, location: p, settle: p != '/booking/b1/processing');
       expect(where(router), p, reason: p);
-      final screen = {'/explore': 'home-screen', '/saved': 'saved-screen', '/all': 'view-all', '/event/e1': 'event-screen'}[p] ?? 'screen-title';
+      final screen = {
+        '/explore': 'home-screen', '/saved': 'saved-screen', '/all': 'view-all', '/event/e1': 'event-screen',
+        '/bookings': 'bookings-screen', '/event/e1/checkout': 'checkout-screen', '/booking/b1/gateway': 'gateway-screen',
+        '/booking/b1/processing': 'processing-screen', '/booking/b1/failed': 'failed-screen', '/booking/b1/ticket': 'ticket-screen',
+      }[p] ?? 'screen-title';
       expect(find.byKey(Key(screen)), findsOneWidget, reason: p);
     }
   });
