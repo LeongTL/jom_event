@@ -14,6 +14,7 @@ import 'package:jom/features/chat/domain/chat.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/event/domain/event_detail.dart';
 import 'package:jom/features/home/data/home_repository.dart';
+import 'package:jom/features/notifications/domain/bell_provider.dart';
 import 'package:jom/features/home/domain/home_feed.dart';
 
 import '../../helpers/fake_auth.dart';
@@ -49,7 +50,7 @@ Future<GoRouter> pumpApp(WidgetTester t, {String location = '/all', bool signedI
       }),
       homeFeedProvider.overrideWith((ref, q) async => HomeFeed(tab: q.tab, top9: const [], stats: const HeroStats(total: 0, live: 0, free: 0, closestKm: null))),
       deviceLocationProvider.overrideWithValue(() async => null),
-      unreadCountProvider.overrideWith((ref) async => 0),
+      bellCountProvider.overrideWith((ref) => Stream.value(0)),
     ],
     child: const JomApp(),
   ));

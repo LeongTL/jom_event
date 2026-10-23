@@ -367,11 +367,11 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 **Interfaces:**
 - Produces: `NotificationRepository { Stream<List<AppNotification>> watch(); Future<void> markRead(List<String> ids); Future<NotificationPrefs> prefs(); Future<void> setPrefs(NotificationPrefs p); }`; `final bellCountProvider = StreamProvider<int>`; tap routing by `ref_type`: `booking` → ticket, `thread` → chat thread, `event` → event page, `payout` → payouts (host).
 
-- [ ] **Step 1: Write failing tests.** `list_shows_icon_title_body_time_and_unread_dot`; `opening_screen_marks_visible_items_read_and_badge_drops`; `tap_routes_by_ref_type` (four cases); `show_me_switches_chat_and_review_requests_toggle_prefs`; `booking_payment_and_event_change_rows_are_always_on_and_not_toggleable`; `footer_says_no_push_notifications_yet`; `bell_on_host_home_also_shows_count`.
-- [ ] **Step 2: Run** `flutter test test/features/notifications`. Expected: FAIL.
-- [ ] **Step 3: Implement** with Realtime on `identity.notifications`.
-- [ ] **Step 4: Run** the tests. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "feat(notifications): in-app list, bell, switches"`.
+- [x] **Step 1: Write failing tests.** `list_shows_icon_title_body_time_and_unread_dot`; `opening_screen_marks_visible_items_read_and_badge_drops`; `tap_routes_by_ref_type` (four cases); `show_me_switches_chat_and_review_requests_toggle_prefs`; `booking_payment_and_event_change_rows_are_always_on_and_not_toggleable`; `footer_says_no_push_notifications_yet`; `bell_on_host_home_also_shows_count`.
+- [x] **Step 2: Run** `flutter test test/features/notifications`. Expected: FAIL.
+- [x] **Step 3: Implement** with Realtime on `identity.notifications`.
+- [x] **Step 4: Run** the tests. Expected: PASS.
+- [x] **Step 5: Commit** `git commit -am "feat(notifications): in-app list, bell, switches"`.
 
 ### Task 20: Reviews, host public profile and Profile
 

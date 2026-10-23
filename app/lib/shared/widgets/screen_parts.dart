@@ -49,16 +49,17 @@ class MiniArt extends StatelessWidget {
 
 /// A rounded card (prototype .card).
 class CardBox extends StatelessWidget {
-  const CardBox({super.key, required this.child, this.onTap});
+  const CardBox({super.key, required this.child, this.onTap, this.gap = 12});
   final Widget child;
   final VoidCallback? onTap;
+  final double gap; // space below the card (the prototype uses 8 in lists of small cards)
 
   @override
   Widget build(BuildContext context) => GestureDetector(
         onTap: onTap,
         child: Container(
           width: double.infinity,
-          margin: const EdgeInsets.only(bottom: 12),
+          margin: EdgeInsets.only(bottom: gap),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(color: context.jom.card, borderRadius: BorderRadius.circular(22)),
           child: child,

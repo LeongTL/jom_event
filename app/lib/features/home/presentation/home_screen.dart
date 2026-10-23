@@ -8,6 +8,7 @@ import '../../../core/location.dart';
 import '../../../core/theme/grain.dart';
 import '../../../core/theme/tokens.dart';
 import '../../auth/data/auth_repository.dart';
+import '../../notifications/presentation/bell_button.dart';
 import '../data/home_repository.dart';
 import '../domain/home_feed.dart';
 import 'area_sheet.dart';
@@ -103,7 +104,6 @@ class _Header extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final k = context.jom;
-    final unread = ref.watch(unreadCountProvider).value ?? 0;
     final user = ref.watch(sessionProvider).value?.user;
     final name =
         ((user?.userMetadata?['full_name'] ?? user?.userMetadata?['name'])
@@ -133,49 +133,7 @@ class _Header extends ConsumerWidget {
           ),
         ),
         const Spacer(),
-        GestureDetector(
-          key: const Key('bell'),
-          onTap: () => context.push('/notifications'),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: k.glass,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: k.glassBorder),
-                ),
-                child: const Icon(Icons.notifications_none, size: 22),
-              ),
-              if (unread > 0)
-                Positioned(
-                  top: -4,
-                  right: -4,
-                  child: Container(
-                    key: const Key('bell-badge'),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 5,
-                      vertical: 1,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFF4D6A),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '$unread',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
+        const BellButton(),
         if (user != null) ...[
           const SizedBox(width: 8),
           GestureDetector(

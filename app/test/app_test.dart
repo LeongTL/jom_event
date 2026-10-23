@@ -13,6 +13,8 @@ import 'package:jom/features/chat/data/chat_repository.dart';
 import 'package:jom/features/chat/domain/chat.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
+import 'package:jom/features/notifications/data/notification_repository.dart';
+import 'package:jom/features/notifications/domain/bell_provider.dart';
 import 'package:jom/features/home/domain/home_feed.dart';
 import 'package:jom/features/home/presentation/odometer.dart';
 import 'package:jom/shared/models/event_summary.dart';
@@ -22,6 +24,7 @@ import 'helpers/fake_auth.dart';
 import 'helpers/fake_bookings.dart';
 import 'helpers/fake_chat.dart';
 import 'helpers/fake_events.dart';
+import 'helpers/fake_notifications.dart';
 
 final yoga = EventSummary.fromJson({
   'event_id': 'e1', 'title': 'Sunset Yoga Deck', 'glyph': '🧘', 'color_a': '#11998e', 'color_b': '#38ef7d',
@@ -46,9 +49,10 @@ Future<GoRouter> pumpApp(
       eventRepositoryProvider.overrideWithValue(FakeEvents()),
       chatRepositoryProvider.overrideWithValue(FakeChat(infos: {'t1': const ThreadInfo(id: 't1', iAmHost: false, otherName: 'Mei Studio')})),
       bookingRepositoryProvider.overrideWithValue(FakeBookings()..byId['b1'] = bk('b1', status: 'processing')),
+      notificationRepositoryProvider.overrideWithValue(FakeNotifications()),
       homeFeedProvider.overrideWith((ref, q) => (feed ?? sampleFeed)(q)),
       deviceLocationProvider.overrideWithValue(() async => null),
-      unreadCountProvider.overrideWith((ref) async => 0),
+      bellCountProvider.overrideWith((ref) => Stream.value(0)),
       ...extra,
     ],
     child: const JomApp(),
@@ -116,7 +120,7 @@ void main() {
       final screen = {
         '/explore': 'home-screen', '/saved': 'saved-screen', '/all': 'view-all', '/event/e1': 'event-screen',
         '/bookings': 'bookings-screen', '/chats': 'chat-list-screen', '/chats/t1': 'thread-screen', '/host-mode/chats': 'chat-list-screen', '/event/e1/checkout': 'checkout-screen', '/booking/b1/gateway': 'gateway-screen',
-        '/booking/b1/processing': 'processing-screen', '/booking/b1/failed': 'failed-screen', '/booking/b1/ticket': 'ticket-screen',
+        '/booking/b1/processing': 'processing-screen', '/booking/b1/failed': 'failed-screen', '/booking/b1/ticket': 'ticket-screen', '/notifications': 'notifications-screen',
       }[p] ?? 'screen-title';
       expect(find.byKey(Key(screen)), findsOneWidget, reason: p);
     }
@@ -194,7 +198,7 @@ void main() {
           authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: fakeSession(name: 'Mei'))),
           homeFeedProvider.overrideWith((ref, q) => Future<HomeFeed>.delayed(const Duration(seconds: 5), () => sampleFeed(q))),
           deviceLocationProvider.overrideWithValue(() async => null),
-          unreadCountProvider.overrideWith((ref) async => 0),
+          bellCountProvider.overrideWith((ref) => Stream.value(0)),
         ],
         child: const JomApp(),
       ));

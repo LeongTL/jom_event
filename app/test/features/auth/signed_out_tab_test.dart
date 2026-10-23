@@ -9,6 +9,7 @@ import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:jom/features/booking/data/booking_repository.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
+import 'package:jom/features/notifications/domain/bell_provider.dart';
 import 'package:jom/features/home/domain/home_feed.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show Session;
 
@@ -26,7 +27,7 @@ Future<GoRouter> pumpApp(WidgetTester t, FakeAuthRepository repo, {String locati
       bookingRepositoryProvider.overrideWithValue(FakeBookings()),
       homeFeedProvider.overrideWith((ref, q) async => HomeFeed(tab: q.tab, top9: const [], stats: const HeroStats(total: 0, live: 0, free: 0, closestKm: null))),
       deviceLocationProvider.overrideWithValue(() async => null),
-      unreadCountProvider.overrideWith((ref) async => 0),
+      bellCountProvider.overrideWith((ref) => Stream.value(0)),
     ],
     child: const JomApp(),
   ));
