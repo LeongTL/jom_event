@@ -9,6 +9,7 @@ import 'package:jom/core/router/app_router.dart';
 import 'package:jom/core/theme/tokens.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:jom/features/booking/data/booking_repository.dart';
+import 'package:jom/features/booking/domain/booking.dart';
 import 'package:jom/features/chat/data/chat_repository.dart';
 import 'package:jom/features/chat/domain/chat.dart';
 import 'package:jom/features/event/data/event_repository.dart';
@@ -32,7 +33,7 @@ final n2 = note('n2', 'chat_message', 'Mei Studio replied', clock.subtract(const
 final n3 = note('n3', 'payout', 'Payout scheduled', clock.subtract(const Duration(days: 1)), refType: 'event', refId: 'e1', body: 'RM 25', read: true);
 final n4 = note('n4', 'event_cancelled', 'Salsa Social was cancelled', clock.subtract(const Duration(days: 2)), refType: 'event', refId: 'e1', body: 'RM25 is on its way back', read: true);
 
-Future<GoRouter> pumpApp(WidgetTester t, {String location = '/notifications', FakeNotifications? repo, bool signedIn = true, FakeChat? chat}) async {
+Future<GoRouter> pumpApp(WidgetTester t, {String location = '/notifications', FakeNotifications? repo, bool signedIn = true, FakeChat? chat, Map<String, Booking> bookings = const {}}) async {
   // wider than a phone on purpose: the test font's letters are so wide that tab names would wrap
   t.view.physicalSize = const Size(800, 2400);
   t.view.devicePixelRatio = 1;
@@ -46,7 +47,7 @@ Future<GoRouter> pumpApp(WidgetTester t, {String location = '/notifications', Fa
       notificationRepositoryProvider.overrideWithValue(repo ?? FakeNotifications()),
       eventRepositoryProvider.overrideWithValue(FakeEvents(details: {'e1': detailOf(sum('e1', title: 'Batik Workshop'))})),
       chatRepositoryProvider.overrideWithValue(chat ?? FakeChat(infos: {'t1': const ThreadInfo(id: 't1', iAmHost: false, otherName: 'Mei Studio')})),
-      bookingRepositoryProvider.overrideWithValue(FakeBookings()..byId['b1'] = bk('b1', status: 'confirmed')),
+      bookingRepositoryProvider.overrideWithValue(FakeBookings()..byId.addAll({'b1': bk('b1', status: 'confirmed'), ...bookings})),
       nowProvider.overrideWithValue(() => clock.add(t.binding.clock.now().difference(start))),
       homeFeedProvider.overrideWith((ref, q) async => HomeFeed(tab: q.tab, top9: const [], stats: const HeroStats(total: 0, live: 0, free: 0, closestKm: null))),
       deviceLocationProvider.overrideWithValue(() async => null),
@@ -156,6 +157,22 @@ void main() {
       expect(key('notifications-screen'), findsOneWidget);
       expect(where(router), '/notifications');
     });
+
+    for (final c in [
+      ('cancelled', 'This booking was cancelled'),
+      ('confirmed', "This event isn't available"),
+    ]) {
+      testWidgets('a ticket whose event is gone says why (${c.$1}) and has a way back', (t) async {
+        final gone = note('g', 'payment', 'Payment received', clock, refType: 'booking', refId: 'bg');
+        await pumpApp(t, repo: FakeNotifications(items: [gone]), bookings: {'bg': bk('bg', event: 'deleted-event', status: c.$1)});
+        await t.tap(key('notif-g'));
+        await t.pumpAndSettle();
+        expect(find.text(c.$2), findsOneWidget);
+        await t.tap(key('nav-back'));
+        await t.pumpAndSettle();
+        expect(key('notifications-screen'), findsOneWidget);
+      });
+    }
 
     testWidgets('a notice about an event that no longer exists says so instead of showing a broken page', (t) async {
       await pumpApp(t, repo: FakeNotifications(items: [note('gone', 'booking', 'New booking', clock, refType: 'event', refId: 'deleted-event')]));

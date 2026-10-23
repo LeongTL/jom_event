@@ -32,16 +32,29 @@ class TicketScreen extends ConsumerWidget {
       key: const Key('ticket-screen'),
       backgroundColor: k.sheet,
       body: booking.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => const Center(child: Text('Could not load this ticket. Check your connection.')),
+        loading: () => const _Plain(CircularProgressIndicator()),
+        error: (_, _) => const _Plain(Text('Could not load this ticket. Check your connection.')),
         data: (b) => ref.watch(eventDetailProvider(b.eventId)).when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, _) => const Center(child: Text('Could not load this ticket. Check your connection.')),
-              data: (d) => d == null ? const Center(child: Text("This event isn't available")) : _Ticket(b, d),
+              loading: () => const _Plain(CircularProgressIndicator()),
+              error: (_, _) => const _Plain(Text('Could not load this ticket. Check your connection.')),
+              // a cancelled booking outlives its event: say that, rather than a bare "not available"
+              data: (d) => d == null ? _Plain(Text(b.status == 'cancelled' ? 'This booking was cancelled' : "This event isn't available")) : _Ticket(b, d),
             ),
       ),
     );
   }
+}
+
+/// A message in the middle of the screen, under the back bar, so there is always a way out.
+class _Plain extends StatelessWidget {
+  const _Plain(this.child);
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(children: [const BookingNav(title: 'Ticket'), Expanded(child: Center(child: child))]),
+      );
 }
 
 class _Ticket extends ConsumerWidget {
