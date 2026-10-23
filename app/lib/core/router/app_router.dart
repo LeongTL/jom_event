@@ -18,6 +18,8 @@ import '../../features/event/presentation/event_screen.dart';
 import '../../features/event/presentation/saved_screen.dart';
 import '../../features/event/presentation/view_all_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../shared/widgets/screen_parts.dart';
 import '../../shared/widgets/shell.dart';
 import 'placeholder_screen.dart';
 
@@ -66,7 +68,16 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
         GoRoute(path: '/booking/:id/ticket', builder: (context, state) => TicketScreen(bookingId: state.pathParameters['id']!)),
         _screen('/review/:bookingId', 'Review'),
         _screen('/host/:id', 'Host profile'),
-        _screen('/notifications', 'Notifications'),
+        GoRoute(
+          path: '/notifications',
+          builder: (context, state) => AuthGate(
+            signedOut: Stack(children: [
+              const SignedOutTab(heading: 'Sign in to see your notifications'),
+              const Positioned(top: 0, left: 20, right: 20, child: BookingNav(title: 'Notifications')),
+            ]),
+            child: const NotificationsScreen(),
+          ),
+        ),
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) => JomShell(navigationShell: shell, host: true),
           branches: [

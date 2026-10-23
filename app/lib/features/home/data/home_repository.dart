@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/supabase_client.dart';
 import '../../../shared/models/event_summary.dart';
-import '../../auth/data/auth_repository.dart';
 import '../domain/home_feed.dart';
 
 /// One tab for one place: the top nine events (events.feed) and the headline numbers (events.hero_stats).
@@ -15,10 +14,4 @@ final homeFeedProvider = FutureProvider.autoDispose.family<HomeFeed, HomeQuery>(
     top9: [for (final row in results[0] as List) EventSummary.fromJson(row as Map<String, dynamic>)],
     stats: HeroStats.fromJson((results[1] as List).first as Map<String, dynamic>),
   );
-});
-
-/// The bell's badge. Signed-out visitors have no notifications, so they do not ask the backend.
-final unreadCountProvider = FutureProvider.autoDispose<int>((ref) async {
-  if (await ref.watch(sessionProvider.future) == null) return 0;
-  return await ref.watch(supabaseClientProvider).schema('identity').rpc('unread_count') as int;
 });

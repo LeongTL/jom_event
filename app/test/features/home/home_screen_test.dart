@@ -7,6 +7,7 @@ import 'package:jom/core/location.dart';
 import 'package:jom/core/theme/tokens.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
+import 'package:jom/features/notifications/domain/bell_provider.dart';
 import 'package:jom/features/home/domain/home_feed.dart';
 import 'package:jom/features/home/presentation/home_screen.dart';
 import 'package:jom/features/home/presentation/odometer.dart';
@@ -53,7 +54,7 @@ Future<void> pumpHome(
         return feedFor(q, events: events, stats: stats);
       }),
       deviceLocationProvider.overrideWithValue(() async => device),
-      unreadCountProvider.overrideWith((ref) async => unread),
+      bellCountProvider.overrideWith((ref) => Stream.value(unread)),
       authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: name == null ? null : fakeSession(name: name))),
       ...extra,
     ],
