@@ -38,10 +38,13 @@ select is((select n from events.tab_counts(3.129, 101.671, 50) where tab = 'nigh
   case when ((date_trunc('day', (now() at time zone 'Asia/Kuala_Lumpur') - interval '4 hours') + interval '1 day 4 hours')
              at time zone 'Asia/Kuala_Lumpur') - (now() + interval '130 minutes') >= interval '60 minutes' then 8 else 0 end,
   'the Night tab has 8 events whenever its window is open');
--- Weekend shows what is left of this weekend on a Saturday or Sunday, so only a weekday guarantees all 22.
-select ok((select case when extract(isodow from now() at time zone 'Asia/Kuala_Lumpur') < 6 then n = 22 else n between 0 and 22 end
+-- Weekend holds the 22 weekend events, plus any Now or Night event that starts inside the weekend window. On a Friday the
+-- Night events after midnight are already Saturday (up to 8 of them); on Saturday or Sunday the Now and Night events count
+-- too, while the weekend events already started are gone. So: a weekday has at least all 22 and at most 22 + 8, and a
+-- weekend day anything up to 22 + 8 + 11.
+select ok((select case when extract(isodow from now() at time zone 'Asia/Kuala_Lumpur') < 6 then n between 22 and 30 else n between 0 and 41 end
              from events.tab_counts(3.129, 101.671, 50) where tab = 'weekend'),
-  'the Weekend tab has all 22 events on a weekday, and what is left of them on a weekend');
+  'the Weekend tab has the 22 weekend events (plus any Now or Night event that starts inside the weekend window)');
 
 select * from finish();
 rollback;
