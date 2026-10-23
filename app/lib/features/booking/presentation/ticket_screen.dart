@@ -62,7 +62,7 @@ class _Ticket extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
           children: [
             Padding(
-              padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top + 60),
+              padding: const EdgeInsets.only(top: 60), // the prototype's .scroll padding-top: 60
               child: Column(children: [
                 if (active) ...[
                   Container(width: 92, height: 92, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFF1FBF75), shape: BoxShape.circle), child: const Text('✓', style: TextStyle(color: Colors.white, fontSize: 44, height: 1))),
@@ -127,7 +127,7 @@ class _Ticket extends ConsumerWidget {
                 child: TextButton(
                   key: const Key('ticket-cancel'),
                   onPressed: () => showCancelSheet(context, b),
-                  child: Text('Cancel booking', style: TextStyle(color: k.sheetInk.withValues(alpha: .7), decoration: TextDecoration.underline)),
+                  child: Text('Cancel booking', style: TextStyle(color: k.sheetInk.withValues(alpha: .7), fontWeight: FontWeight.w600, decoration: TextDecoration.underline)),
                 ),
               ),
           ],

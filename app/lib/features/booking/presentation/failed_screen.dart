@@ -32,8 +32,8 @@ class FailedScreen extends ConsumerWidget {
           : Stack(children: [
               Positioned.fill(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 44),
-                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  padding: const EdgeInsets.fromLTRB(44, 180, 44, 0), // the prototype's padding-top: 180
+                  child: Column(children: [
                     icon('!', const Color(0xFFFF5A67)),
                     const SizedBox(height: 24),
                     Text(live ? "Payment didn't go through" : 'Spot released', textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
@@ -55,7 +55,11 @@ class FailedScreen extends ConsumerWidget {
               CtaBar(column: true, children: [
                 if (live) ...[
                   KeyedSubtree(key: const Key('try-again'), child: JomButton(label: 'Try again', onPressed: () => context.pushReplacement('/booking/$bookingId/gateway'))),
-                  TextButton(key: const Key('give-up'), onPressed: () => _giveUp(context, ref), child: const Text('Give up')),
+                  TextButton(
+                    key: const Key('give-up'),
+                    onPressed: () => _giveUp(context, ref),
+                    child: Text('Give up', style: TextStyle(color: k.sheetInk.withValues(alpha: .7), fontWeight: FontWeight.w600, decoration: TextDecoration.underline)),
+                  ),
                 ] else
                   KeyedSubtree(key: const Key('back-to-event'), child: JomButton(label: 'Back to the event', onPressed: () => context.go('/event/${b.eventId}'))),
               ]),

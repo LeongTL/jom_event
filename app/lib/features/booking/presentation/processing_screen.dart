@@ -37,8 +37,8 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen> {
       key: const Key('processing-screen'),
       backgroundColor: k.sheet,
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 44),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        padding: const EdgeInsets.fromLTRB(44, 200, 44, 0), // the prototype's padding-top: 200
+        child: Column(children: [
           SizedBox(width: 84, height: 84, child: CircularProgressIndicator(strokeWidth: 6, color: k.accent, backgroundColor: k.line)),
           const SizedBox(height: 30),
           const Text('Confirming your payment', textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
