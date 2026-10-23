@@ -163,6 +163,7 @@ void main() {
     await pumpApp(t, extra: [chatBadgeCountProvider.overrideWithValue(4)]);
     expect(find.byKey(const Key('tab-badge')), findsOneWidget);
     expect(find.text('4'), findsOneWidget);
+    expect(t.getSize(find.byKey(const Key('tab-badge'))).width, lessThan(30), reason: 'a small dot with the number, not a bar across the tab');
   });
 
   testWidgets('the app is painted with the Now theme to start with', (t) async {

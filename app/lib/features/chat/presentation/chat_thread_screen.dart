@@ -129,7 +129,7 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
                       },
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                       decoration: InputDecoration(
-                        hintText: 'Message ${i.otherName.split(' ').first}…',
+                        hintText: 'Message ${i.iAmHost ? i.otherName.split(' ').first : i.otherName}…',
                         filled: true,
                         fillColor: k.card,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

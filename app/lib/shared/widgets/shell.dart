@@ -133,10 +133,13 @@ class _Badge extends StatelessWidget {
       key: const Key('tab-badge'),
       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      alignment: Alignment.center,
+      // no `alignment` here: a Container with one fills all the width it is given, which made a bar across the tab
       decoration: BoxDecoration(color: const Color(0xFFFF4D6D), borderRadius: BorderRadius.circular(8)),
-      child: Text(count > 9 ? '9+' : '$count',
-          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, height: 1)),
+      child: Center(
+        widthFactor: 1,
+        heightFactor: 1,
+        child: Text(count > 9 ? '9+' : '$count', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, height: 1)),
+      ),
     );
   }
 }

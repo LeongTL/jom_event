@@ -91,6 +91,7 @@ void main() {
       expect(key('thread-screen'), findsOneWidget);
       expect(find.text('Aina Rahman'), findsOneWidget);
       expect(find.text('Attendee'), findsOneWidget);
+      expect(t.widget<TextField>(key('msg-field')).decoration!.hintText, 'Message Aina…', reason: 'a host writes to a guest by first name');
     });
   });
 
@@ -103,6 +104,7 @@ void main() {
       await pumpApp(t, location: '/chats/t1', repo: FakeChat(infos: {'t1': info1}, messages: {...msgs}));
       expect(find.text('Mei Studio'), findsOneWidget);
       expect(find.text('Host'), findsOneWidget);
+      expect(t.widget<TextField>(key('msg-field')).decoration!.hintText, 'Message Mei Studio…', reason: 'a guest writes to the host by name');
       expect(find.descendant(of: key('event-card'), matching: find.text('Batik Workshop')), findsOneWidget);
       expect(find.descendant(of: key('event-card'), matching: find.textContaining('Bangsar')), findsOneWidget);
       expect(find.text("Keep the chat in Jom. Phone numbers and social handles can't be shared here."), findsOneWidget);
