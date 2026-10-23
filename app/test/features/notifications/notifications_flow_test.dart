@@ -145,6 +145,25 @@ void main() {
       });
     }
 
+    testWidgets('Done on a ticket opened from a notification returns to Notifications, not Explore', (t) async {
+      final router = await pumpApp(t, repo: FakeNotifications(items: [n1]));
+      await t.tap(key('notif-n1'));
+      await t.pumpAndSettle();
+      expect(key('ticket-screen'), findsOneWidget);
+      await t.ensureVisible(key('ticket-done'));
+      await t.tap(key('ticket-done'));
+      await t.pumpAndSettle();
+      expect(key('notifications-screen'), findsOneWidget);
+      expect(where(router), '/notifications');
+    });
+
+    testWidgets('a notice about an event that no longer exists says so instead of showing a broken page', (t) async {
+      await pumpApp(t, repo: FakeNotifications(items: [note('gone', 'booking', 'New booking', clock, refType: 'event', refId: 'deleted-event')]));
+      await t.tap(key('notif-gone'));
+      await t.pumpAndSettle();
+      expect(find.text("This event isn't available"), findsOneWidget);
+    });
+
     testWidgets('a notice with nothing to open stays where it is', (t) async {
       final router = await pumpApp(t, repo: FakeNotifications(items: [note('n9', 'payment', 'Hello', clock)]));
       await t.tap(key('notif-n9'));

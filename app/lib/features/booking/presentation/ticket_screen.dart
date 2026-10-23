@@ -133,7 +133,7 @@ class _Ticket extends ConsumerWidget {
           ],
         ),
       ),
-      CtaBar(children: [Expanded(child: KeyedSubtree(key: const Key('ticket-done'), child: JomButton(label: 'Done', onPressed: () => context.go('/explore'))))]),
+      CtaBar(children: [Expanded(child: KeyedSubtree(key: const Key('ticket-done'), child: JomButton(label: 'Done', onPressed: () => context.canPop() ? context.pop() : context.go('/explore'))))]),
     ]);
   }
 
