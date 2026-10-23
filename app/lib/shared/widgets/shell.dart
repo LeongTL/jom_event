@@ -5,9 +5,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/grain.dart';
 import '../../core/theme/tokens.dart';
+import '../../features/chat/data/chat_repository.dart';
 
-/// Unread chat messages, shown on the Chat tab of both bars. Zero until the chat screens (Task 18) override it.
-final chatBadgeCountProvider = Provider<int>((ref) => 0);
+/// Threads with something unread, shown on the Chat tab of both bars.
+final chatBadgeCountProvider = Provider<int>((ref) => ref.watch(chatUnreadProvider).value ?? 0);
 
 class _TabSpec {
   const _TabSpec(this.label, this.icon, {this.badge = false});
@@ -132,10 +133,13 @@ class _Badge extends StatelessWidget {
       key: const Key('tab-badge'),
       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      alignment: Alignment.center,
+      // no `alignment` here: a Container with one fills all the width it is given, which made a bar across the tab
       decoration: BoxDecoration(color: const Color(0xFFFF4D6D), borderRadius: BorderRadius.circular(8)),
-      child: Text(count > 9 ? '9+' : '$count',
-          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, height: 1)),
+      child: Center(
+        widthFactor: 1,
+        heightFactor: 1,
+        child: Text(count > 9 ? '9+' : '$count', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, height: 1)),
+      ),
     );
   }
 }

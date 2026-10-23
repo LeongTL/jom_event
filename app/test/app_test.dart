@@ -9,6 +9,8 @@ import 'package:jom/core/router/app_router.dart';
 import 'package:jom/core/theme/tokens.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:jom/features/booking/data/booking_repository.dart';
+import 'package:jom/features/chat/data/chat_repository.dart';
+import 'package:jom/features/chat/domain/chat.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/home/domain/home_feed.dart';
@@ -18,6 +20,7 @@ import 'package:jom/shared/widgets/shell.dart';
 
 import 'helpers/fake_auth.dart';
 import 'helpers/fake_bookings.dart';
+import 'helpers/fake_chat.dart';
 import 'helpers/fake_events.dart';
 
 final yoga = EventSummary.fromJson({
@@ -41,6 +44,7 @@ Future<GoRouter> pumpApp(
       routerProvider.overrideWithValue(router),
       authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: fakeSession(name: 'Mei'))), // signed in: these tests are about the app shell
       eventRepositoryProvider.overrideWithValue(FakeEvents()),
+      chatRepositoryProvider.overrideWithValue(FakeChat(infos: {'t1': const ThreadInfo(id: 't1', iAmHost: false, otherName: 'Mei Studio')})),
       bookingRepositoryProvider.overrideWithValue(FakeBookings()..byId['b1'] = bk('b1', status: 'processing')),
       homeFeedProvider.overrideWith((ref, q) => (feed ?? sampleFeed)(q)),
       deviceLocationProvider.overrideWithValue(() async => null),
@@ -83,6 +87,8 @@ void main() {
         expect(find.byKey(const Key('saved-screen')), findsOneWidget);
       } else if (entry.value == '/bookings') {
         expect(find.byKey(const Key('bookings-screen')), findsOneWidget);
+      } else if (entry.value == '/chats') {
+        expect(find.byKey(const Key('chat-list-screen')), findsOneWidget);
       } else {
         expect(title(t), entry.key);
       }
@@ -109,7 +115,7 @@ void main() {
       expect(where(router), p, reason: p);
       final screen = {
         '/explore': 'home-screen', '/saved': 'saved-screen', '/all': 'view-all', '/event/e1': 'event-screen',
-        '/bookings': 'bookings-screen', '/event/e1/checkout': 'checkout-screen', '/booking/b1/gateway': 'gateway-screen',
+        '/bookings': 'bookings-screen', '/chats': 'chat-list-screen', '/chats/t1': 'thread-screen', '/host-mode/chats': 'chat-list-screen', '/event/e1/checkout': 'checkout-screen', '/booking/b1/gateway': 'gateway-screen',
         '/booking/b1/processing': 'processing-screen', '/booking/b1/failed': 'failed-screen', '/booking/b1/ticket': 'ticket-screen',
       }[p] ?? 'screen-title';
       expect(find.byKey(Key(screen)), findsOneWidget, reason: p);
@@ -157,6 +163,7 @@ void main() {
     await pumpApp(t, extra: [chatBadgeCountProvider.overrideWithValue(4)]);
     expect(find.byKey(const Key('tab-badge')), findsOneWidget);
     expect(find.text('4'), findsOneWidget);
+    expect(t.getSize(find.byKey(const Key('tab-badge'))).width, lessThan(30), reason: 'a small dot with the number, not a bar across the tab');
   });
 
   testWidgets('the app is painted with the Now theme to start with', (t) async {

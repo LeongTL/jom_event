@@ -16,7 +16,7 @@ import '../../event/domain/event_labels.dart';
 import '../data/booking_repository.dart';
 import '../domain/booking.dart';
 import '../domain/hold_timer.dart';
-import 'booking_widgets.dart';
+import '../../../shared/widgets/screen_parts.dart';
 
 /// Checkout. Paid events hold the seat for 15 minutes the moment this opens (the spec's "Join, then Checkout
 /// creates a held booking"); free events are booked only when you confirm.

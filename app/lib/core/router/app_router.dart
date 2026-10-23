@@ -6,6 +6,8 @@ import '../../features/auth/domain/auth_gate.dart';
 import '../../features/auth/presentation/profile_placeholder.dart';
 import '../../features/auth/presentation/signed_out_tab.dart';
 import '../../features/booking/presentation/bookings_screen.dart';
+import '../../features/chat/presentation/chat_list_screen.dart';
+import '../../features/chat/presentation/chat_thread_screen.dart';
 import '../../features/booking/presentation/checkout_screen.dart';
 import '../../features/booking/presentation/failed_screen.dart';
 import '../../features/booking/presentation/gateway_screen.dart';
@@ -50,11 +52,11 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
             _tab('/explore', 'Explore', screen: const HomeScreen()),
             _account('/saved', 'Saved', 'Sign in to see your saved events', content: const SavedScreen()),
             _account('/bookings', 'Bookings', 'Sign in to see your bookings', content: const BookingsScreen()),
-            _account('/chats', 'Chat', 'Sign in to see your chats'),
+            _account('/chats', 'Chat', 'Sign in to see your chats', content: const ChatListScreen()),
             _account('/profile', 'Profile', 'Sign in to see your profile', content: const ProfilePlaceholder()),
           ],
         ),
-        _screen('/chats/:threadId', 'Chat thread'),
+        GoRoute(path: '/chats/:threadId', builder: (context, state) => ChatThreadScreen(threadId: state.pathParameters['threadId']!)),
         GoRoute(path: '/all', builder: (context, state) => const ViewAllScreen()),
         GoRoute(path: '/event/:id', builder: (context, state) => EventScreen(id: state.pathParameters['id']!)),
         GoRoute(path: '/event/:id/checkout', builder: (context, state) => CheckoutScreen(eventId: state.pathParameters['id']!)),
@@ -71,7 +73,7 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
             _tab('/host-mode/home', 'Host home'),
             _tab('/host-mode/events', 'Host events'),
             _tab('/host-mode/payouts', 'Payouts'),
-            _tab('/host-mode/chats', 'Host chat'),
+            _tab('/host-mode/chats', 'Host chat', screen: const ChatListScreen(host: true)),
             _tab('/host-mode/profile', 'Host profile'),
           ],
         ),

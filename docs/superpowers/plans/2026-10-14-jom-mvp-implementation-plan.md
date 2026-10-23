@@ -353,11 +353,11 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 **Interfaces:**
 - Produces: `ChatRepository { Future<String> openThread(String hostId, {String? eventId}); Stream<List<Message>> messages(String threadId); Future<void> send(String threadId, String body); Future<List<ThreadSummary>> mine(); Future<void> markRead(String threadId); }`; `final chatUnreadProvider = StreamProvider<int>` driving the tab badge (attendee and host). The same two screens serve both modes (host copy: "Messages from guests about your events.").
 
-- [ ] **Step 1: Write failing tests.** `list_shows_one_row_per_host_with_unread_dot_and_subtitle`; `thread_shows_event_card_notice_and_bubbles_with_times`; `send_appends_message_and_clears_input`; `phone_number_error_shows_inline_Keep_the_chat_in_Jom_message`; `realtime_message_arrives_and_badge_updates`; `opening_thread_marks_it_read`; `signed_out_chat_tab_shows_sign_in_prompt`; `host_mode_uses_host_copy_and_same_threads`.
-- [ ] **Step 2: Run** `flutter test test/features/chat`. Expected: FAIL.
-- [ ] **Step 3: Implement** with Supabase Realtime on `chat.messages` filtered by thread.
-- [ ] **Step 4: Run** the tests. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "feat(chat): list, thread, realtime, badges"`.
+- [x] **Step 1: Write failing tests.** `list_shows_one_row_per_host_with_unread_dot_and_subtitle`; `thread_shows_event_card_notice_and_bubbles_with_times`; `send_appends_message_and_clears_input`; `phone_number_error_shows_inline_Keep_the_chat_in_Jom_message`; `realtime_message_arrives_and_badge_updates`; `opening_thread_marks_it_read`; `signed_out_chat_tab_shows_sign_in_prompt`; `host_mode_uses_host_copy_and_same_threads`.
+- [x] **Step 2: Run** `flutter test test/features/chat`. Expected: FAIL.
+- [x] **Step 3: Implement** with Supabase Realtime on `chat.messages` filtered by thread.
+- [x] **Step 4: Run** the tests. Expected: PASS.
+- [x] **Step 5: Commit** `git commit -am "feat(chat): list, thread, realtime, badges"`.
 
 ### Task 19: Notifications screen
 
