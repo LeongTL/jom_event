@@ -33,7 +33,7 @@ class EventDetail {
   final bool isEnded;
 
   factory EventDetail.fromJson(Map<String, dynamic> j) => EventDetail(
-        summary: EventSummary.fromJson(j),
+        summary: EventSummary.fromJson({...j, 'score': 0}), // the page has no ranking score; the poster parser wants one
         hostId: j['host_id'] as String,
         hostName: j['host_name'] as String?,
         ratingAvg: (j['rating_avg'] as num?)?.toDouble(),
