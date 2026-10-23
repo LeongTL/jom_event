@@ -68,5 +68,11 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Jom uses your approximate location (about 1 km) to show events near you. It is never stored.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Jom adds an event to your calendar only when you tap Add to calendar.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>Jom adds an event to your calendar only when you tap Add to calendar.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Jom adds an event to your calendar only when you tap Add to calendar.</string>
 </dict>
 </plist>

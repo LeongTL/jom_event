@@ -53,6 +53,8 @@ void main() {
     expect(whenLabel(DateTime.utc(2030, 1, 19, 1), now), '19 Jan 9:00 AM');
   });
 
+  test('fullWhen is the weekday, date and time', () => expect(fullWhen(DateTime.utc(2030, 1, 13, 1)), 'Sun 13 Jan · 9:00 AM'));
+
   test('durationText reads like the prototype', () {
     expect(durationText(const Duration(hours: 1)), '1 hour');
     expect(durationText(const Duration(hours: 2)), '2 hours');

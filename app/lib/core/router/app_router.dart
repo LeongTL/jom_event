@@ -5,6 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/domain/auth_gate.dart';
 import '../../features/auth/presentation/profile_placeholder.dart';
 import '../../features/auth/presentation/signed_out_tab.dart';
+import '../../features/booking/presentation/bookings_screen.dart';
+import '../../features/booking/presentation/checkout_screen.dart';
+import '../../features/booking/presentation/failed_screen.dart';
+import '../../features/booking/presentation/gateway_screen.dart';
+import '../../features/booking/presentation/processing_screen.dart';
+import '../../features/booking/presentation/ticket_screen.dart';
+import '../../features/booking/domain/booking.dart';
 import '../../features/event/presentation/event_screen.dart';
 import '../../features/event/presentation/saved_screen.dart';
 import '../../features/event/presentation/view_all_screen.dart';
@@ -42,7 +49,7 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
           branches: [
             _tab('/explore', 'Explore', screen: const HomeScreen()),
             _account('/saved', 'Saved', 'Sign in to see your saved events', content: const SavedScreen()),
-            _account('/bookings', 'Bookings', 'Sign in to see your bookings'),
+            _account('/bookings', 'Bookings', 'Sign in to see your bookings', content: const BookingsScreen()),
             _account('/chats', 'Chat', 'Sign in to see your chats'),
             _account('/profile', 'Profile', 'Sign in to see your profile', content: const ProfilePlaceholder()),
           ],
@@ -50,11 +57,11 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
         _screen('/chats/:threadId', 'Chat thread'),
         GoRoute(path: '/all', builder: (context, state) => const ViewAllScreen()),
         GoRoute(path: '/event/:id', builder: (context, state) => EventScreen(id: state.pathParameters['id']!)),
-        _screen('/event/:id/checkout', 'Checkout'),
-        _screen('/booking/:id/gateway', 'Gateway'),
-        _screen('/booking/:id/processing', 'Confirming payment'),
-        _screen('/booking/:id/failed', 'Payment failed'),
-        _screen('/booking/:id/ticket', 'Ticket'),
+        GoRoute(path: '/event/:id/checkout', builder: (context, state) => CheckoutScreen(eventId: state.pathParameters['id']!)),
+        GoRoute(path: '/booking/:id/gateway', builder: (context, state) => GatewayScreen(bookingId: state.pathParameters['id']!, session: state.extra as PaymentSession?)),
+        GoRoute(path: '/booking/:id/processing', builder: (context, state) => ProcessingScreen(bookingId: state.pathParameters['id']!)),
+        GoRoute(path: '/booking/:id/failed', builder: (context, state) => FailedScreen(bookingId: state.pathParameters['id']!)),
+        GoRoute(path: '/booking/:id/ticket', builder: (context, state) => TicketScreen(bookingId: state.pathParameters['id']!)),
         _screen('/review/:bookingId', 'Review'),
         _screen('/host/:id', 'Host profile'),
         _screen('/notifications', 'Notifications'),

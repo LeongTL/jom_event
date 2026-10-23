@@ -6,12 +6,14 @@ import 'package:jom/app.dart';
 import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
+import 'package:jom/features/booking/data/booking_repository.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/home/domain/home_feed.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show Session;
 
 import '../../helpers/fake_auth.dart';
+import '../../helpers/fake_bookings.dart';
 import '../../helpers/fake_events.dart';
 
 Future<GoRouter> pumpApp(WidgetTester t, FakeAuthRepository repo, {String location = '/explore'}) async {
@@ -21,6 +23,7 @@ Future<GoRouter> pumpApp(WidgetTester t, FakeAuthRepository repo, {String locati
       routerProvider.overrideWithValue(router),
       authRepositoryProvider.overrideWithValue(repo),
       eventRepositoryProvider.overrideWithValue(FakeEvents()),
+      bookingRepositoryProvider.overrideWithValue(FakeBookings()),
       homeFeedProvider.overrideWith((ref, q) async => HomeFeed(tab: q.tab, top9: const [], stats: const HeroStats(total: 0, live: 0, free: 0, closestKm: null))),
       deviceLocationProvider.overrideWithValue(() async => null),
       unreadCountProvider.overrideWith((ref) async => 0),
@@ -89,7 +92,7 @@ void main() {
     await t.tap(find.text('Continue with Google'));
     await t.pumpAndSettle();
     expect(repo.googleCalls, 1);
-    expect(t.widget<Text>(find.byKey(const Key('screen-title'))).data, 'Bookings');
+    expect(find.byKey(const Key('bookings-screen')), findsOneWidget);
   });
 
   testWidgets('a failed Google sign-in on a tab says so and keeps the prompt', (t) async {
