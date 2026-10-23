@@ -9,7 +9,7 @@ import '../../event/domain/event_labels.dart';
 import '../data/booking_repository.dart';
 import '../domain/booking.dart';
 import '../domain/hold_timer.dart';
-import 'booking_widgets.dart';
+import '../../../shared/widgets/screen_parts.dart';
 
 /// Payment failed: the seat stays held for what is left of the 15 minutes. Try again reuses the hold; Give up
 /// releases it. When the hold has run out the screen says the spot was released instead.

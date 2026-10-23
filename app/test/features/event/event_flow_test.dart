@@ -9,6 +9,8 @@ import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:jom/features/booking/data/booking_repository.dart';
+import 'package:jom/features/chat/data/chat_repository.dart';
+import 'package:jom/features/chat/domain/chat.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/event/domain/event_detail.dart';
 import 'package:jom/features/home/data/home_repository.dart';
@@ -16,6 +18,7 @@ import 'package:jom/features/home/domain/home_feed.dart';
 
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_bookings.dart';
+import '../../helpers/fake_chat.dart';
 import '../../helpers/fake_events.dart';
 
 late FakeEvents events;
@@ -38,6 +41,7 @@ Future<GoRouter> pumpApp(WidgetTester t, {String location = '/all', bool signedI
       authRepositoryProvider.overrideWithValue(auth),
       eventRepositoryProvider.overrideWithValue(events),
       bookingRepositoryProvider.overrideWithValue(FakeBookings()),
+      chatRepositoryProvider.overrideWithValue(FakeChat(infos: {'t1': const ThreadInfo(id: 't1', iAmHost: false, otherName: 'Mei Studio')})),
       nowProvider.overrideWithValue(() => clock.add(t.binding.clock.now().difference(start))), // the test's clock starts at 14:00 KL
       launchUrlProvider.overrideWithValue((u) async {
         launched.add(u);
@@ -307,7 +311,7 @@ void main() {
       expect(find.text('Sign in to chat'), findsOneWidget);
       await signInWithPhone(t);
       expect(events.threads, [('h1', 'a')]);
-      expect(t.widget<Text>(find.byKey(const Key('screen-title'))).data, 'Chat thread');
+      expect(find.byKey(const Key('thread-screen')), findsOneWidget);
     });
 
     testWidgets('the host row opens the host profile', (t) async {

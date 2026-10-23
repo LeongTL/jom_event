@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/tokens.dart';
+import '../../core/theme/tokens.dart';
 
-/// The top bar of a booking screen: a round back button and the title (prototype .nav).
+/// The top bar of a full screen: a round back button and the title (prototype .nav).
 class BookingNav extends StatelessWidget {
-  const BookingNav({super.key, required this.title, this.back = true});
+  const BookingNav({super.key, required this.title, this.back = true, this.trailing});
   final String title;
   final bool back;
+  final String? trailing; // a small muted label at the right ("Host", "Attendee")
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +24,8 @@ class BookingNav extends StatelessWidget {
           ),
           const SizedBox(width: 12),
         ],
-        Expanded(child: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -.2))),
+        Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -.2))),
+        if (trailing != null) Text(trailing!, style: TextStyle(fontSize: 13, color: k.sheetInk.withValues(alpha: .62))),
       ]),
     );
   }

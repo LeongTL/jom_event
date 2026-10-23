@@ -14,7 +14,7 @@ import '../../event/domain/event_labels.dart';
 import '../data/booking_repository.dart';
 import '../data/calendar.dart';
 import '../domain/booking.dart';
-import 'booking_widgets.dart';
+import '../../../shared/widgets/screen_parts.dart';
 import 'cancel_sheet.dart';
 
 /// The QR the host scans: the booking's signed token, fetched for its owner.

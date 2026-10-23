@@ -5,9 +5,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/grain.dart';
 import '../../core/theme/tokens.dart';
+import '../../features/chat/data/chat_repository.dart';
 
-/// Unread chat messages, shown on the Chat tab of both bars. Zero until the chat screens (Task 18) override it.
-final chatBadgeCountProvider = Provider<int>((ref) => 0);
+/// Threads with something unread, shown on the Chat tab of both bars.
+final chatBadgeCountProvider = Provider<int>((ref) => ref.watch(chatUnreadProvider).value ?? 0);
 
 class _TabSpec {
   const _TabSpec(this.label, this.icon, {this.badge = false});
