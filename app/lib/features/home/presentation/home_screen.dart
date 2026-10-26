@@ -20,6 +20,7 @@ import '../data/home_repository.dart';
 import '../domain/home_query.dart';
 import 'area_sheet.dart';
 import 'map_preview_card.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 const _tiles = [('make', 'Make', ArtKind.make), ('move', 'Move', ArtKind.move), ('meet', 'Meet', ArtKind.meet), ('free', 'Free', ArtKind.free)];
 
@@ -83,7 +84,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _SearchBar(controller: _search, onChanged: _onSearch),
           _Tiles(selected: filter.category),
           centre.when(
-            loading: () => const Padding(padding: EdgeInsets.only(top: 60), child: Center(child: CircularProgressIndicator())),
+            loading: Skeleton.feed,
             error: (_, _) => const Padding(padding: EdgeInsets.only(top: 60), child: Center(child: Text('Could not work out where to look'))),
             data: (c) => _Feed(area: (lat: c.lat, lng: c.lng, km: sel.km), filter: filter, usingDevice: sel.useDevice),
           ),
@@ -232,7 +233,7 @@ class _Feed extends ConsumerWidget {
       Padding(padding: const EdgeInsets.only(bottom: 26), child: MapPreviewCard(count: near.value?.length ?? 0, km: area.km)),
       _Header('Near you', 'View all ›', () => context.push(allRoute())),
       near.when(
-        loading: () => const Padding(padding: EdgeInsets.symmetric(vertical: 26), child: Center(child: CircularProgressIndicator())),
+        loading: () => Skeleton.rows(),
         error: (_, _) => const Padding(padding: EdgeInsets.symmetric(vertical: 26), child: Center(child: Text('Could not load events. Check your connection.', style: TextStyle(color: Calm.mut)))),
         data: (list) => list.isEmpty
             ? Padding(
