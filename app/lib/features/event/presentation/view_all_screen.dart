@@ -55,9 +55,7 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
                 key: Key('chip-$key'),
                 onTap: () => setState(() => _cat = key),
                 child: Container(
-                  height: 34,
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: _cat == key ? Calm.accSoft : Calm.surface,
                     borderRadius: BorderRadius.circular(10),

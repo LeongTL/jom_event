@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jom/shared/widgets/skeleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -129,7 +130,7 @@ void main() {
     ));
     await t.pump(const Duration(milliseconds: 50));
     expect(find.text('Sign in to see your saved events'), findsNothing);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(Skeleton), findsWidgets);
     await t.pump(const Duration(seconds: 2));
     await t.pumpAndSettle();
     expect(find.byKey(const Key('saved-screen')), findsOneWidget); // signed in after all

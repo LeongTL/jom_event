@@ -12,6 +12,7 @@ import '../data/event_repository.dart';
 import '../domain/event_detail.dart';
 import '../domain/event_labels.dart';
 import 'poster_card.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 /// One event. Paid events (bookable) get the paid page with the host row and the refund policy; the rest get the
 /// free page with directions and the source of the listing. Both are read-only for visitors: only the heart,
@@ -27,7 +28,7 @@ class EventScreen extends ConsumerWidget {
       key: const Key('event-screen'),
       backgroundColor: k.sheet,
       body: ref.watch(eventDetailProvider(id)).when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => SafeArea(child: Skeleton.page()),
             error: (_, _) => _Notice(text: 'Could not load this event. Check your connection.'),
             data: (d) => d == null ? _Notice(text: "This event isn't available") : _Page(d),
           ),

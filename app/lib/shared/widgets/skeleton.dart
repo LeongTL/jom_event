@@ -10,6 +10,12 @@ class Skeleton extends StatefulWidget {
   /// A list of event rows (72 px picture and two text lines).
   static Widget rows([int n = 4]) => Skeleton(child: Column(children: [for (var i = 0; i < n; i++) const _Row()]));
 
+  /// A whole-screen placeholder: a title bar and a few rows. For screens whose content shape is not worth copying.
+  static Widget page() => Padding(padding: const EdgeInsets.all(20), child: Skeleton(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const _Bar(width: 160, height: 22), const SizedBox(height: 18), ...List.generate(3, (_) => const _Row())])));
+
+  /// One grey block, for a picture or a QR code.
+  static Widget box(double size) => Skeleton(child: Container(width: size, height: size, decoration: BoxDecoration(color: Calm.chip, borderRadius: BorderRadius.circular(12))));
+
   /// A heading and a horizontal carousel of 262 px cards.
   static Widget carousel() => Skeleton(
         child: SingleChildScrollView(

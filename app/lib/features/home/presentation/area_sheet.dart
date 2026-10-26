@@ -21,9 +21,7 @@ class _AreaSheetState extends ConsumerState<AreaSheet> {
         key: key,
         onTap: tap,
         child: Container(
-          height: 34,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(color: on ? Calm.accSoft : Calm.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: on ? Calm.acc : Calm.line)),
           child: Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: on ? Calm.acc : Calm.ink)),
         ),

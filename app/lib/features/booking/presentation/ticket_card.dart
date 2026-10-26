@@ -9,6 +9,7 @@ import '../../event/domain/event_labels.dart';
 import '../domain/ticket.dart';
 import 'dashed_line.dart';
 import 'ticket_screen.dart' show ticketTokenProvider;
+import '../../../shared/widgets/skeleton.dart';
 
 String paymentLabel(String? method, int amountSen) => switch (method) {
       'free' => 'Free',
@@ -52,7 +53,7 @@ class TicketCard extends ConsumerWidget {
                   )
                 : Column(children: [
                     ref.watch(ticketTokenProvider(b.id)).when(
-                          loading: () => const SizedBox(width: 150, height: 150, child: Center(child: CircularProgressIndicator())),
+                          loading: () => Skeleton.box(150),
                           error: (_, _) => const SizedBox(width: 150, height: 150, child: Center(child: Text('QR unavailable'))),
                           data: (token) => QrImageView(key: const Key('qr'), data: token, size: 150, padding: EdgeInsets.zero, semanticsLabel: 'Ticket QR code'),
                         ),

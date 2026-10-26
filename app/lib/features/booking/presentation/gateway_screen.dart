@@ -8,6 +8,7 @@ import '../data/payment_gateway_client.dart';
 import '../domain/booking.dart';
 import '../domain/hold_timer.dart';
 import '../../event/domain/event_labels.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 const _methods = [
   ('Online banking (FPX)', 'Maybank2u · CIMB Clicks · Public Bank'),
@@ -73,7 +74,7 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       body: DefaultTextStyle.merge(
         style: const TextStyle(color: Color(0xFF111111)),
         child: s == null
-            ? Center(child: _error == null ? const CircularProgressIndicator() : Padding(padding: const EdgeInsets.all(32), child: Text(_error!, textAlign: TextAlign.center)))
+            ? Center(child: _error == null ? Skeleton.box(120) : Padding(padding: const EdgeInsets.all(32), child: Text(_error!, textAlign: TextAlign.center)))
             : Stack(children: [
                 Positioned.fill(
                   child: ListView(padding: const EdgeInsets.only(bottom: 110), children: [
