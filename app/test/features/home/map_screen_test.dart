@@ -1,7 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map/flutter_map.dart' show FlutterMap;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jom/app.dart';
@@ -26,41 +24,23 @@ import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_bookings.dart';
 import '../../helpers/fake_chat.dart';
 import '../../helpers/fake_events.dart';
+import '../../helpers/fake_map.dart';
 
-/// Draws every tile as one transparent pixel so no test touches the network.
-class _BlankTiles extends TileProvider {
-  static final _png = base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
-  @override
-  ImageProvider getImage(TileCoordinates coordinates, TileLayer options) => MemoryImage(_png);
-}
-
-class _FakeMap implements MapRepository {
-  _FakeMap(this.all);
-  final List<EventSummary> all;
-  final queries = <MapQuery>[];
-
-  @override
-  Future<List<EventSummary>> pins(MapQuery q) async {
-    queries.add(q);
-    return all.where((e) => q.category == 'all' || e.categories.contains(q.category)).toList();
-  }
-}
-
-late _FakeMap fakeMap;
+late FakeMap fakeMap;
 final launched = <Uri>[];
 
 Future<void> pumpMap(WidgetTester t, List<EventSummary> events, {List<Booking> tickets = const [], LatLng? device}) async {
   t.view.physicalSize = const Size(800, 1800);
   t.view.devicePixelRatio = 2;
   addTearDown(t.view.reset);
-  fakeMap = _FakeMap(events);
+  fakeMap = FakeMap(events);
   launched.clear();
   final router = createRouter(initialLocation: '/explore/map');
   await t.pumpWidget(ProviderScope(
     overrides: [
       routerProvider.overrideWithValue(router),
       appConfigProvider.overrideWithValue(const AppConfig(flavor: 'dev', supabaseUrl: 'http://x', supabaseAnonKey: 'k')),
-      mapTileProvider.overrideWithValue(_BlankTiles()),
+      mapTileProvider.overrideWithValue(BlankTiles()),
       mapRepositoryProvider.overrideWithValue(fakeMap),
       launchUrlProvider.overrideWithValue((u) async {
         launched.add(u);
