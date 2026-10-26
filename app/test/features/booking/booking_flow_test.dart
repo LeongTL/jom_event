@@ -28,6 +28,7 @@ final calendarAdds = <String>[];
 
 final paid = sum('e1', title: 'Batik Workshop', price: 3000);
 final free = sum('e2', title: 'Sunrise Run', price: 0, cats: ['move']);
+final today = sum('e3', title: 'Salsa Night', starts: clock.add(const Duration(hours: 5)), cats: ['move', 'meet']);
 
 Future<void> pumpApp(
   WidgetTester t, {
@@ -58,6 +59,7 @@ Future<void> pumpApp(
       eventRepositoryProvider.overrideWithValue(FakeEvents(details: {
         'e1': detailOf(paid, policy: policy),
         'e2': detailOf(free, bookable: false, policy: 'none'),
+        'e3': detailOf(today),
       })),
       bookingRepositoryProvider.overrideWithValue(bookings),
       paymentGatewayClientProvider.overrideWithValue(gateway),
@@ -150,7 +152,7 @@ void main() {
       await t.pumpAndSettle();
       expect(bookings.created, [('e2', 1, 'Mei', '60123456789')]);
       expect(key('ticket-screen'), findsOneWidget);
-      expect(find.text("You're in!"), findsOneWidget);
+      expect(find.text("You're booked"), findsOneWidget);
     });
 
     testWidgets('sold_out_error_shows_friendly_message', (t) async {
@@ -291,12 +293,12 @@ void main() {
 
     testWidgets('ticket_shows_qr_from_token_reference_and_buttons_directions_calendar_cancel_done', (t) async {
       await openTicket(t);
-      expect(find.text("You're in!"), findsOneWidget);
-      expect(find.text('A receipt was sent to your email.'), findsOneWidget);
+      expect(find.text("You're booked"), findsOneWidget);
+      expect(find.text('Confirmation sent to your email'), findsOneWidget);
       expect(find.byType(QrImageView), findsOneWidget);
       expect(bookings.tokenAsked, ['b9'], reason: 'the QR holds the booking\'s signed token, fetched for its owner');
       expect(find.text('KLS-4821'), findsOneWidget);
-      expect(find.text('Show this to the host on arrival'), findsOneWidget);
+      expect(find.text('Show this at the entrance'), findsOneWidget);
       expect(find.text('Batik Workshop'), findsOneWidget);
 
       await t.tap(key('ticket-directions'));
@@ -335,6 +337,7 @@ void main() {
       await t.pumpAndSettle();
       expect(bookings.cancelled, ['b9']);
       expect(find.text('Cancelled'), findsOneWidget);
+      expect(find.byType(QrImageView), findsNothing, reason: 'a cancelled ticket has no QR to show');
       expect(key('ticket-cancel'), findsNothing);
     });
 
@@ -359,53 +362,99 @@ void main() {
     });
   });
 
-  group('bookings tab', () {
+  group('tickets tab', () {
     final soon = clock.add(const Duration(days: 3));
-    testWidgets('bookings_upcoming_past_with_status_pills', (t) async {
-      await pumpApp(t, location: '/tickets',
-          upcoming: [bk('c1', status: 'confirmed', title: 'Pottery', starts: soon), bk('p1', status: 'processing', title: 'Salsa', starts: soon)],
-          past: [bk('a1', status: 'attended', title: 'Old Yoga', starts: clock), bk('x1', status: 'cancelled', title: 'Old Run', starts: clock)]);
-      expect(key('bookings-screen'), findsOneWidget);
-      expect(find.text('Pottery'), findsOneWidget);
-      expect(find.descendant(of: key('booking-c1'), matching: find.text('Confirmed')), findsOneWidget);
-      expect(find.descendant(of: key('booking-p1'), matching: find.text('Processing')), findsOneWidget);
-      expect(find.text('Old Yoga'), findsNothing);
+    Future<void> openTab(WidgetTester t, {List<Booking> upcoming = const [], List<Booking> past = const []}) =>
+        pumpApp(t, location: '/tickets', upcoming: upcoming, past: past);
+
+    testWidgets('upcoming_groups_by_day_with_Today_first_each_a_full_ticket', (t) async {
+      await openTab(t, upcoming: [bk('c1', event: 'e1', starts: soon), bk('c2', event: 'e3', code: 'KLS-0002')]);
+      expect(key('tickets-screen'), findsOneWidget);
+      expect(find.text('Tickets'), findsWidgets);
+      final today = t.getTopLeft(find.text('TODAY · WED 9 JAN')).dy, later = t.getTopLeft(find.text('SAT 12 JAN')).dy;
+      expect(today, lessThan(later));
+      expect(find.byType(QrImageView), findsNWidgets(2));
+      expect(find.text('✓ Confirmed'), findsNWidgets(2));
+    });
+
+    testWidgets('each_ticket_header_uses_its_primary_category_colour', (t) async {
+      await openTab(t, upcoming: [bk('c1', event: 'e1', starts: soon), bk('c2', event: 'e3', code: 'KLS-0002')]);
+      Color header(String id) => (t.widget<Container>(find.descendant(of: key('ticket-$id'), matching: key('ticket-header'))).decoration as BoxDecoration).color!;
+      expect(header('c1'), const Color(0xFFA8553A), reason: 'make');
+      expect(header('c2'), const Color(0xFF1F5E5B), reason: 'move comes before meet');
+    });
+
+    testWidgets('ticket_card_rows_in_the_designed_order_and_price_has_no_service_fee', (t) async {
+      await openTab(t, upcoming: [bk('c1', event: 'e1', people: 2, amount: 6000, starts: soon)]);
+      final ys = [for (final k in ['row-date', 'row-attendee', 'row-host', 'row-payment']) t.getTopLeft(key(k)).dy];
+      expect(ys, [...ys]..sort());
+      expect(find.text('Mei'), findsOneWidget, reason: 'attendee');
+      expect(find.text('KLS-4821'), findsOneWidget);
+      expect(find.text('Mei Studio'), findsOneWidget);
+      expect(find.text('RM 60'), findsOneWidget, reason: 'price x people only');
+      expect(find.textContaining('fee', findRichText: true), findsNothing);
+    });
+
+    testWidgets('processing_ticket_shows_the_chip_and_a_hint_instead_of_the_qr', (t) async {
+      await openTab(t, upcoming: [bk('p1', status: 'processing', event: 'e1', starts: soon)]);
+      expect(find.text('Processing'), findsOneWidget);
+      expect(find.byType(QrImageView), findsNothing);
+      expect(find.text('Your QR code appears here as soon as the payment clears.'), findsOneWidget);
+    });
+
+    testWidgets('actions_are_two_buttons_and_a_cancel_link_only_inside_the_free_window', (t) async {
+      await openTab(t, upcoming: [bk('c1', event: 'e1', cutoff: clock.add(const Duration(days: 1)), starts: soon), bk('c2', event: 'e3', code: 'KLS-0002', cutoff: clock.subtract(const Duration(hours: 1)))]);
+      expect(key('ticket-directions'), findsNWidgets(2));
+      expect(key('ticket-calendar'), findsNWidgets(2));
+      expect(key('ticket-cancel'), findsOneWidget);
+    });
+
+    testWidgets('cancelling_from_the_tab_moves_the_ticket_out_of_upcoming', (t) async {
+      final c1 = bk('c1', event: 'e1', cutoff: clock.add(const Duration(days: 1)), starts: soon);
+      await pumpApp(t, location: '/tickets', upcoming: [c1], setup: (b) => b.byId['c1'] = c1);
+      await t.ensureVisible(key('ticket-cancel'));
+      await t.tap(key('ticket-cancel'));
+      await t.pumpAndSettle();
+      bookings.upcoming.clear();
+      await t.tap(key('cancel-yes'));
+      await t.pumpAndSettle();
+      expect(bookings.cancelled, ['c1']);
+      expect(find.textContaining('No upcoming tickets.'), findsOneWidget);
+    });
+
+    testWidgets('previous_lists_attended_and_cancelled_and_only_attended_opens_review', (t) async {
+      await openTab(t, past: [bk('a1', status: 'attended', event: 'e1', starts: clock), bk('x1', status: 'cancelled', event: 'e2', starts: clock)]);
       await t.tap(key('seg-past'));
       await t.pumpAndSettle();
-      expect(find.text('Old Yoga'), findsOneWidget);
       expect(find.descendant(of: key('booking-a1'), matching: find.text('Attended')), findsOneWidget);
       expect(find.descendant(of: key('booking-x1'), matching: find.text('Cancelled')), findsOneWidget);
       expect(find.text('Tap an attended event to write a review'), findsOneWidget);
-      expect(find.text('Pottery'), findsNothing);
-    });
-
-    testWidgets('tapping_confirmed_booking_opens_ticket_and_attended_opens_review', (t) async {
-      await pumpApp(t, location: '/tickets', upcoming: [bk('c1', title: 'Pottery', starts: soon)],
-          past: [bk('a1', status: 'attended', title: 'Old Yoga', starts: clock), bk('x1', status: 'cancelled', title: 'Old Run', starts: clock)],
-          setup: (b) => b.byId['c1'] = bk('c1', title: 'Pottery', starts: soon));
-      await t.tap(key('booking-c1'));
-      await t.pumpAndSettle();
-      expect(key('ticket-screen'), findsOneWidget);
-      await t.tap(key('ticket-done'));
-      await t.pumpAndSettle();
-      await t.tap(find.descendant(of: find.byKey(const Key('tab-bar')), matching: find.text('Tickets')));
-      await t.pumpAndSettle();
-      await t.tap(key('seg-past'));
-      await t.pumpAndSettle();
       await t.tap(key('booking-x1'));
       await t.pumpAndSettle();
-      expect(key('ticket-screen'), findsNothing, reason: 'a cancelled booking opens nothing');
+      expect(key('tickets-screen'), findsOneWidget, reason: 'a cancelled booking opens nothing');
       await t.tap(key('booking-a1'));
       await t.pumpAndSettle();
       expect(t.widget<Text>(key('screen-title')).data, 'Review');
     });
 
-    testWidgets('nothing booked yet says so', (t) async {
-      await pumpApp(t, location: '/tickets');
-      expect(find.text('No upcoming bookings'), findsOneWidget);
+    testWidgets('a_cancelled_booking_whose_event_is_gone_still_shows_in_previous', (t) async {
+      await openTab(t, past: [bk('x1', status: 'cancelled', event: 'gone', title: 'Vanished Event', starts: clock)]);
       await t.tap(key('seg-past'));
       await t.pumpAndSettle();
-      expect(find.text('No past bookings'), findsOneWidget);
+      expect(find.text('Vanished Event'), findsOneWidget);
+    });
+
+    testWidgets('empty_upcoming_says_so_and_offers_Explore', (t) async {
+      await openTab(t);
+      expect(find.textContaining('No upcoming tickets.'), findsOneWidget);
+      await t.tap(find.text('Explore events'));
+      await t.pumpAndSettle();
+      expect(key('home-screen'), findsOneWidget);
+    });
+
+    testWidgets('ten_tickets_do_not_overflow', (t) async {
+      await openTab(t, upcoming: [for (var i = 0; i < 10; i++) bk('c$i', event: i.isEven ? 'e1' : 'e3', code: 'KLS-000$i', starts: soon)]);
+      expect(t.takeException(), isNull);
     });
   });
 }

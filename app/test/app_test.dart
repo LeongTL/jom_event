@@ -90,7 +90,7 @@ void main() {
       } else if (entry.value == '/saved') {
         expect(find.byKey(const Key('saved-screen')), findsOneWidget);
       } else if (entry.value == '/tickets') {
-        expect(find.byKey(const Key('bookings-screen')), findsOneWidget);
+        expect(find.byKey(const Key('tickets-screen')), findsOneWidget);
       } else if (entry.value == '/chats') {
         expect(find.byKey(const Key('chat-list-screen')), findsOneWidget);
       } else {
@@ -119,7 +119,7 @@ void main() {
       expect(where(router), p, reason: p);
       final screen = {
         '/explore': 'home-screen', '/saved': 'saved-screen', '/all': 'view-all', '/event/e1': 'event-screen',
-        '/tickets': 'bookings-screen', '/chats': 'chat-list-screen', '/chats/t1': 'thread-screen', '/host-mode/chats': 'chat-list-screen', '/event/e1/checkout': 'checkout-screen', '/booking/b1/gateway': 'gateway-screen',
+        '/tickets': 'tickets-screen', '/chats': 'chat-list-screen', '/chats/t1': 'thread-screen', '/host-mode/chats': 'chat-list-screen', '/event/e1/checkout': 'checkout-screen', '/booking/b1/gateway': 'gateway-screen',
         '/booking/b1/processing': 'processing-screen', '/booking/b1/failed': 'failed-screen', '/booking/b1/ticket': 'ticket-screen', '/notifications': 'notifications-screen',
       }[p] ?? 'screen-title';
       expect(find.byKey(Key(screen)), findsOneWidget, reason: p);

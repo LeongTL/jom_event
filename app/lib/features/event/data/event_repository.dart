@@ -13,6 +13,9 @@ abstract class EventRepository {
   /// Every upcoming or live event near [at], soonest first (events.list_all).
   Future<List<EventSummary>> listAll(String category, LatLng at, int km);
 
+  /// The cards for known ids, ended events included (events.cards).
+  Future<List<EventSummary>> cards(List<String> ids, LatLng at);
+
   /// One event page, or null when the event is a draft, cancelled or unknown.
   Future<EventDetail?> detail(String id, LatLng at);
 
@@ -42,6 +45,12 @@ class SupabaseEventRepository implements EventRepository {
     final rows = await _db.schema('events').rpc('list_all', params: {
       'p_lat': at.lat, 'p_lng': at.lng, 'p_category': category, 'p_km': km,
     }) as List;
+    return [for (final r in rows) EventSummary.fromJson(r as Map<String, dynamic>)];
+  }
+
+  @override
+  Future<List<EventSummary>> cards(List<String> ids, LatLng at) async {
+    final rows = await _db.schema('events').rpc('cards', params: {'p_ids': ids, 'p_lat': at.lat, 'p_lng': at.lng}) as List;
     return [for (final r in rows) EventSummary.fromJson(r as Map<String, dynamic>)];
   }
 

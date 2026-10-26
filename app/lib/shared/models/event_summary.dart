@@ -18,6 +18,15 @@ class EventSummary {
     required this.spotsLeft,
     required this.score,
     this.categories = const [],
+    this.description,
+    this.posterUrl,
+    this.cancelPolicy,
+    this.lat,
+    this.lng,
+    this.hostId,
+    this.hostName,
+    this.hostVerified = false,
+    this.going = 0,
   });
 
   final String id;
@@ -31,7 +40,12 @@ class EventSummary {
   final bool isLive;
   final int spotsLeft;
   final double score;
-  final List<String> categories; // only list_all returns these
+  final List<String> categories;
+  // the Calm card columns (events.event_card); the old saved-events query leaves them empty
+  final String? description, posterUrl, cancelPolicy, hostId, hostName;
+  final double? lat, lng;
+  final bool hostVerified;
+  final int going; // people who are in, a number only
 
   bool get isFree => priceSen == 0;
 
@@ -50,6 +64,15 @@ class EventSummary {
         spotsLeft: (json['spots_left'] as num).toInt(),
         score: (json['score'] as num).toDouble(),
         categories: [for (final c in (json['categories'] as List?) ?? const []) c as String],
+        description: json['description'] as String?,
+        posterUrl: json['poster_url'] as String?,
+        cancelPolicy: json['cancel_policy'] as String?,
+        lat: (json['lat'] as num?)?.toDouble(),
+        lng: (json['lng'] as num?)?.toDouble(),
+        hostId: json['host_id'] as String?,
+        hostName: json['host_name'] as String?,
+        hostVerified: (json['host_verified'] as bool?) ?? false,
+        going: (json['going'] as num?)?.toInt() ?? 0,
       );
 
   static const _fallbackGlyph = '✨';
