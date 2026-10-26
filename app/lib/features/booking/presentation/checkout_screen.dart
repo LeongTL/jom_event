@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/clock.dart';
 import '../../../core/money.dart';
-import '../../../core/theme/tokens.dart';
+import '../../../core/theme/calm.dart';
 import '../../../shared/widgets/jom_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show User;
 
@@ -17,6 +17,7 @@ import '../data/booking_repository.dart';
 import '../domain/booking.dart';
 import '../domain/hold_timer.dart';
 import '../../../shared/widgets/screen_parts.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 /// Checkout. Paid events hold the seat for 15 minutes the moment this opens (the spec's "Join, then Checkout
 /// creates a held booking"); free events are booked only when you confirm.
@@ -29,7 +30,7 @@ class CheckoutScreen extends ConsumerWidget {
         key: const Key('checkout-screen'),
         backgroundColor: context.jom.sheet,
         body: ref.watch(eventDetailProvider(eventId)).when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => SafeArea(child: Skeleton.page()),
               error: (_, _) => const Center(child: Text('Could not load this event. Check your connection.')),
               data: (d) => d == null ? const Center(child: Text("This event isn't available")) : _Body(d),
             ),

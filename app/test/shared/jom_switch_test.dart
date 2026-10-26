@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jom/core/theme/calm.dart';
-import 'package:jom/core/theme/tokens.dart';
 import 'package:jom/shared/widgets/jom_switch.dart';
 
 Future<void> pump(WidgetTester t, bool value, ValueChanged<bool>? onChanged) => t.pumpWidget(MaterialApp(
-      theme: ThemeData(extensions: [JomTokens.of(JomTheme.now)]),
+      theme: ThemeData(extensions: [const JomTokens()]),
       home: Scaffold(body: Center(child: JomSwitch(value: value, onChanged: onChanged))),
     ));
 

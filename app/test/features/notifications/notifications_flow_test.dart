@@ -6,7 +6,7 @@ import 'package:jom/app.dart';
 import 'package:jom/core/clock.dart';
 import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
-import 'package:jom/core/theme/tokens.dart';
+import 'package:jom/core/theme/calm.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:jom/features/booking/data/booking_repository.dart';
 import 'package:jom/features/booking/domain/booking.dart';
@@ -14,7 +14,7 @@ import 'package:jom/features/chat/data/chat_repository.dart';
 import 'package:jom/features/chat/domain/chat.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
-import 'package:jom/features/home/domain/home_feed.dart';
+import 'package:jom/shared/models/event_summary.dart';
 import 'package:jom/features/notifications/data/notification_repository.dart';
 import 'package:jom/features/notifications/domain/bell_provider.dart';
 import 'package:jom/features/notifications/domain/notification.dart';
@@ -49,7 +49,8 @@ Future<GoRouter> pumpApp(WidgetTester t, {String location = '/notifications', Fa
       chatRepositoryProvider.overrideWithValue(chat ?? FakeChat(infos: {'t1': const ThreadInfo(id: 't1', iAmHost: false, otherName: 'Mei Studio')})),
       bookingRepositoryProvider.overrideWithValue(FakeBookings()..byId.addAll({'b1': bk('b1', status: 'confirmed'), ...bookings})),
       nowProvider.overrideWithValue(() => clock.add(t.binding.clock.now().difference(start))),
-      homeFeedProvider.overrideWith((ref, q) async => HomeFeed(tab: q.tab, top9: const [], stats: const HeroStats(total: 0, live: 0, free: 0, closestKm: null))),
+      weekendProvider.overrideWith((ref, a) async => <EventSummary>[]),
+      nearYouProvider.overrideWith((ref, q) async => <EventSummary>[]),
       deviceLocationProvider.overrideWithValue(() async => null),
     ],
     child: const JomApp(),
@@ -248,7 +249,7 @@ void main() {
     Future<void> pumpBell(WidgetTester t, int count) => t.pumpWidget(ProviderScope(
           overrides: [bellCountProvider.overrideWith((ref) => Stream.value(count))],
           child: MaterialApp(
-            theme: ThemeData(extensions: [JomTokens.of(JomTheme.now)]),
+            theme: ThemeData(extensions: [const JomTokens()]),
             home: const Scaffold(body: Center(child: BellButton())),
           ),
         ));

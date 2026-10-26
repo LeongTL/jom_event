@@ -14,7 +14,7 @@ import 'package:jom/features/booking/domain/booking.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/notifications/domain/bell_provider.dart';
-import 'package:jom/features/home/domain/home_feed.dart';
+import 'package:jom/shared/models/event_summary.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../helpers/fake_auth.dart';
@@ -72,7 +72,8 @@ Future<void> pumpApp(
         calendarAdds.add(d.summary.title);
         return true;
       }),
-      homeFeedProvider.overrideWith((ref, q) async => HomeFeed(tab: q.tab, top9: const [], stats: const HeroStats(total: 0, live: 0, free: 0, closestKm: null))),
+      weekendProvider.overrideWith((ref, a) async => <EventSummary>[]),
+      nearYouProvider.overrideWith((ref, q) async => <EventSummary>[]),
       deviceLocationProvider.overrideWithValue(() async => null),
       bellCountProvider.overrideWith((ref) => Stream.value(0)),
     ],

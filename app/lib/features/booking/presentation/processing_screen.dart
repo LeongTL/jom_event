@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/tokens.dart';
+import '../../../core/theme/calm.dart';
 import '../data/booking_repository.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 /// "Confirming your payment": waits for the webhook. The booking decides where this goes, never this screen:
 /// confirmed → ticket, failed or expired → the failed screen. Still processing, the guest can leave; Bookings
@@ -39,7 +40,7 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen> {
       body: Padding(
         padding: const EdgeInsets.fromLTRB(44, 200, 44, 0), // the prototype's padding-top: 200
         child: Column(children: [
-          SizedBox(width: 84, height: 84, child: CircularProgressIndicator(strokeWidth: 6, color: k.accent, backgroundColor: k.line)),
+          Skeleton.box(84),
           const SizedBox(height: 30),
           const Text('Confirming your payment', textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
           const SizedBox(height: 6),

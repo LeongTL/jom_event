@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/clock.dart';
-import '../../../core/theme/tokens.dart';
+import '../../../core/theme/calm.dart';
 import '../../../shared/widgets/jom_button.dart';
 import '../../event/domain/event_labels.dart';
 import '../data/booking_repository.dart';
 import '../domain/booking.dart';
 import '../domain/hold_timer.dart';
 import '../../../shared/widgets/screen_parts.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 /// Payment failed: the seat stays held for what is left of the 15 minutes. Try again reuses the hold; Give up
 /// releases it. When the hold has run out the screen says the spot was released instead.
@@ -28,7 +29,7 @@ class FailedScreen extends ConsumerWidget {
       key: const Key('failed-screen'),
       backgroundColor: k.sheet,
       body: b == null
-          ? const Center(child: CircularProgressIndicator())
+          ? SafeArea(child: Skeleton.page())
           : Stack(children: [
               Positioned.fill(
                 child: Padding(

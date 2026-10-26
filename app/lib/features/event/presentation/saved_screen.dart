@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/clock.dart';
-import '../../../core/theme/tokens.dart';
+import '../../../core/theme/calm.dart';
 import '../domain/saved_controller.dart';
 import 'poster_card.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 /// The Saved tab: a two-column grid of hearted events. Ended ones stay, dimmed and tagged "Ended".
 class SavedScreen extends ConsumerWidget {
@@ -27,7 +28,7 @@ class SavedScreen extends ConsumerWidget {
           ),
           Expanded(
             child: ref.watch(savedEventsProvider).when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () => Skeleton.rows(4),
                   error: (_, _) => const Center(child: Text('Could not load your saved events. Check your connection.')),
                   data: (list) => list.isEmpty
                       ? const Center(child: Text('Nothing saved yet'))

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jom/shared/widgets/skeleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +11,7 @@ import 'package:jom/features/booking/data/booking_repository.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/notifications/domain/bell_provider.dart';
-import 'package:jom/features/home/domain/home_feed.dart';
+import 'package:jom/shared/models/event_summary.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show Session;
 
 import '../../helpers/fake_auth.dart';
@@ -25,7 +26,8 @@ Future<GoRouter> pumpApp(WidgetTester t, FakeAuthRepository repo, {String locati
       authRepositoryProvider.overrideWithValue(repo),
       eventRepositoryProvider.overrideWithValue(FakeEvents()),
       bookingRepositoryProvider.overrideWithValue(FakeBookings()),
-      homeFeedProvider.overrideWith((ref, q) async => HomeFeed(tab: q.tab, top9: const [], stats: const HeroStats(total: 0, live: 0, free: 0, closestKm: null))),
+      weekendProvider.overrideWith((ref, a) async => <EventSummary>[]),
+      nearYouProvider.overrideWith((ref, q) async => <EventSummary>[]),
       deviceLocationProvider.overrideWithValue(() async => null),
       bellCountProvider.overrideWith((ref) => Stream.value(0)),
     ],
@@ -128,7 +130,7 @@ void main() {
     ));
     await t.pump(const Duration(milliseconds: 50));
     expect(find.text('Sign in to see your saved events'), findsNothing);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(Skeleton), findsWidgets);
     await t.pump(const Duration(seconds: 2));
     await t.pumpAndSettle();
     expect(find.byKey(const Key('saved-screen')), findsOneWidget); // signed in after all

@@ -167,3 +167,15 @@ begin
   drop table seed_pool;
 end
 $seed$;
+
+-- Demo posters: free-to-use Pexels photos (https://www.pexels.com/license/). Titles without a photo keep the category illustration.
+update events.events e
+   set poster_url = 'https://images.pexels.com/photos/' || p.id || '/pexels-photo-' || p.id || '.jpeg?auto=compress&cs=tinysrgb&w=800'
+  from (values
+    ('Sunset Yoga Deck', 6900838), ('Sunset Stretch', 6900838), ('Beginner Salsa Lesson', 18812920), ('Salsa Social', 18812920),
+    ('Board Game Brunch', 8111356), ('Board Game Night', 8111367), ('Midnight Board Games', 8111367), ('Badminton Social', 8796050),
+    ('Boxing Basics', 5750760), ('Intro to Muay Thai', 5750947), ('Rooftop Run', 1072705), ('Supper Run Club', 1072705),
+    ('Sunday Cycling Club', 13392576), ('Sunrise Hike Bukit Kiara', 29347332), ('Batik Painting Workshop', 10682942),
+    ('Candle Pouring Class', 8272376), ('Sourdough Starter Swap', 1571075), ('Vinyl Swap Meet', 6862587), ('Silent Disco', 18704225)
+  ) as p(stem, id)
+ where split_part(e.title, ' · ', 1) = p.stem;

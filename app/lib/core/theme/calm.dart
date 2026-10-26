@@ -40,6 +40,28 @@ Color ticketColor(String primary) => switch (primary) {
       _ => const Color(0xFF7A6A2B),
     };
 
+/// The few colours the screens read through `context.jom` (screens, cards, lines, accent). They are the Calm palette.
+@immutable
+class JomTokens extends ThemeExtension<JomTokens> {
+  const JomTokens();
+  Color get accent => Calm.acc;
+  Color get accentInk => Colors.white;
+  Color get sheet => Calm.bg;
+  Color get sheetInk => Calm.ink;
+  Color get card => Calm.surface;
+  Color get line => Calm.line;
+
+  @override
+  JomTokens copyWith() => this;
+
+  @override
+  JomTokens lerp(ThemeExtension<JomTokens>? other, double t) => this;
+}
+
+extension JomThemeContext on BuildContext {
+  JomTokens get jom => Theme.of(this).extension<JomTokens>()!;
+}
+
 ThemeData calmTheme() {
   final base = ThemeData(useMaterial3: true, brightness: Brightness.light, fontFamily: 'Inter');
   return base.copyWith(
@@ -54,5 +76,6 @@ ThemeData calmTheme() {
       onSurface: Calm.ink,
     ),
     textTheme: base.textTheme.apply(bodyColor: Calm.ink, displayColor: Calm.ink),
+    extensions: const [JomTokens()],
   );
 }

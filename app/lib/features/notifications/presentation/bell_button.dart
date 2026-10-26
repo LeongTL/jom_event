@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/tokens.dart';
+import '../../../core/theme/calm.dart';
 import '../domain/bell_provider.dart';
 
 /// The round bell with the unread number, at the top of Explore (and of host Home). Opens Notifications.
@@ -22,8 +22,8 @@ class BellButton extends ConsumerWidget {
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(color: k.glass, shape: BoxShape.circle, border: Border.all(color: k.glassBorder)),
-            child: const Icon(Icons.notifications_none, size: 22),
+            decoration: BoxDecoration(color: k.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: k.line)),
+            child: Icon(Icons.notifications_none, size: 22, color: k.sheetInk),
           ),
           if (unread > 0)
             Positioned(
@@ -32,8 +32,8 @@ class BellButton extends ConsumerWidget {
               child: Container(
                 key: const Key('bell-badge'),
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                decoration: BoxDecoration(color: const Color(0xFFFF4D6A), borderRadius: BorderRadius.circular(10)),
-                child: Text('$unread', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800)),
+                decoration: BoxDecoration(color: Calm.badge, borderRadius: BorderRadius.circular(9), border: Border.all(color: Calm.bg, width: 2)),
+                child: Text('$unread', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
               ),
             ),
         ],

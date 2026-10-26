@@ -65,9 +65,9 @@ class BoardingPassTile extends StatelessWidget {
               color: color,
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                _Col(shortDate(e.startsAt), 'Date', CrossAxisAlignment.start),
-                _Col(timeLabel(e.startsAt), 'Start time', CrossAxisAlignment.center),
-                _Col('${ticket.booking.people}', 'Spots', CrossAxisAlignment.end),
+                Flexible(child: _Col(shortDate(e.startsAt), 'Date', CrossAxisAlignment.start)),
+                Flexible(child: _Col(timeLabel(e.startsAt), 'Start time', CrossAxisAlignment.center)),
+                Flexible(child: _Col('${ticket.booking.people}', 'Spots', CrossAxisAlignment.end)),
               ]),
             ),
           ),
@@ -84,9 +84,9 @@ class _Col extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(crossAxisAlignment: align, children: [
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600, height: 1.2)),
+        Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600, height: 1.2)),
         const SizedBox(height: 2),
-        Text(label, style: TextStyle(color: Colors.white.withValues(alpha: .75), fontSize: 12)),
+        Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.white.withValues(alpha: .75), fontSize: 12)),
       ]);
 }
 
