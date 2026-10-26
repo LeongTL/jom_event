@@ -19,4 +19,12 @@ void main() {
       throwsStateError,
     );
   });
+
+  test('prod_config_requires_map_tile_url_and_dev_staging_default_to_osm', () {
+    const base = {'SUPABASE_URL': 'https://x.supabase.co', 'SUPABASE_ANON_KEY': 'anon'};
+    expect(AppConfig.fromMap({...base, 'FLAVOR': 'dev'}).mapTileUrl, osmTileUrl);
+    expect(AppConfig.fromMap({...base, 'FLAVOR': 'staging', 'MAP_TILE_URL': ''}).mapTileUrl, osmTileUrl);
+    expect(() => AppConfig.fromMap({...base, 'FLAVOR': 'prod', 'MAP_TILE_URL': ''}), throwsStateError);
+    expect(AppConfig.fromMap({...base, 'FLAVOR': 'prod', 'MAP_TILE_URL': 'https://t.example/{z}/{x}/{y}.png'}).mapTileUrl, 'https://t.example/{z}/{x}/{y}.png');
+  });
 }
