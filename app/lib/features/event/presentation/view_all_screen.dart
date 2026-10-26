@@ -6,6 +6,7 @@ import '../../../core/theme/calm.dart';
 import '../../../shared/models/event_summary.dart';
 import '../data/event_repository.dart';
 import 'event_cards.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 const _chips = [('all', 'All'), ('make', 'Make'), ('move', 'Move'), ('meet', 'Meet'), ('free', 'Free')];
 
@@ -54,9 +55,7 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
                 key: Key('chip-$key'),
                 onTap: () => setState(() => _cat = key),
                 child: Container(
-                  height: 34,
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: _cat == key ? Calm.accSoft : Calm.surface,
                     borderRadius: BorderRadius.circular(10),
@@ -68,7 +67,7 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
           ]),
           const SizedBox(height: 16),
           ...all.when(
-            loading: () => [const Padding(padding: EdgeInsets.only(top: 60), child: Center(child: CircularProgressIndicator()))],
+            loading: () => [Skeleton.rows(6)],
             error: (_, _) => [const Padding(padding: EdgeInsets.only(top: 60), child: Center(child: Text('Could not load events. Check your connection.')))],
             data: (list) {
               final shown = [...list.where((e) => _in(e, _cat))]..sort((a, b) => (a.distanceKm ?? 999).compareTo(b.distanceKm ?? 999));

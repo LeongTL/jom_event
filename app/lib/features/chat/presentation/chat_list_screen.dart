@@ -8,6 +8,7 @@ import '../../../shared/widgets/screen_parts.dart';
 import '../data/chat_repository.dart';
 import '../domain/chat.dart';
 import '../domain/chat_labels.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 const _avatars = [
   [Color(0xFFFF9A62), Color(0xFFD4467C)],
@@ -37,7 +38,7 @@ class ChatListScreen extends ConsumerWidget {
           ),
           ref.watch(chatThreadsProvider).when(
                 skipLoadingOnReload: true,
-                loading: () => const Padding(padding: EdgeInsets.only(top: 60), child: Center(child: CircularProgressIndicator())),
+                loading: () => Padding(padding: const EdgeInsets.only(top: 16), child: Skeleton.rows(4)),
                 error: (_, _) => const Padding(padding: EdgeInsets.only(top: 60), child: Center(child: Text('Could not load your chats. Check your connection.'))),
                 data: (list) => list.isEmpty
                     ? const Padding(padding: EdgeInsets.only(top: 60), child: Center(child: Text('No chats yet')))

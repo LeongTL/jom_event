@@ -34,9 +34,11 @@ Future<LatLng?> _geolocate() async {
     var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) return null;
-    final p = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.low, timeLimit: Duration(seconds: 8)),
-    );
+    // The last fix is instant and good enough for a 1 km area; only ask for a fresh one when the phone has none.
+    final p = await Geolocator.getLastKnownPosition() ??
+        await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(accuracy: LocationAccuracy.low, timeLimit: Duration(seconds: 4)),
+        );
     return (lat: p.latitude, lng: p.longitude);
   } catch (_) {
     return null; // no GPS, no service or a timeout: the selected area stands in

@@ -16,6 +16,7 @@ import 'area_sheet.dart';
 import 'map_chips.dart';
 import 'map_event_card.dart';
 import 'price_pin.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 /// Tiles come from [AppConfig.mapTileUrl]; tests replace this with a provider that draws nothing.
 final mapTileProvider = Provider<TileProvider>((ref) => NetworkTileProvider());
@@ -116,7 +117,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     return Scaffold(
       body: q == null
-          ? const Center(child: CircularProgressIndicator())
+          ? SafeArea(child: Skeleton.page())
           : Stack(children: [
               Positioned.fill(
                 child: FlutterMap(

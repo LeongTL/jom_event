@@ -10,6 +10,7 @@ import '../data/booking_repository.dart';
 import '../domain/ticket.dart';
 import 'ticket_actions.dart';
 import 'ticket_card.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 /// The QR the host scans: the booking's signed token, fetched for its owner.
 final ticketTokenProvider = FutureProvider.autoDispose.family<String, String>((ref, id) => ref.watch(bookingRepositoryProvider).ticketToken(id));
@@ -27,10 +28,10 @@ class TicketScreen extends ConsumerWidget {
       key: const Key('ticket-screen'),
       backgroundColor: Calm.bg,
       body: booking.when(
-        loading: () => const _Plain(CircularProgressIndicator()),
+        loading: () => _Plain(Skeleton.box(220)),
         error: (_, _) => const _Plain(Text('Could not load this ticket. Check your connection.')),
         data: (b) => ref.watch(eventDetailProvider(b.eventId)).when(
-              loading: () => const _Plain(CircularProgressIndicator()),
+              loading: () => _Plain(Skeleton.box(220)),
               error: (_, _) => const _Plain(Text('Could not load this ticket. Check your connection.')),
               // a cancelled booking outlives its event: say that, rather than a bare "not available"
               data: (d) => d == null

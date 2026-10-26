@@ -9,6 +9,7 @@ import '../../../shared/widgets/screen_parts.dart';
 import '../data/notification_repository.dart';
 import '../domain/notification.dart';
 import '../domain/notification_labels.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 /// The in-app list of notices, then the "Show me" switches. Opening it marks what is on screen as read, but the
 /// dots stay for this visit so you can see what was new.
@@ -82,7 +83,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           const BookingNav(title: 'Notifications'),
           ref.watch(notificationsProvider).when(
                 skipLoadingOnReload: true,
-                loading: () => const Padding(padding: EdgeInsets.only(top: 40, bottom: 40), child: Center(child: CircularProgressIndicator())),
+                loading: () => Skeleton.rows(4),
                 error: (_, _) => const Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: Text('Could not load your notifications. Check your connection.'))),
                 data: (list) => list.isEmpty
                     ? const Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: Text('Nothing yet')))

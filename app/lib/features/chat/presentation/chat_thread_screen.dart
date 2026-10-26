@@ -9,6 +9,7 @@ import '../../event/domain/event_labels.dart';
 import '../data/chat_repository.dart';
 import '../domain/chat.dart';
 import '../domain/chat_labels.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 /// One conversation: who it is with, the event it is about, the messages (live) and the box to write in.
 class ChatThreadScreen extends ConsumerStatefulWidget {
@@ -84,7 +85,7 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
       key: const Key('thread-screen'),
       backgroundColor: k.sheet,
       body: info.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => SafeArea(child: Skeleton.page()),
         error: (_, _) => const Center(child: Text('Could not load this chat. Check your connection.')),
         data: (i) => Column(children: [
           Expanded(

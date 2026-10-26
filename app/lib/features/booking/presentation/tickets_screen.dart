@@ -12,6 +12,7 @@ import '../data/booking_repository.dart';
 import '../domain/ticket.dart';
 import 'ticket_actions.dart';
 import 'ticket_card.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 /// The Tickets tab: Upcoming tickets grouped by day, each a full ticket, and Previous bookings as plain rows.
 class TicketsScreen extends ConsumerStatefulWidget {
@@ -60,7 +61,7 @@ class _TicketsScreenState extends ConsumerState<TicketsScreen> {
             child: Row(children: [seg('Upcoming', false), seg('Previous', true)]),
           ),
           ref.watch(ticketsProvider(scope)).when(
-                loading: () => const Padding(padding: EdgeInsets.only(top: 60), child: Center(child: CircularProgressIndicator())),
+                loading: () => Padding(padding: const EdgeInsets.only(top: 16), child: Skeleton.rows(2)),
                 error: (_, _) => const Padding(padding: EdgeInsets.only(top: 60), child: Center(child: Text('Could not load your tickets. Check your connection.'))),
                 data: (list) => _past ? _Previous(list) : _Upcoming(list, onChanged: () => ref.invalidate(ticketsProvider)),
               ),
