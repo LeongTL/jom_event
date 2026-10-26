@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KL Local Session · Calm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF8F5;--surface:#fff;--ink:#1B2430;--mut:#5F6B7A;--faint:#8A94A1;--line:#E7E2DA;
+  --acc:#1F5E5B;--acc-soft:#E3EFEC;--ok:#1E7A4F;--ok-soft:#E4F1E9;--bad:#B3261E;--bad-soft:#FBE9E7;--warn:#9A6200;--warn-soft:#FBF0D9;
+  --serif:Fraunces,Georgia,serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#ECE8E1;color:var(--ink);font:15px/1.45 Inter,-apple-system,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:12px 10px}
+.cap{display:flex;gap:10px;align-items:center;margin-bottom:10px;font-size:12px;color:var(--mut);flex-wrap:wrap;justify-content:center}
+.cap b{color:var(--ink);font-size:15px;font-weight:600}
+.cap select{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font:inherit}
+#wrap{position:relative}
+.phone{width:390px;height:844px;border-radius:44px;position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden;background:var(--bg);box-shadow:0 0 0 8px #1B2430,0 24px 60px rgba(27,36,48,.25)}
+.status{position:absolute;top:0;left:0;right:0;height:44px;padding:16px 28px 0;display:flex;justify-content:space-between;font-size:12px;font-weight:600;z-index:40;pointer-events:none}
+.status{background:linear-gradient(var(--bg) 62%,rgba(250,248,245,0))}
+.status.clear{background:none}
+.status.light{color:#fff;background:linear-gradient(#0E1217 62%,rgba(14,18,23,0))}
+#screen{position:absolute;inset:0}
+svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+[data-go],[data-act],[data-modal],[data-back],[data-ev],[data-cat],[data-seg],[data-sw],[data-pick],[data-chk],[data-fav],[data-send]{cursor:pointer}
+
+/* layout */
+.scroll{position:absolute;inset:0;overflow:auto;scrollbar-width:none;padding:56px 20px 110px}
+.scroll::-webkit-scrollbar{display:none}
+.scroll.tabbed{padding-bottom:120px}
+.scroll.nopad{padding:0 0 110px}
+.nav{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.nav b{flex:1;font-weight:600;font-size:17px;text-align:center}
+.nav .sp0{width:40px;flex:none}
+.ib{width:40px;height:40px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;flex:none;position:relative;color:var(--ink)}
+.ib.gl{background:rgba(255,255,255,.92);border-color:transparent}
+.bdg{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;border-radius:9px;background:#C9432F;color:#fff;font:600 10px/17px Inter;text-align:center;padding:0 4px;border:2px solid var(--bg);box-sizing:content-box}
+h1{font:500 32px/1.1 var(--serif);letter-spacing:-.015em;margin:6px 0 16px}
+h2{font:600 18px/1.2 var(--serif);margin:0}
+h3{font:600 20px/1.2 var(--serif);margin:0 0 6px}
+p{margin:0 0 10px;color:#35404E}
+.mut{color:var(--mut);font-size:13px}
+.eye{font-size:11.5px;font-weight:600;letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
+.center{text-align:center}
+.ok{color:var(--ok);font-weight:500}
+.sech{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 12px}
+.more{font-size:13px;font-weight:600;color:var(--acc)}
+.row{display:flex;gap:12px;align-items:center}
+.row .sp{flex:1;min-width:0}
+.vf{width:14px;height:14px;stroke:var(--acc);stroke-width:2.2;flex:none}
+.host{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--mut);min-width:0}
+.host span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* art */
+[data-art]{position:relative;overflow:hidden}
+[data-art]>svg.bg{position:absolute;inset:0;width:100%;height:100%;stroke:none;fill:initial}
+
+/* buttons / fields */
+.btn{height:50px;border-radius:12px;border:0;font:600 16px Inter;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--acc);color:#fff}
+.btn.sec{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn.dng{background:var(--bad);color:#fff}
+.btn.sm{height:38px;width:auto;padding:0 14px;font-size:13.5px;border-radius:10px}
+.btn.link{background:none;color:var(--acc);height:40px}
+.btn.dlk{background:none;color:var(--bad);font-weight:500;height:44px}
+.cta{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:14px 20px 30px;display:flex;align-items:center;gap:12px;z-index:20}
+.cta.stack{flex-direction:column}
+.cta.above{bottom:84px;padding-bottom:14px}
+.cta .tot small{display:block;color:var(--mut);font-size:12px;white-space:nowrap}.cta .tot b{font-size:18px;font-weight:600;white-space:nowrap}
+.fld{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:10px}
+.fld label{display:block;font-size:11.5px;font-weight:600;color:var(--faint);margin-bottom:2px}
+.fld input,.fld textarea{width:100%;border:0;outline:0;background:none;font:500 15px Inter;color:var(--ink);padding:0;resize:none}
+.fld.lock{background:#F4F1EC}
+.chip{height:34px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:500;display:inline-flex;align-items:center;white-space:nowrap}
+.chip.on{background:var(--acc-soft);border-color:var(--acc);color:var(--acc)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.seg{display:flex;background:#F0EDE8;border-radius:12px;padding:3px;margin-bottom:16px}
+.seg span{flex:1;text-align:center;padding:9px 0;font-size:14px;font-weight:500;color:var(--mut);border-radius:10px}
+.seg span.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(27,36,48,.12)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+.card.tint{background:var(--acc-soft);border-color:transparent}
+.soft{background:#F4F1EC;border-radius:12px;padding:12px 14px;font-size:13px;color:var(--mut);margin-bottom:12px}
+.st{display:inline-flex;font-size:11.5px;font-weight:600;border-radius:8px;padding:3px 8px;background:#F0EDE8;color:var(--mut);white-space:nowrap}
+.st.ok{background:var(--ok-soft);color:var(--ok)}.st.warn{background:var(--warn-soft);color:var(--warn)}.st.bad{background:var(--bad-soft);color:var(--bad)}.st.acc{background:var(--acc-soft);color:var(--acc)}
+.av{width:44px;height:44px;border-radius:50%;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center;font-weight:600;flex:none}
+.stack i svg{width:14px;height:14px;stroke:#fff}
+.stack{display:flex}.stack i{width:28px;height:28px;border-radius:50%;border:2px solid #fff;margin-left:-8px;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:600;color:#fff}.stack i:first-child{margin-left:0}
+.sw{width:46px;height:28px;border-radius:14px;background:#D8D3CA;position:relative;flex:none;transition:.2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.on>.sw,.sw.on{background:var(--acc)}.on>.sw::after,.sw.on::after{left:21px}
+.chk{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;color:transparent;flex:none}
+.chk.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.chk svg{width:16px;height:16px;stroke-width:2.5}
+.policy{display:flex;gap:12px;background:var(--ok-soft);border-radius:14px;padding:13px 14px;margin-bottom:16px;color:var(--ok)}
+.policy b{display:block;font-weight:600;font-size:14px}.policy span{font-size:13px;color:#2F5C45}
+.policy.neutral{background:#F4F1EC;color:var(--mut)}.policy.neutral span{color:var(--mut)}
+.bar{height:6px;border-radius:3px;background:#EAE5DC;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
+
+/* tab bar */
+.tabs{position:absolute;left:0;right:0;bottom:0;height:84px;background:var(--surface);border-top:1px solid var(--line);display:flex;padding:8px 8px 24px;z-index:30}
+.tabs div{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:500;color:var(--faint);padding-top:4px;position:relative}
+.tabs div.on{color:var(--acc)}
+.tabs .bdg{top:0;left:calc(50% + 4px);right:auto;border-color:var(--surface)}
+
+/* modal + toast */
+.scrim{position:absolute;inset:0;background:rgba(27,36,48,.45);z-index:60;display:flex;align-items:flex-end;animation:fade .2s}
+.msheet{background:var(--bg);width:100%;border-radius:24px 24px 0 0;padding:12px 20px 32px;animation:rise .28s cubic-bezier(.2,.8,.2,1)}
+.msheet .gr{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 16px}
+@keyframes fade{from{opacity:0}}@keyframes rise{from{transform:translateY(30px);opacity:0}}
+.toast{position:absolute;left:20px;right:20px;bottom:110px;z-index:70;background:var(--ink);color:#fff;border-radius:12px;padding:12px 14px;font-size:13.5px;text-align:center;animation:fade .2s}
+
+/* home */
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.loc{display:inline-flex;gap:6px;align-items:center;font-weight:500;font-size:14px}
+.search{display:flex;gap:10px;margin-bottom:18px}
+.sb{flex:1;height:44px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:0 14px;color:var(--faint)}
+.sb input{flex:1;border:0;outline:0;background:none;font:400 14px Inter;color:var(--ink);min-width:0}
+.cats{display:flex;justify-content:space-between;margin-bottom:26px}
+.cat{width:76px;text-align:center;font-size:12.5px;font-weight:500}
+.cat .art{width:64px;height:64px;border-radius:18px;margin:0 auto 7px;border:2px solid var(--line)}
+.cat.on .art{border-color:var(--acc)}.cat.on{color:var(--acc);font-weight:600}
+.car{display:flex;gap:12px;overflow-x:auto;margin:0 -20px 26px;padding:0 20px 4px;scroll-snap-type:x mandatory;scroll-padding-left:20px;scrollbar-width:none}
+.car::-webkit-scrollbar{display:none}
+.cc{flex:none;width:262px;scroll-snap-align:start;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.cc .art{height:136px}
+.cc .bd{padding:12px 14px 14px}
+.cc h4{font:600 17px/1.2 var(--serif);margin:0 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc .ft{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:11px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mut)}
+.cc .ft b{color:var(--ink);font-weight:600;font-size:14px}
+.cc .stack i{width:24px;height:24px;font-size:10px;margin-left:-7px}.cc .stack i:first-child{margin-left:0}
+.badge{position:absolute;left:12px;top:12px;z-index:2;background:rgba(255,255,255,.94);border-radius:8px;padding:5px 9px;font-size:12px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:6px}
+.badge.live{color:var(--ok)}.badge i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.heart{position:absolute;right:10px;top:10px;z-index:2;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.94);display:grid;place-items:center;color:var(--ink)}
+.heart svg{width:16px;height:16px}.heart.on{color:#C9432F}.heart.on svg{fill:#C9432F}
+.lr{display:flex;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px;margin-bottom:10px}
+.lr .art{width:72px;height:72px;border-radius:12px;flex:none}
+.lr .tx{min-width:0;flex:1;display:flex;flex-direction:column}
+.lr .tx b{font-weight:600;font-size:14.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr .ft{margin-top:auto;display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut);padding-top:4px}
+.lr .ft .p{color:var(--ink);font-weight:600}
+.all{display:flex;align-items:center;justify-content:center;height:46px;border:1px solid var(--line);background:var(--surface);border-radius:12px;font-weight:600;font-size:14px;color:var(--acc);margin-top:4px}
+.empty{text-align:center;color:var(--mut);padding:26px 0;font-size:14px}
+.mapcard{position:relative;height:170px;border-radius:16px;overflow:hidden;border:1px solid var(--line);margin-bottom:26px}
+.mapcard svg.m{width:100%;height:100%;stroke:none}
+.mapcard .mb{position:absolute;left:10px;bottom:10px;background:#fff;border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:600}
+.mapcard .mo{position:absolute;right:10px;bottom:10px;background:var(--acc);color:#fff;border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:600}
+
+/* home boarding pass */
+.tkrow{display:flex;align-items:flex-start;gap:12px;overflow-x:auto;margin:-2px -20px 20px;padding:0 20px;scroll-snap-type:x mandatory;scroll-padding-left:20px;scrollbar-width:none}
+.tkrow::-webkit-scrollbar{display:none}
+.tk{flex:none;width:310px;scroll-snap-align:start;color:#fff;cursor:pointer}
+.tk-top,.tk-bot{background:var(--tkc);position:relative}
+.tk-top{border-radius:20px 20px 0 0;padding:16px 20px 18px;
+  -webkit-mask:radial-gradient(circle 11px at 0 100%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 11px at 100% 100%,#0000 97%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 11px at 0 100%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 11px at 100% 100%,#0000 97%,#000) right/51% 100% no-repeat}
+.tk-top::after{content:"";position:absolute;left:24px;right:24px;bottom:0;border-bottom:2px dashed rgba(255,255,255,.45)}
+.tk-bot{border-radius:0 0 20px 20px;padding:16px 20px 18px;
+  -webkit-mask:radial-gradient(circle 11px at 0 0,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 11px at 100% 0,#0000 97%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 11px at 0 0,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 11px at 100% 0,#0000 97%,#000) right/51% 100% no-repeat}
+.tk-r{display:flex;justify-content:space-between;align-items:center}
+.tk-r small{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.tk-r i{font-style:normal;font-size:11.5px;font-weight:600;background:rgba(255,255,255,.2);border-radius:8px;padding:3px 8px;white-space:nowrap}
+.tk-t{font:500 21px/1.25 var(--serif);margin:12px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-h{font-size:13px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-c{display:flex;justify-content:space-between}
+.tk-c b{display:block;font-weight:600;font-size:17px}.tk-c span{display:block;font-size:12px;opacity:.75;margin-top:2px}
+.tk-c .c{text-align:center}.tk-c .r{text-align:right}
+
+/* full ticket */
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:0 8px 24px rgba(27,36,48,.07);margin-bottom:10px}
+.tc-h{padding:18px 18px 26px;background:var(--tkc);color:#fff;border-radius:22px 22px 0 0;position:relative}
+.tc-h::after{content:"";position:absolute;left:18px;right:18px;bottom:0;border-bottom:2px dashed rgba(255,255,255,.5)}
+.tc-t{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}
+.tc-t b{font:500 21px/1.15 var(--serif);min-width:0}
+.tc-t i{font-style:normal;font-size:11.5px;font-weight:600;color:#fff;background:rgba(255,255,255,.2);border-radius:8px;padding:4px 8px;white-space:nowrap}
+.tc-t i.warn{color:var(--warn);background:var(--warn-soft)}
+.tc-r{display:flex;justify-content:space-between;align-items:flex-start}
+.tc-r b{display:block;font-weight:600;font-size:19px}.tc-r span{display:block;font-size:12.5px;color:rgba(255,255,255,.75);margin-top:2px}
+.tc-r .rt{text-align:right}.tc-r .mid{text-align:center;padding-top:2px}.tc-r .mid>b{font-size:14px;margin-top:4px}
+.ln{display:flex;align-items:center;gap:4px}.ln svg{width:20px;height:20px;color:#fff}.ln u{width:22px;border-top:2px dotted rgba(255,255,255,.55)}
+.tc-cut{position:relative;height:0;margin:0 18px}
+.tc-cut::before,.tc-cut::after{content:"";position:absolute;top:-14px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,var(--tkc) 0 4.5px,transparent 5px),var(--bg);border:2px solid var(--tkc)}
+.tc-cut::before{left:-31px}.tc-cut::after{right:-31px}
+.tc-qr{padding:20px 18px 18px;text-align:center}
+.tc-qr .qrs{width:150px;height:150px;fill:var(--ink);stroke:none}.tc-qr .mut{margin-top:6px}
+.tc-g,.tc-row{display:flex;justify-content:space-between;padding:16px 0;margin:0 18px;border-top:1.5px dashed var(--line)}
+.tc-g b,.tc-row b{display:block;font-weight:600;font-size:16px}.tc-g span,.tc-row span{display:block;font-size:12.5px;color:var(--faint);margin-top:2px}
+.tc-g .r,.tc-row .r{text-align:right}
+.tw{margin-bottom:30px}
+.tact{display:flex;gap:10px}
+.tb{flex:1;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px;color:var(--ink);cursor:pointer;white-space:nowrap}
+.tb svg{width:18px;height:18px;color:var(--acc)}
+.tcancel{text-align:center;color:var(--faint);font-size:13px;text-decoration:underline;text-underline-offset:3px;padding:12px 8px 0;cursor:pointer}
+.tcancel:hover{color:var(--bad)}
+.grp{margin:8px 2px 10px}
+.tlinks{display:flex;justify-content:center;gap:18px;margin-bottom:30px;font-size:13.5px;font-weight:600;color:var(--acc)}
+.tlinks .d{color:var(--bad);font-weight:500}
+
+/* detail */
+.hero{height:260px}
+.hero .ib{position:absolute;top:50px;z-index:3}
+.sheet{position:relative;z-index:2;background:var(--bg);border-radius:24px 24px 0 0;margin-top:-24px;padding:22px 20px 0}
+.tag{display:inline-flex;font-size:12px;font-weight:600;color:var(--acc);background:var(--acc-soft);border-radius:8px;padding:4px 9px;margin-bottom:10px}
+.sheet h1{font-size:30px;margin:0 0 6px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+.fc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.fc small{display:block;color:var(--faint);font-size:11.5px;font-weight:500}.fc b{font-weight:600;font-size:14.5px}
+.who{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:16px}
+.who .stack i{width:34px;height:34px;font-size:12px}
+.quote{border-left:3px solid var(--acc);padding:2px 0 2px 14px;margin:0 0 18px;font:500 17px/1.45 var(--serif)}
+.quote small{display:block;font:500 12.5px Inter;color:var(--mut);margin-top:6px}
+.hostcard{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:16px}
+.hostcard b{font-weight:600;display:flex;gap:5px;align-items:center}
+
+/* checkout */
+.line{display:flex;justify-content:space-between;padding:7px 0;font-size:14px}
+.line.t{border-top:1px solid var(--line);margin-top:6px;padding-top:12px;font-weight:600;font-size:16px}
+.step{display:flex;align-items:center;gap:14px}
+.step i{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;font-style:normal;font-size:18px}
+.pm{display:flex;gap:12px;align-items:center;padding:12px 0}.pm+.pm{border-top:1px solid var(--line)}
+.rad{width:20px;height:20px;border-radius:50%;border:2px solid #C4C9D0;margin-left:auto;flex:none}.rad.on{border:6px solid var(--acc)}
+.pmi{width:42px;height:28px;border-radius:6px;background:#F0EDE8;display:grid;place-items:center;font-size:10px;font-weight:600;color:var(--mut)}
+.secure{display:flex;gap:8px;align-items:center;justify-content:center;font-size:12.5px;color:var(--mut);margin-top:4px}.secure svg{width:16px;height:16px}
+.big-ic{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;margin:0 auto 16px}
+.big-ic svg{width:34px;height:34px;stroke-width:2.2}
+.big-ic.ok{background:var(--ok-soft);color:var(--ok)}.big-ic.bad{background:var(--bad-soft);color:var(--bad)}
+.spin{width:64px;height:64px;border-radius:50%;border:5px solid #E8E3DA;border-top-color:var(--acc);animation:rot 1s linear infinite;margin:0 auto}
+@keyframes rot{to{transform:rotate(360deg)}}
+/* gateway (third-party, neutral) */
+.gw{position:absolute;inset:0;background:#F6F7F9;color:#111;overflow:auto;padding-bottom:110px;font-family:Inter,sans-serif;z-index:10}
+.gw .gh{background:#fff;padding:52px 20px 14px;border-bottom:1px solid #E5E7EB;display:flex;justify-content:space-between;font-weight:600}
+.gw .meth{background:#fff;border:2px solid #E5E7EB;border-radius:14px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;cursor:pointer}
+.gw .meth.on{border-color:#2F6BFF}.gw .meth .r2{width:20px;height:20px;border-radius:50%;border:2px solid #C3C8D1;flex:none}.gw .meth.on .r2{border:6px solid #2F6BFF}
+.gw .gbtn{position:absolute;left:0;right:0;bottom:0;padding:16px 20px 28px;background:#F6F7F9}
+.gw .gbtn button{width:100%;height:50px;border:0;border-radius:10px;background:#2F6BFF;color:#fff;font:600 16px Inter;cursor:pointer}
+
+/* lists */
+.cli{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;cursor:pointer}
+.cli .art,.cli .av{width:48px;height:48px;border-radius:12px;flex:none}
+.cli .av{border-radius:50%}
+.cli .sp{min-width:0}.cli .sp b{display:block;font-weight:600}.cli .sp .mut{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cli .when{font-size:11.5px;color:var(--faint);text-align:right}
+.cli .dotu{display:block;margin:6px 0 0 auto;width:9px;height:9px;border-radius:50%;background:#C9432F}
+.bub{max-width:78%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.35;margin-bottom:4px;width:fit-content}
+.bub.me{margin-left:auto;background:var(--acc);color:#fff;border-bottom-right-radius:5px}
+.bub.them{background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:5px}
+.btime{font-size:10.5px;color:var(--faint);margin:0 6px 12px}.btime.me{text-align:right}
+.stars{font-size:36px;letter-spacing:6px;text-align:center;user-select:none;margin:18px 0}
+.stars span{color:#D8D3CA;cursor:pointer}.stars span.on{color:#D69A2D}
+.ring{width:128px;height:128px;border-radius:50%;display:grid;place-items:center;margin:4px auto 18px}
+.ring div{width:100px;height:100px;border-radius:50%;background:var(--bg);display:grid;place-items:center;text-align:center;font:500 26px/1 var(--serif)}
+.ring small{display:block;font:500 11px Inter;color:var(--mut);margin-top:4px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center}
+.stat b{display:block;font:500 26px/1.1 var(--serif)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.pay{background:var(--acc);color:#fff;border-radius:18px;padding:20px;margin-bottom:12px}
+.pay b{display:block;font:500 38px/1.1 var(--serif);margin:4px 0}
+.cam{position:relative;height:330px;margin:6px 0 16px;border-radius:22px;background:#12161C;overflow:hidden}
+.cam i{position:absolute;width:34px;height:34px;border:0 solid #7FD3C8;border-radius:6px}
+.cam .scanline{position:absolute;left:44px;right:44px;height:2px;background:#7FD3C8;box-shadow:0 0 12px #7FD3C8;animation:scanl 2.2s ease-in-out infinite alternate}
+@keyframes scanl{from{top:60px}to{top:270px}}
+.lockic{width:14px;height:14px;margin-left:4px;color:var(--faint);vertical-align:-2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.ib.on{color:#C9432F}.ib.on svg{fill:#C9432F}
+.bdg{text-decoration:none}
+.fm{position:absolute;inset:0;width:100%;height:100%;stroke:none}
+.pin{position:absolute;transform:translate(-50%,-100%);background:#fff;border:1px solid var(--line);border-radius:14px;padding:5px 10px;font-weight:600;font-size:13px;box-shadow:0 2px 6px rgba(27,36,48,.18);white-space:nowrap;cursor:pointer}
+.pin::after{content:"";position:absolute;left:50%;bottom:-5px;width:9px;height:9px;background:inherit;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:translateX(-50%) rotate(45deg)}
+.pin.bk{background:var(--ink);color:#fff;border-color:var(--ink)}.pin.bk::after{border-color:var(--ink)}
+.pin.sel{background:var(--acc);color:#fff;border-color:var(--acc);font-size:14px;padding:6px 12px;z-index:2}.pin.sel::after{border-color:var(--acc)}
+.mtop{position:absolute;top:52px;left:16px;right:16px;display:flex;gap:10px;z-index:3}
+.mtop .sb,.mtop .ib{box-shadow:0 2px 8px rgba(27,36,48,.12)}
+.mchips{position:absolute;top:104px;left:0;right:0;display:flex;gap:8px;padding:0 16px;overflow-x:auto;scrollbar-width:none;z-index:3}.mchips::-webkit-scrollbar{display:none}
+.mc{height:34px;padding:0 14px;border-radius:17px;background:#fff;border:1px solid var(--line);font-size:13px;font-weight:500;display:inline-flex;align-items:center;white-space:nowrap;box-shadow:0 2px 6px rgba(27,36,48,.1);cursor:pointer;flex:none}
+.mc.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.msearch{position:absolute;top:152px;left:50%;transform:translateX(-50%);background:#fff;border-radius:18px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--acc);box-shadow:0 2px 8px rgba(27,36,48,.18);z-index:3;cursor:pointer;white-space:nowrap}
+.loc2{position:absolute;right:16px;bottom:282px;width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 2px 8px rgba(27,36,48,.2);z-index:3;cursor:pointer}
+.mcard{position:absolute;left:0;right:0;bottom:0;background:var(--bg);border-radius:24px 24px 0 0;padding:10px 16px 34px;box-shadow:0 -6px 24px rgba(27,36,48,.15);z-index:4}
+.grip{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+.mrow{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px;cursor:pointer}
+.mrow .art{width:76px;height:96px;border-radius:12px;flex:none}
+.mrow .tx{flex:1;min-width:0}.mrow .tx b{font:600 16px var(--serif);display:block}
+.mrow .pr{font-weight:600;font-size:16px}.mrow .mut{white-space:nowrap}
+.mbtn{display:flex;gap:10px;margin-top:12px}
+.nav .st{flex:none}
+</style>
+</head>
+<body>
+<div class="cap"><b>KL Local Session · Calm</b><label>Jump to <select id="jump"></select></label></div>
+<div id="wrap"><div class="phone" id="ph">
+  <div id="screen"></div><div id="tabs"></div><div id="modal"></div><div id="toastbox"></div>
+  <div class="status" id="status"><span>9:41</span><span>5G</span></div>
+</div></div>
+<script>
+const $=id=>document.getElementById(id);let SC=1;
+const V='<svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const I={
+ back:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+ bell:'<svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15zM10 20a2 2 0 004 0"/></svg>',
+ pin:'<svg viewBox="0 0 24 24"><path d="M12 21s-6-5.2-6-10a6 6 0 0112 0c0 4.8-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>',
+ search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
+ filter:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>',
+ heart:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/></svg>',
+ tix:'<svg viewBox="0 0 24 24"><path d="M4 8a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg>',
+ chat:'<svg viewBox="0 0 24 24"><path d="M5 6h14a2 2 0 012 2v7a2 2 0 01-2 2h-7l-4 3.5V17H5a2 2 0 01-2-2V8a2 2 0 012-2z"/></svg>',
+ me:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1-4 4-5.5 7-5.5s6 1.5 7 5.5"/></svg>',
+ dash:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>',
+ cal:'<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>',
+ cash:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.7 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5v1.5M12 16v1.5"/></svg>',
+ shield:'<svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg>',
+ lock:'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>',
+ check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+ x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+ send:'<svg viewBox="0 0 24 24"><path d="M12 19V6M6 11l6-6 6 6"/></svg>',
+ plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+ locate:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
+ dots:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>',
+ cam:'<svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'
+};
+
+/* ---------- illustrations ---------- */
+const P={
+ free:['#F3EAD0','<circle cx="300" cy="150" r="70" fill="#E8B74A"/><circle cx="300" cy="150" r="104" fill="none" stroke="#E8B74A" stroke-opacity=".4" stroke-width="2"/><circle cx="300" cy="150" r="140" fill="none" stroke="#E8B74A" stroke-opacity=".22" stroke-width="2"/><path d="M0 230 Q110 170 220 230 T440 230 V300 H0Z" fill="#D9C58E"/>'],
+ move:['#DDEBE4','<circle cx="90" cy="90" r="46" fill="#F3D9A4"/><path d="M0 170 Q60 130 120 170 T240 170 T360 170 T480 170 V300 H0Z" fill="#9CC4B6"/><path d="M0 215 Q60 180 120 215 T240 215 T360 215 T480 215 V300 H0Z" fill="#4F8F86"/><path d="M0 260 Q60 235 120 260 T240 260 T360 260 T480 260 V300 H0Z" fill="#1F5E5B"/>'],
+ meet:['#E1E6F2','<circle cx="150" cy="150" r="90" fill="#7F8FD0" fill-opacity=".75"/><circle cx="240" cy="150" r="90" fill="#F0B7A4" fill-opacity=".8"/><circle cx="195" cy="150" r="28" fill="#fff" fill-opacity=".55"/>'],
+ meet2:['#EEE3EC','<circle cx="130" cy="170" r="80" fill="#C98BB0" fill-opacity=".7"/><circle cx="230" cy="120" r="80" fill="#E8A87C" fill-opacity=".75"/><circle cx="300" cy="190" r="50" fill="#7F8FD0" fill-opacity=".6"/>'],
+ make:['#F3E6DD','<path d="M70 300 V150 a80 80 0 0 1 160 0 V300Z" fill="#D98B6A"/><path d="M110 300 V160 a40 40 0 0 1 80 0 V300Z" fill="#FBF1E8"/><circle cx="300" cy="80" r="26" fill="#C9704F" fill-opacity=".55"/><rect x="250" y="210" width="110" height="90" rx="4" fill="#E9C3AB"/>']
+};
+const TKC={move:'#1F5E5B',make:'#A8553A',meet:'#4B5A9E',free:'#7A6A2B'};
+const CATS=[['make','Make','make'],['move','Move','move'],['meet','Meet','meet'],['free','Free','free']];
+function hydrate(){document.querySelectorAll('[data-art]').forEach(el=>{if(el.querySelector(':scope>svg.bg'))return;const p=P[el.dataset.art];if(!p)return;el.style.background=p[0];el.insertAdjacentHTML('afterbegin','<svg class="bg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">'+p[1]+'</svg>')})}
+const A=(k,cls='',inner='')=>`<div class="${cls}" data-art="${k}">${inner}</div>`;
+function qr(){let s='';for(let y=0;y<13;y++)for(let x=0;x<13;x++){const c=(x<4&&y<4)||(x>8&&y<4)||(x<4&&y>8),r=((x*7+y*13+x*y)%5<2);if(c?((x%3!==1||y%3!==1)&&!(x===1&&y===1)):r)s+=`<rect x="${x*8}" y="${y*8}" width="8" height="8"/>`}return `<svg class="qrs" viewBox="0 0 104 104">${s}</svg>`}
+
+/* ---------- data ---------- */
+const E=(id,t,host,area,d,p,w,date,dshort,start,end,dur,rel,left,going,cap,cats,art,c,day,extra={})=>({id,t,host,area,d,p,w,date,dshort,start,end,dur,rel,left,going,cap,cats,art,c,day,pc:cats.find(x=>x!=='free')||'free',...extra});
+const EV={};[
+ E(1,'Pokémon Trade Night','KLCC Pokémon Club','KLCC',.8,0,'Now','Wed 21 Oct','21 Oct','7:30 PM','10:00 PM','2h 30m','Happening now',null,12,null,['meet','free'],'free',null,'tonight',{live:1,pc:'meet'}),
+ E(2,'Sunset Yoga Deck','Mei Studio','Bangsar',1.9,25,'8:04 PM','Wed 21 Oct','21 Oct','8:04 PM','9:15 PM','1h 11m','in 22 min',5,12,17,['move'],'move','24 hours','tonight',{q:'A relaxed 70-minute beginner flow on the rooftop as the sun goes down. Mats provided, just bring water.',by:'Mei'}),
+ E(3,'Open Mic Night','The Loft Café','Bangsar',1.2,10,'8:20 PM','Wed 21 Oct','21 Oct','8:20 PM','10:00 PM','1h 40m','in 38 min',8,22,30,['meet'],'meet','24 hours','tonight'),
+ E(4,'Salsa Social','Salsa KL','Bangsar',2.1,15,'9:00 PM','Wed 21 Oct','21 Oct','9:00 PM','11:00 PM','2h','in 78 min',14,26,40,['move','meet'],'meet2','24 hours','tonight',{pc:'move'}),
+ E(5,'Late Pottery Drop-in','Clay & Co','Sri Hartamas',3.4,45,'9:15 PM','Wed 21 Oct','21 Oct','9:15 PM','11:15 PM','2h','in 93 min',3,9,12,['make'],'make','48 hours','tonight'),
+ E(6,'Sunrise Hike Bukit Kiara','Kiara Hikers','Bukit Kiara',3.1,0,'Sat 6:30 AM','Sat 24 Oct','24 Oct','6:30 AM','9:30 AM','3h','in 3 days',null,18,null,['move','free','meet'],'move',null,'weekend',{pc:'move'}),
+ E(7,'Bangsar Flea Market','Bangsar Makers','Bangsar',1.5,0,'Sat 10:00 AM','Sat 24 Oct','24 Oct','10:00 AM','4:00 PM','6h','in 3 days',null,40,null,['free','meet'],'free',null,'weekend'),
+ E(8,'Batik Painting Workshop','Batik House','Bangsar',2.2,60,'Sat 2:00 PM','Sat 24 Oct','24 Oct','2:00 PM','5:00 PM','3h','in 3 days',8,2,10,['make'],'make','48 hours','weekend'),
+ E(9,'Sketch & Brunch','Ink & Eggs','Bangsar',.9,38,'Sun 10:30 AM','Sun 25 Oct','25 Oct','10:30 AM','12:30 PM','2h','in 4 days',6,6,12,['make','meet'],'meet2','24 hours','weekend',{pc:'make'}),
+ E(10,'Beginner Mat Pilates','Mei Studio','Bangsar',1.2,30,'Sun 9:00 AM','Sun 25 Oct','25 Oct','9:00 AM','10:00 AM','1h','in 4 days',4,8,12,['move'],'move','24 hours','weekend'),
+ E(11,'Midvalley Night Market','Midvalley Mall','Mid Valley',4.5,0,'Until 11 PM','Wed 21 Oct','21 Oct','7:00 PM','11:00 PM','4h','Happening now',null,60,null,['free','meet'],'free',null,'tonight',{live:1,pc:'meet'}),
+ E(12,'Supper Run Club','KL Run Crew','Bangsar',1,0,'11:00 PM','Wed 21 Oct','21 Oct','11:00 PM','12:00 AM','1h','in 3h 18m',null,15,null,['free','move','meet'],'move',null,'tonight',{pc:'move'}),
+ E(13,'Midnight Board Games','Game Haus','PJ',2.4,12,'10:30 PM','Wed 21 Oct','21 Oct','10:30 PM','1:00 AM','2h 30m','in 2h 48m',6,10,16,['meet'],'meet','24 hours','tonight')
+].forEach(e=>EV[e.id]=e);
+const ALL=Object.values(EV);
+const PIN={1:[120,290],2:[250,262],3:[300,390],4:[320,500],5:[90,440],11:[210,470],12:[150,530],13:[60,350]};
+const price=e=>e.p?`RM${e.p}`:'Free';
+const pol=e=>e.c?`Full refund up to ${e.c} before it starts.`:'Free to join. Cancel any time.';
+const polTitle=e=>e.c?'Free cancellation':'Free event';
+const COLS=['#C9704F','#4F8F86','#6C7BC0','#B58A3C','#8E6BA8'];
+const stk=(n=3,pre='')=>`<div class="stack">${[0,1,2,3,4].slice(0,n).map(i=>`<i style="background:${COLS[i]}">${I.me}</i>`).join('')}</div>`;
+const initials=s=>s[0];
+
+/* ---------- state ---------- */
+const st={screen:'home',hist:[],modal:null,signed:true,ev:2,people:2,method:0,cat:null,q:'',bk:0,rating:4,
+ saved:new Set([6,10]),mapSel:2,mapCat:'all',cap:12,hev:2,scanned:0,area:'Bangsar',tab:'att',allCat:null,
+ notif:{chat:1,review:1},after:null,why:'join',pending:null,
+ bookings:[
+  {id:'b1',ev:2,spots:2,code:'JOM-7K2Q-48XD',paid:50,pay:'FPX · Maybank',status:'ok'},
+  {id:'b2',ev:8,spots:2,code:'JOM-3M9F-21AB',paid:120,pay:'Card · Visa 2462',status:'ok'}],
+ past:[{t:'Pottery Wheel Basics',art:'make',host:'Clay & Co',date:'Fri 9 Oct',status:'attended'},{t:'Salsa Social',art:'meet2',host:'Salsa KL',date:'Sat 3 Oct',status:'cancelled'}],
+ msgs:{chat:[['me','Hi! Is this okay for a complete beginner?','9:12 AM'],['them','Hi Aina! Totally. Everything is beginner-friendly.','9:20 AM'],['me','Do I need to bring my own mat?','9:21 AM'],['them','Yes, mats are provided 🙂 Just wear something comfy.','9:24 AM']],
+       hchat:[['them','Hi! Is this okay for a complete beginner?','9:12 AM'],['me','Hi Aina! Totally. Everything is beginner-friendly.','9:20 AM'],['them','Do I need to bring my own mat?','9:21 AM']]}};
+
+/* ---------- shared components ---------- */
+const nav=(t,r='',noBack=false)=>`<div class="nav">${noBack?'<span class="sp0"></span>':`<span class="ib" data-back>${I.back}</span>`}<b>${t}</b>${r||'<span class="sp0"></span>'}</div>`;
+const hostLine=e=>`<div class="host"><span>${e.host}</span>${V}</div>`;
+const cancelBadge=e=>e.c?'<span class="ok" style="font-size:12px">✓ Free cancellation</span>':'';
+const badgeFor=e=>e.live?'<span class="badge live"><i></i>Happening now</span>':`<span class="badge">${e.day==='tonight'?e.rel:e.w}</span>`;
+const heart=e=>`<span class="heart ${st.saved.has(e.id)?'on':''}" data-fav="${e.id}">${I.heart}</span>`;
+const listRow=e=>`<div class="lr" data-ev="${e.id}">${A(e.art,'art')}<div class="tx"><b>${e.t}</b>${hostLine(e)}<div class="ft"><span>${e.w} · ${e.d} km</span><span class="p">${price(e)}</span></div></div></div>`;
+const carCard=e=>`<div class="cc" data-ev="${e.id}">${A(e.art,'art',badgeFor(e)+heart(e))}<div class="bd"><h4>${e.t}</h4>${hostLine(e)}<div class="ft">${stk(3)}<span><b>${price(e)}</b>${e.left!=null?' · '+e.left+' left':' · '+e.going+' going'}</span></div></div></div>`;
+const rel=b=>EV[b.ev].day==='tonight'?'Today':'';
+
+function homeTicket(b){const e=EV[b.ev];const lab=e.day==='tonight'?'Your ticket · Today':'Your ticket';
+ return `<div class="tk" style="--tkc:${TKC[e.pc]}" data-go="bookings"><div class="tk-top"><div class="tk-r"><small>${lab}</small><i>${b.status==='processing'?'Processing':e.rel}</i></div><div class="tk-t">${e.t}</div><div class="tk-h">${e.host} · ${e.area}</div></div><div class="tk-bot"><div class="tk-c"><div><b>${e.dshort}</b><span>Date</span></div><div class="c"><b>${e.start}</b><span>Start time</span></div><div class="r"><b>${b.spots}</b><span>Spots</span></div></div></div></div>`}
+
+function fullTicket(b){const e=EV[b.ev],proc=b.status==='processing';
+ return `<div class="tcard" style="--tkc:${TKC[e.pc]}"><div class="tc-h"><div class="tc-t"><b>${e.t}</b><i class="${proc?'warn':''}">${proc?'Processing':'✓ Confirmed'}</i></div>
+ <div class="tc-r"><div><b>${e.start}</b><span>Starts</span></div><div class="mid"><div class="ln"><u></u>${I.tix}<u></u></div><b>${e.dur}</b></div><div class="rt"><b>${e.end}</b><span>Ends</span></div></div></div>
+ <div class="tc-cut"></div>
+ <div class="tc-qr">${proc?'<div class="mut" style="padding:34px 10px">Your QR code appears here as soon as the payment clears.</div>':qr()+'<div class="mut">Show this at the entrance</div>'}</div>
+ <div class="tc-g"><div><b>${e.date}</b><span>Date</span></div><div class="r"><b>${b.spots}</b><span>Spots</span></div></div>
+ <div class="tc-row"><div><b>Aina</b><span>Attendee</span></div><div class="r"><b>${b.code.slice(0,8)}</b><span>Booking code</span></div></div>
+ <div class="tc-row"><div><b style="display:flex;gap:5px;align-items:center">${e.host} ${V}</b><span>Host</span></div><div class="r"><b>${e.area}</b><span>Area</span></div></div>
+ <div class="tc-row" style="margin-bottom:6px"><div><b>${b.pay}</b><span>Payment method</span></div><div class="r"><b>${b.paid?'RM'+b.paid.toFixed(2):'Free'}</b><span>Price paid</span></div></div></div>
+ <div class="tw"><div class="tact"><span class="tb" data-toast="Opens Apple / Google Maps">${I.pin}Directions</span><span class="tb" data-toast="Added to your calendar">${I.cal}Add to calendar</span></div>${e.c?`<div class="tcancel" data-modal="cancel" data-bk="${b.id}">Cancel booking</div>`:''}</div>`}
+
+/* ================= attendee screens ================= */
+const S={};
+const nearList=()=>ALL.filter(e=>(!st.cat||e.cats.includes(st.cat))&&(!st.q||(e.t+' '+e.host+' '+e.area).toLowerCase().includes(st.q.toLowerCase()))).sort((a,b)=>a.d-b.d);
+const nearHTML=()=>{const L=nearList();return L.length?L.slice(0,4).map(listRow).join(''):'<div class="empty">Nothing matches yet. Try another word or category.</div>'};
+const MAPSVG=`<rect width="390" height="844" fill="#EFEBE3"/><path d="M-20 560 C90 620 160 480 260 560 S380 640 420 560" fill="none" stroke="#BFD9E6" stroke-width="26" stroke-linecap="round"/><ellipse cx="80" cy="180" rx="70" ry="44" fill="#D3E5CC"/><ellipse cx="330" cy="140" rx="50" ry="34" fill="#D3E5CC"/><ellipse cx="60" cy="700" rx="60" ry="40" fill="#D3E5CC"/><g stroke="#fff" stroke-width="10" fill="none"><path d="M0 300 L390 260"/><path d="M130 100 L190 844"/><path d="M290 100 C270 300 320 500 290 844"/></g><g stroke="#fff" stroke-width="4" fill="none"><path d="M0 440 L390 480"/><path d="M60 100 L30 844"/><path d="M360 100 L370 844"/><path d="M0 700 L390 660"/><path d="M0 200 L390 190"/></g><g font-family="Inter" font-size="11" font-weight="600" fill="#8A94A1"><text x="40" y="330">Bangsar</text><text x="230" y="150">KLCC</text><text x="240" y="610">Mid Valley</text></g><circle cx="190" cy="360" r="22" fill="#2F6BFF" fill-opacity=".15"/><circle cx="190" cy="360" r="7" fill="#2F6BFF" stroke="#fff" stroke-width="3"/>`;
+const MINIMAP=`<svg class="m" viewBox="0 0 350 170" preserveAspectRatio="xMidYMid slice"><rect width="350" height="170" fill="#EFEBE3"/><path d="M-10 120 C80 150 140 80 230 125 S330 150 370 110" fill="none" stroke="#BFD9E6" stroke-width="16" stroke-linecap="round"/><ellipse cx="70" cy="45" rx="48" ry="26" fill="#D3E5CC"/><ellipse cx="290" cy="40" rx="36" ry="20" fill="#D3E5CC"/><g stroke="#fff" stroke-width="7" fill="none"><path d="M0 80 L350 60"/><path d="M110 0 L150 170"/><path d="M250 0 C235 70 270 110 250 170"/></g><g stroke="#fff" stroke-width="3" fill="none"><path d="M0 130 L350 150"/><path d="M40 0 L20 170"/><path d="M320 0 L330 170"/></g><g fill="#1F5E5B" stroke="#fff" stroke-width="2.5"><circle cx="130" cy="70" r="9"/><circle cx="205" cy="52" r="9"/><circle cx="260" cy="95" r="9"/><circle cx="90" cy="110" r="9"/></g><circle cx="175" cy="92" r="6" fill="#2F6BFF" stroke="#fff" stroke-width="3"/></svg>`;
+
+S.home={tab:'att',html(){
+ const bks=st.signed?st.bookings:[],wk=ALL.filter(e=>e.day==='weekend');
+ return `<div class="scroll tabbed">
+ <div class="top"><span class="loc" data-modal="area">${I.pin}${st.area}, KL ▾</span><span class="ib" data-go="notifs">${I.bell}<span class="bdg">3</span></span></div>
+ <div class="eye">Wed 21 Oct · 7:42 PM</div><h1>Tonight in ${st.area}</h1>
+ ${bks.length?`<div class="tkrow">${bks.map(homeTicket).join('')}</div>`:''}
+ <div class="search"><div class="sb">${I.search}<input id="q" value="${st.q}" placeholder="Search events, hosts, places"></div><span class="ib" data-modal="filter">${I.filter}</span></div>
+ <div class="cats">${CATS.map(([k,l,a])=>`<div class="cat ${st.cat===k?'on':''}" data-cat="${k}">${A(a,'art')}${l}</div>`).join('')}</div>
+ <div class="sech"><h2>This weekend</h2><span class="more" data-go="all" data-allcat="">View all ›</span></div>
+ <div class="car">${wk.map(carCard).join('')}</div>
+ <div class="sech"><h2>On the map</h2><span class="more" data-go="map">Open map ›</span></div>
+ <div class="mapcard" data-go="map">${MINIMAP}<span class="mb">5 events within 2 km</span><span class="mo">Open map</span></div>
+ <div class="sech"><h2>Near you</h2><span class="more" data-go="all" data-allcat="${st.cat||''}">View all ›</span></div>
+ <div id="nearlist">${nearHTML()}</div>
+ <div class="all" data-go="all" data-allcat="${st.cat||''}">View all ${ALL.length} events</div></div>`}};
+
+S.all={html(){const L=ALL.filter(e=>!st.allCat||e.cats.includes(st.allCat)).sort((a,b)=>a.d-b.d);
+ return `<div class="scroll">${nav('All events')}
+ <div class="chips" style="margin-bottom:16px"><span class="chip ${!st.allCat?'on':''}" data-allfilter="">All</span>${CATS.map(([k,l])=>`<span class="chip ${st.allCat===k?'on':''}" data-allfilter="${k}">${l}</span>`).join('')}</div>
+ <div class="mut" style="margin-bottom:12px">${L.length} events · nearest first</div>${L.map(listRow).join('')}</div>`}};
+
+S.detail={hero:true,html(){const e=EV[st.ev],free=!e.p,sv=st.saved.has(e.id);
+ return `<div class="scroll nopad">${A(e.art,'hero',`<span class="ib gl" data-back style="left:20px">${I.back}</span><span class="ib gl ${sv?'on':''}" data-fav="${e.id}" style="right:20px">${I.heart}</span>`)}
+ <div class="sheet"><span class="tag">${e.live?'Happening now':CATS.find(c=>c[0]===e.pc)[1]+' · '+(e.day==='tonight'?e.rel:e.w)}</span>
+ <h1>${e.t}</h1>
+ <div class="host" style="font-size:13.5px" data-go="hostpub">Hosted by ${e.host} ${V} <span style="color:var(--acc);font-weight:500;overflow:visible">Verified host</span></div>
+ <div class="facts"><div class="fc"><small>When</small><b>${e.day==='tonight'?'Today':e.date.split(' ')[0]} ${e.start}</b></div><div class="fc"><small>Where</small><b>${e.area} · ${e.d} km</b></div></div>
+ <div class="who">${stk(4)}<div><b style="font-weight:600">${e.going} going</b><div class="mut">${e.left!=null?e.left+' spots left':'Open to everyone'}</div></div></div>
+ <div class="policy ${e.c?'':'neutral'}">${I.shield}<div><b>${polTitle(e)}</b><span>${pol(e)}</span></div></div>
+ <div class="quote">${e.q||'A relaxed, beginner-friendly session. Everything you need is provided, just bring yourself.'}<small>— ${e.by||e.host}, your host</small></div>
+ <div class="hostcard" data-go="hostpub"><div class="av">${initials(e.host)}</div><div style="flex:1"><b>${e.host} ${V}</b><span class="mut">4.8 · 36 reviews · 38 events hosted</span></div><span class="btn sec sm" data-chat>Message</span></div>
+ </div></div>
+ <div class="cta"><div class="tot"><small>${free?'Entry':'Per person'}</small><b>${price(e)}</b></div><button class="btn" data-join>${free?'Join for free':'Book a spot'}</button></div>`}};
+
+S.checkout={html(){const e=EV[st.ev],sub=e.p*st.people,tot=sub;
+ return `<div class="scroll">${nav('Review and pay')}
+ <div class="card row">${A(e.art,'',``).replace('class=""','class="" style="width:56px;height:56px;border-radius:12px;flex:none"')}<div class="sp"><b style="font-weight:600">${e.t}</b><div class="mut">${e.date} · ${e.start} · ${e.host}</div></div></div>
+ ${e.p?`<div class="center" style="margin:0 0 14px"><span class="st warn">Spot held for 14:32</span></div>`:''}
+ <div class="card"><div class="step"><div style="flex:1"><b style="font-weight:600">${e.p?'Spots':'People'}</b><div class="mut">Up to 2 per booking</div></div><i data-act="pm">−</i><b style="min-width:14px;text-align:center;font-weight:600">${st.people}</b><i data-act="pp">+</i></div></div>
+ <div class="card row"><div class="sp"><div class="mut">Contact</div><b style="font-weight:600">Aina Rahman</b><div class="mut">+60 12-345 6789</div></div><span class="mut">Edit</span></div>
+ <h2 style="margin:18px 0 8px">Price details</h2>
+ <div class="card">${e.p?`<div class="line"><span>${price(e)} × ${st.people} ${st.people>1?'spots':'spot'}</span><span>RM${sub.toFixed(2)}</span></div><div class="line t"><span>Total (MYR)</span><span>RM${tot.toFixed(2)}</span></div><div class="mut" style="margin-top:4px">No booking fees. You pay the price you see.</div>`:`<div class="line t" style="border:0;margin:0;padding:0"><span>Total</span><span>Free</span></div>`}</div>
+ <div class="policy ${e.c?'':'neutral'}">${I.shield}<div><b>${e.c?'Free cancellation until '+e.date.split(' ')[0]+', 8:04 AM':'Free event'}</b><span>${e.c?`You'd get RM${tot.toFixed(2)} back to your original payment method.`:'You can cancel any time.'}</span></div></div></div>
+ <div class="cta"><div class="tot"><small>Total</small><b>${e.p?'RM'+tot.toFixed(2):'Free'}</b></div><button class="btn" data-checkout>${e.p?'Pay RM'+tot.toFixed(2):'Confirm my spot'}</button></div>`}};
+
+S.gw={gw:true,hero:true,html(){const e=EV[st.ev],tot=e.p*st.people;
+ const M=[['FPX','Online banking','Maybank2u · CIMB Clicks · Public Bank'],['CARD','Credit / debit card','Visa · Mastercard'],['E-WAL','E-wallet','Touch ’n Go · GrabPay · Boost · ShopeePay'],['QR','DuitNow QR','Scan with any banking app']];
+ return `<div class="gw"><div class="gh"><span>🔒 Secure payment</span><span style="opacity:.5;font-weight:500">gateway</span></div><div style="padding:20px"><div style="color:#6b7280;font-size:13px">Paying KL Local Session</div><div style="font:600 34px Inter;margin:2px 0">RM${tot.toFixed(2)}</div><div style="color:#6b7280;font-size:13px;margin-bottom:18px">Ref KLS-4821</div>
+ ${M.map((m,i)=>`<div class="meth ${st.method===i?'on':''}" data-method="${i}"><span class="r2"></span><div><b style="font-weight:600">${m[1]}</b><div style="color:#6b7280;font-size:12px">${m[2]}</div></div></div>`).join('')}
+ <div style="color:#6b7280;font-size:12px;margin-top:10px">Methods shown are whatever the gateway offers. Session expires in 09:41.</div></div>
+ <div class="gbtn"><button data-go="processing">Pay RM${tot.toFixed(2)}</button></div></div>`}};
+
+S.processing={html(){return `<div class="scroll" style="padding-top:190px"><div class="spin"></div><h3 class="center" style="margin-top:28px">Confirming your payment</h3><p class="center mut" style="margin:6px 24px">Please don't close the app or pay again. This takes a few seconds.</p><div class="center" style="margin-top:14px"><span class="st">KLS-4821 · Processing</span></div>
+ <div class="card" style="margin-top:46px"><div class="mut" style="margin-bottom:10px">Prototype: simulate the gateway result</div><div class="row"><span class="btn sec sm" data-res="ok">✓ Success</span><span class="btn sec sm" data-res="fail">✕ Failed</span><span class="btn sec sm" data-res="delay">… Delayed</span></div></div></div>`}};
+
+S.failed={html(){return `<div class="scroll" style="padding-top:170px"><div class="big-ic bad">${I.x}</div><h3 class="center">Payment didn't go through</h3><p class="center mut" style="margin:8px 24px">Your spot is held for another 06:12. If any money left your account, it's refunded automatically.</p></div>
+ <div class="cta stack"><button class="btn" data-go="gw">Try again</button><button class="btn link" data-go="home">Give up</button></div>`}};
+
+S.confirmed={html(){const b=st.last||st.bookings[0];return `<div class="scroll"><div class="center" style="padding-top:6px;margin-bottom:18px"><div class="big-ic ok">${I.check}</div><h1 style="margin:0 0 4px">You're booked</h1><div class="mut">Confirmation sent to your email</div></div>${fullTicket(b)}</div>
+ <div class="cta"><button class="btn" data-go="home">Done</button></div>`}};
+
+const groupHTML=L=>{const g={};[...L].sort((a,b)=>(EV[a.ev].day==='tonight'?0:1)-(EV[b.ev].day==='tonight'?0:1)).forEach(b=>{const e=EV[b.ev],k=e.day==='tonight'?'Today · '+e.date:e.date;(g[k]=g[k]||[]).push(b)});return Object.entries(g).map(([k,l])=>`<div class="eye grp">${k}</div>${l.map(fullTicket).join('')}`).join('')};
+S.bookings={tab:'att',html(){
+ const up=st.signed?st.bookings:[];
+ const prev=st.past.map(p=>`<div class="cli" ${p.status==='attended'?'data-go="review"':''}>${A(p.art,'art')}<div class="sp"><b>${p.t}</b><div class="mut">${p.host} · ${p.date}</div></div><span class="st ${p.status==='attended'?'ok':''}">${p.status==='attended'?'Attended':'Cancelled'}</span></div>`).join('');
+ return `<div class="scroll tabbed"><h1 style="margin:2px 0 14px;font-size:30px">Tickets</h1>
+ <div class="seg"><span class="${st.bk===0?'on':''}" data-seg="0">Upcoming</span><span class="${st.bk===1?'on':''}" data-seg="1">Previous</span></div>
+ ${st.bk===0?(up.length?groupHTML(up):'<div class="empty">No upcoming tickets.<br>Find something to do tonight.<div style="margin-top:14px"><span class="btn sm" data-go="home" style="display:inline-flex">Explore events</span></div></div>'):prev+'<div class="mut center" style="margin-top:6px">Tap an attended event to write a review</div>'}</div>`}};
+
+S.saved={tab:'att',html(){const L=ALL.filter(e=>st.saved.has(e.id));return `<div class="scroll tabbed"><h1 style="margin:2px 0 16px;font-size:30px">Saved</h1>${L.length?L.map(listRow).join(''):'<div class="empty">Nothing saved yet.<br>Tap the heart on an event to keep it here.</div>'}</div>`}};
+
+const THREADS=[['chat',2,'Mei Studio','Yes, mats are provided 🙂 Just wear…','9:24 AM',1],['chat',5,'Clay & Co','Starts 9:15 PM sharp, see you there!','Yesterday',0],['chat',4,'Salsa KL','Thanks for coming last week!','Fri',0]];
+S.chats={tab:'att',html(){return `<div class="scroll tabbed"><h1 style="margin:2px 0 4px;font-size:30px">Chat</h1><div class="mut" style="margin-bottom:16px">Ask a host before you book.</div>
+ ${THREADS.map(([g,id,t,sub,w,u])=>`<div class="cli" data-go="chat">${A(EV[id].art,'art')}<div class="sp"><b>${t}</b><div class="mut">${sub}</div></div><div><div class="when">${w}</div>${u?'<i class="dotu"></i>':''}</div></div>`).join('')}</div>`}};
+const thread=(key,who,sub)=>{const e=EV[2];return `<div class="scroll" id="thr">${nav(who,'<span class="mut" style="width:62px;text-align:right">'+sub+'</span>')}
+ <div class="card row">${A(e.art,'',``).replace('class=""','class="" style="width:48px;height:48px;border-radius:10px;flex:none"')}<div class="sp"><b style="font-weight:600">${e.t}</b><div class="mut">${e.date} · ${e.start} · ${e.area}</div></div></div>
+ <div class="soft" style="font-size:12px">Keep the chat in Jom. Phone numbers and social handles can't be shared here.</div>
+ ${st.msgs[key].map(([w,t,tm])=>`<div class="bub ${w}">${t}</div><div class="btime ${w==='me'?'me':''}">${tm}</div>`).join('')}</div>
+ <div class="cta"><div class="fld" style="flex:1;margin:0;border-radius:24px;padding:11px 16px"><input id="msg" placeholder="Message ${key==='chat'?'Mei Studio':'Aina'}…"></div><span class="ib" data-send="${key}" style="background:var(--acc);color:#fff;border:0;width:46px;height:46px;border-radius:50%">${I.send}</span></div>`};
+S.chat={html(){return thread('chat','Mei Studio','Host')}};
+
+S.notifs={html(){const N=[['Booking confirmed','Sunset Yoga Deck · Today, 8:04 PM','2 min ago',1],['Mei Studio replied','Yes, mats are provided 🙂 Just wear something comfy.','1 h ago',1],['Payment is still processing','Late Pottery Drop-in. We will tell you when it clears.','Yesterday',1],['Event cancelled, refunded','Salsa Social was cancelled by the host. RM25 is on its way back (3–7 working days).','Mon',0]];
+ const T=[['Booking and payment updates','Always on',1,1],['New chat messages','',st.notif.chat,0,'chat'],['Event changes and cancellations','Always on',1,1],['Review requests','',st.notif.review,0,'review']];
+ return `<div class="scroll">${nav('Notifications')}${N.map(([t,d,w,u])=>`<div class="card row" style="align-items:flex-start"><div class="sp"><b style="font-weight:600">${t}</b><div class="mut">${d}</div><div class="mut" style="font-size:11px;margin-top:4px">${w}</div></div>${u?'<span style="width:9px;height:9px;border-radius:50%;background:#C9432F;margin-top:6px"></span>':''}</div>`).join('')}
+ <div class="eye" style="margin:20px 2px 10px">Show me</div>
+ ${T.map(([t,n,on,lock,k])=>`<div class="card row ${on?'on':''}" ${lock?'':`data-sw="${k}"`}><div class="sp"><b style="font-weight:600">${t}</b>${n?`<div class="mut">${n}</div>`:''}</div><span class="sw ${on?'on':''}"></span></div>`).join('')}
+ <div class="mut" style="margin:8px 2px">Notifications show inside Jom only. We don't send push notifications yet.</div></div>`}};
+
+S.review={html(){const p=st.past[0];return `<div class="scroll">${nav('Review')}<div class="card row">${A(p.art,'',``).replace('class=""','class="" style="width:56px;height:56px;border-radius:12px;flex:none"')}<div class="sp"><b style="font-weight:600">${p.t}</b><div class="mut">${p.date} · ${p.host}</div></div></div>
+ <div class="stars">${[1,2,3,4,5].map(i=>`<span class="${i<=st.rating?'on':''}" data-star="${i}">★</span>`).join('')}</div>
+ <div class="chips" style="justify-content:center;margin-bottom:16px"><span class="chip on" data-chk>Friendly host</span><span class="chip" data-chk>Good value</span><span class="chip on" data-chk>Beginner-friendly</span><span class="chip" data-chk>Clean venue</span></div>
+ <div class="fld"><label>Your review</label><textarea rows="3" placeholder="What was it like?"></textarea></div><div class="mut center">✓ Verified attendee</div></div>
+ <div class="cta"><button class="btn" data-submit-review>Submit review</button></div>`}};
+
+S.hostpub={hero:true,html(){const h=EV[2];return `<div class="scroll nopad">${A('move','hero',`<span class="ib gl" data-back style="left:20px">${I.back}</span>`).replace('class="hero"','class="hero" style="height:200px"')}
+ <div class="sheet center"><div class="av" style="width:84px;height:84px;font-size:32px;margin:-68px auto 10px;border:4px solid var(--bg);font-family:var(--serif)">M</div><h2 style="font-size:24px;display:flex;gap:6px;align-items:center;justify-content:center">Mei Studio ${V}</h2><div class="mut">Bangsar · hosting since 2026 · Verified host</div>
+ <div class="facts" style="grid-template-columns:repeat(3,1fr)"><div class="fc center"><b style="font:500 22px var(--serif)">4.8</b><small>rating</small></div><div class="fc center"><b style="font:500 22px var(--serif)">36</b><small>reviews</small></div><div class="fc center"><b style="font:500 22px var(--serif)">120</b><small>guests</small></div></div>
+ <div style="text-align:left"><div class="sech"><h2>Coming up</h2></div><div class="car">${[EV[2],EV[10]].map(carCard).join('')}</div>
+ <div class="sech"><h2>What people said</h2></div>
+ <div class="card"><div style="color:#D69A2D;letter-spacing:2px">★★★★★</div><p style="font:500 15px/1.45 var(--serif);margin:6px 0 8px">“Small group, kind teacher, and the sunset was unreal. Felt safe walking in alone.”</p><div class="mut"><b style="color:var(--ink);font-weight:600">Nadia</b> · <span class="ok">✓ Attended</span></div></div></div></div></div>`}};
+
+S.profile={tab:'att',html(){return `<div class="scroll tabbed"><h1 style="margin:2px 0 18px;font-size:30px">Profile</h1>
+ <div class="center" style="margin-bottom:20px"><div class="av" style="width:84px;height:84px;font:500 32px var(--serif);margin:0 auto 10px">A</div><b style="font:500 22px var(--serif)">${st.signed?'Aina Rahman':'Guest'}</b><div class="mut">${st.signed?'+60 12-345 6789':'Sign in to book and chat'}</div></div>
+ ${['My reviews','Notifications','Help & support','Terms & privacy'].map(x=>`<div class="card row" ${x==='Notifications'?'data-go="notifs"':'data-toast="Not in this prototype"'}><span class="sp">${x}</span><span class="mut">›</span></div>`).join('')}
+ <div class="card row" data-go="hdash" style="margin-top:14px;background:var(--acc);border-color:var(--acc);color:#fff"><div class="sp"><b>Switch to Host mode</b><div style="font-size:12.5px;opacity:.85">Run your own events</div></div><b>→</b></div>
+ <div class="center"><span class="btn link" style="display:inline-flex;width:auto;padding:0 12px" data-signout>${st.signed?'Sign out':'Sign in'}</span></div></div>`}};
+
+S.map={hero:true,html(){
+ const vis=ALL.filter(e=>PIN[e.id]&&(st.mapCat==='all'||e.cats.includes(st.mapCat)||(st.mapCat==='tonight'&&e.day==='tonight')));
+ if(!vis.find(e=>e.id===st.mapSel)&&vis.length)st.mapSel=vis[0].id;
+ const sel=EV[st.mapSel];const booked=id=>st.signed&&st.bookings.some(b=>b.ev===id);
+ const pins=vis.map(e=>`<div class="pin ${e.id===st.mapSel?'sel':''} ${booked(e.id)?'bk':''}" data-pin="${e.id}" style="left:${PIN[e.id][0]}px;top:${PIN[e.id][1]}px">${booked(e.id)?'✓ Booked':price(e)}</div>`).join('');
+ const chips=[['all','All'],['make','Make'],['move','Move'],['meet','Meet'],['free','Free'],['tonight','Tonight']];
+ return `<svg class="fm" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice">${MAPSVG}</svg>${pins}
+ <div class="mtop"><span class="ib" data-back>${I.back}</span><div class="sb" style="color:var(--ink);font-weight:500">${st.area}, KL</div><span class="ib" data-modal="filter">${I.filter}</span></div>
+ <div class="mchips">${chips.map(([k,l])=>`<span class="mc ${st.mapCat===k?'on':''}" data-mapcat="${k}">${l}</span>`).join('')}</div>
+ <div class="msearch" data-toast="Searching this area…">Search this area</div>
+ <div class="loc2" data-toast="Centered on you">${I.locate}</div>
+ ${sel?`<div class="mcard"><div class="grip"></div><div class="mrow" data-ev="${sel.id}">${A(sel.art,'art')}<div class="tx"><span class="tag" style="margin-bottom:4px">${sel.live?'Happening now':sel.rel}</span><b>${sel.t}</b>${hostLine(sel)}<div class="mut" style="margin-top:2px">${sel.w} · ${sel.d} km ${sel.c?'· <span class="ok">✓ Free cancel</span>':''}</div></div><div class="pr">${price(sel)}</div></div>
+ <div class="mbtn"><span class="btn sec" data-toast="Opens Apple / Google Maps">Directions</span><span class="btn" data-ev="${sel.id}">View event</span></div><div class="mut" style="text-align:center;margin-top:10px">${vis.length} events in this area</div></div>`:'<div class="mcard"><div class="grip"></div><div class="empty">No events match this filter.</div></div>'}`}};
+
+/* ================= host screens ================= */
+const lockI=`<span class="lockic">${I.lock}</span>`;
+S.hdash={tab:'host',html(){const e=EV[2];return `<div class="scroll tabbed"><div class="top" style="margin-bottom:16px"><div><div class="mut">Good evening</div><h1 style="margin:0;font-size:30px">Mei Studio</h1></div><span class="st acc">HOST</span></div>
+ <div class="pay" data-go="hpay"><small style="opacity:.8">Upcoming payout</small><b>RM318.60</b><small style="opacity:.85">Wed 21 Oct → Maybank ••4821</small></div>
+ <div class="card"><div class="row" data-hev="2">${A(e.art,'',``).replace('class=""','class="" style="width:56px;height:56px;border-radius:12px;flex:none"')}<div class="sp"><div class="eye">Next event</div><b style="font-weight:600">${e.t}</b><div class="mut">Today ${e.start}</div></div></div>
+ <div class="bar"><i style="width:${Math.round(e.going/e.cap*100)}%"></i></div><div class="mut">${e.going} of ${e.cap} paid · ${e.left} spots left</div>
+ <div class="grid2" style="margin:12px 0 0"><span class="btn sec sm" style="width:100%" data-go="hbook">Guest list</span><span class="btn sm" style="width:100%" data-go="hscan">${I.cam} Scan</span></div></div>
+ <div class="grid2"><div class="stat"><b>14</b><span class="mut">bookings this week</span></div><div class="stat"><b>4.8 ★</b><span class="mut">average rating</span></div></div></div>
+ <div class="cta above"><button class="btn" data-go="hcreate">${I.plus} New event</button></div>`}};
+
+S.hevents={tab:'host',html(){const L=[[EV[2],'Today',1],[EV[10],'Sun 25 Oct',0]];const seg=st.hseg||1;
+ const D=[['Sunset Yoga Deck · next Saturday','Draft','make'],['Candle Making Night','Draft','make']],X=[['Beginner Mat Pilates · 11 Oct','Ended','move'],['Sketch & Brunch · 4 Oct','Ended','meet2']];
+ const list=seg===1?L.map(([e,d,f])=>`<div class="cli" data-hev="${e.id}">${A(e.art,'art')}<div class="sp"><b>${e.t}</b><div class="mut">${d} · ${e.start}</div></div><span class="st ${f?'':'ok'}">${e.going} / ${e.cap} paid</span></div>`).join(''):(seg===0?D:X).map(([t,s,a])=>`<div class="cli">${A(a==='make'?'make':a,'art')}<div class="sp"><b>${t}</b><div class="mut">${s}</div></div><span class="st">${s}</span></div>`).join('');
+ return `<div class="scroll tabbed"><h1 style="margin:2px 0 14px;font-size:30px">Events</h1><div class="seg">${['Draft','Published','Ended'].map((l,i)=>`<span class="${seg===i?'on':''}" data-hseg="${i}">${l}</span>`).join('')}</div>${list}</div>
+ <div class="cta above"><button class="btn" data-go="hcreate">${I.plus} New event</button></div>`}};
+
+S.hevent={hero:true,html(){const e=EV[st.hev],paid=e.going,gross=paid*e.p,full=paid>=e.cap,chk=e.id===2?5:0;
+ return `<div class="scroll nopad">${A(e.art,'hero',`<span class="ib gl" data-back style="left:20px">${I.back}</span>`).replace('class="hero"','class="hero" style="height:190px"')}
+ <div class="sheet"><div class="row" style="justify-content:space-between;margin-bottom:6px"><span class="st ok">Published</span><span class="st ${full?'ok':''}">${paid} / ${e.cap} paid</span></div>
+ <h1 style="font-size:28px">${e.t}</h1><div class="mut">${e.date} · ${e.start} – ${e.end}<br>${e.area} · Jalan Telawi 3</div>
+ <div class="bar" style="margin-top:14px"><i style="width:${Math.round(paid/e.cap*100)}%"></i></div><div class="mut">${full?'Full':e.cap-paid+' spots left'}</div>
+ <div class="facts" style="grid-template-columns:repeat(3,1fr)"><div class="fc center"><b>${paid}</b><small>joined</small></div><div class="fc center"><b>${chk}</b><small>checked in</small></div><div class="fc center"><b>RM${gross}</b><small>gross</small></div></div>
+ <div class="grid2"><span class="btn sm" style="width:100%" data-go="hscan">${I.cam} Scan tickets</span><span class="btn sec sm" style="width:100%" data-go="hbook">Guest list</span></div>
+ <div class="card"><div class="row" style="justify-content:space-between"><b style="font-weight:600">Event details</b><span data-go="hedit" style="color:var(--acc);font-weight:600">Edit</span></div>
+ <p style="margin:8px 0 10px">A gentle session for complete beginners. Mats are provided. Wear something comfy.</p>
+ <div class="line"><span class="mut">Price</span><b style="font-weight:600">${e.p?'RM'+e.p+' per person':'Free'}</b></div><div class="line"><span class="mut">Refunds</span><b style="font-weight:600">${e.c?'Up to '+e.c+' before':'n/a'}</b></div><div class="line"><span class="mut">Payout</span><b style="font-weight:600">RM${(gross*0.885).toFixed(2)} · 3 days after</b></div></div>
+ <div class="card row" data-go="hchats"><div class="sp"><b style="font-weight:600">Messages</b><div class="mut">2 unread from guests</div></div><span class="mut">›</span></div>
+ <div class="soft">Once the event ends, tap <b>Mark as completed</b>. If you don't, it completes automatically 24 hours after the end time.</div>
+ <span class="btn dlk" data-modal="delete">Delete this event</span><div style="height:80px"></div></div></div>
+ <div class="cta"><button class="btn" data-modal="complete">Mark as completed</button></div>`}};
+
+const hform=ed=>{const L=ed?lockI:'',lk=ed?' lock':'',ro=ed?'readonly':'';
+ return `<div class="scroll">${nav(ed?'Edit event':'New event')}
+ ${A('free','',`<div class="center" style="position:relative;z-index:1;padding:${ed?30:50}px 0"><div style="font-size:26px;line-height:1">${ed?'':'＋'}</div><b style="font-weight:600">${ed?'Poster':'Add a poster'}</b></div>`).replace('class=""','class="" style="border-radius:16px;margin-bottom:12px"')}
+ ${ed?`<div class="soft">8 guests have joined. You can change the title, description and spots. Date, place, price and refund window are locked so nobody is surprised after paying.</div>`:''}
+ <div class="fld"><label>Title</label><input value="${ed?'Beginner Mat Pilates':''}" placeholder="Give your event a name"></div>
+ <div class="fld"><label>Description</label><textarea rows="3" placeholder="What will guests do?">${ed?'A gentle 60-minute mat class for complete beginners. Mats are provided.':''}</textarea></div>
+ <div class="chips" style="margin-bottom:10px">${[['Make',0],['Move',1],['Meet',0],['Other',0]].map(([l,on])=>`<span class="chip ${on?'on':''}" ${ed?'':'data-chk'}>${l}</span>`).join('')}${L}</div>
+ <div class="fld${lk}"><label>When ${L}</label><input ${ro} value="${ed?'Sun 25 Oct · 9:00 – 10:00 AM':''}" placeholder="Pick a date and time"></div><div class="fld${lk}"><label>Where ${L}</label><input ${ro} value="${ed?'Bangsar, Jalan Telawi 3':''}" placeholder="Venue and address"></div>
+ <div class="card row on" data-sw="acc"><div class="sp"><b style="font-weight:600">Accept bookings ${L}</b><div class="mut">Guests pay online to join</div></div><span class="sw on"></span></div>
+ <div class="grid2"><div class="fld${lk}" style="margin:0"><label>Price ${L}</label><input ${ro} value="${ed?'RM30':''}" placeholder="RM0"></div><div class="fld" style="margin:0"><label>Spots</label>${ed?`<div class="row"><i data-cap="-1" style="font-style:normal;font-size:20px">−</i><b style="flex:1;text-align:center;font-weight:600">${st.cap}</b><i data-cap="1" style="font-style:normal;font-size:20px">+</i></div>`:'<input value="12">'}</div></div>
+ ${ed?'<div class="mut" style="margin:0 2px 8px">8 already joined, so spots can\'t go below 8.</div>':''}
+ <div class="mut" style="margin:10px 2px 8px">Guests can cancel for a refund up to ${L}</div><div class="chips">${['24 h before','48 h before','7 days before','No refunds'].map((t,i)=>`<span class="chip ${(ed?i===0:i===0)?'on':''}" ${ed?'':'data-pick'}>${t}</span>`).join('')}</div>
+ <div class="mut" style="margin:14px 2px">Payouts to Maybank ••4821 ✓ · <span data-go="hacct" style="color:var(--acc);font-weight:600">change</span></div>
+ <div class="soft">After the event, mark it completed yourself, or it completes automatically 24 hours after it ends. Completing unlocks reviews and your payout.</div></div>
+ <div class="cta">${ed?'<span class="btn sec" data-back>Cancel</span><button class="btn" data-toast="Changes saved" data-back>Save changes</button>':'<span class="btn sec" data-go="hevents">Save draft</span><button class="btn" data-go="hevents">Publish</button>'}</div>`};
+S.hcreate={html(){return hform(false)}};S.hedit={html(){return hform(true)}};
+
+S.hscan={dark:true,html(){const n=5+st.scanned,g=['Aina Rahman','Daniel Tan','Sarah Lim'][st.scanned%3],ok=st.scanned>0;
+ return `<div class="scroll" style="background:#0E1217;color:#fff"><div class="nav"><span class="ib gl" data-back>${I.back}</span><b style="color:#fff">Scan tickets</b><span class="st ok">${n} / 12</span></div>
+ <div class="cam"><div style="position:absolute;inset:48px;border-radius:16px;border:2px dashed rgba(255,255,255,.12)"></div>${['top:36px;left:36px;border-width:4px 0 0 4px','top:36px;right:36px;border-width:4px 4px 0 0','bottom:36px;left:36px;border-width:0 0 4px 4px','bottom:36px;right:36px;border-width:0 4px 4px 0'].map(c=>`<i style="${c}"></i>`).join('')}<div class="scanline"></div><div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:13px;opacity:.7">Point the camera at the guest's ticket QR</div></div>
+ ${ok?`<div class="card row" style="background:#143A2A;border-color:#143A2A"><div class="sp"><b style="font-weight:600">✓ ${g}</b><div style="font-size:13px;color:#BFE9D0">1 person · Checked in just now</div></div></div>`:`<div class="card row" style="background:rgba(255,255,255,.08);border-color:transparent"><div class="sp"><b style="font-weight:600">Waiting for a ticket</b><div style="font-size:13px;color:#aaa">Valid tickets check the guest in automatically.</div></div></div>`}
+ <span class="btn" data-scan style="margin:10px 0 8px">Simulate a scan (prototype)</span><span class="btn link" data-go="hcheck" style="color:#fff">Enter code manually / see list</span></div>`}};
+
+S.hbook={html(){const P=[['Aina Rahman','FPX'],['Daniel Tan','TnG eWallet'],['Sarah Lim','Card'],['Wei Ling','FPX'],['Priya S.','Card']];return `<div class="scroll">${nav('Guest list')}<h3 style="margin-bottom:2px">Sunset Yoga Deck</h3><div class="mut" style="margin-bottom:14px">Today · 12 paid · RM300 gross</div>
+ ${P.map(([n,m])=>`<div class="cli"><div class="av">${n[0]}</div><div class="sp"><b>${n}</b><div class="mut">${m}</div></div><span class="st ok">Paid</span></div>`).join('')}<div class="mut center">+ 7 more</div><span class="btn dlk" data-modal="delete" style="margin-top:14px">Delete this event</span></div>`}};
+
+S.hcheck={html(){const P=st.hchk||(st.hchk=[['Aina Rahman',1],['Daniel Tan',0],['Wei Ling',1],['Priya S.',0],['Sarah Lim',1]]),n=P.filter(x=>x[1]).length;
+ return `<div class="scroll">${nav('Check-in')}<div class="ring" style="background:conic-gradient(var(--acc) 0 ${Math.round(n/P.length*100)}%,#E8E3DA 0 100%)"><div>${n} / ${P.length}<small>checked in</small></div></div>
+ ${P.map(([nm,c],i)=>`<div class="cli" data-hchk="${i}"><div class="sp"><b>${nm}</b><div class="mut">JOM-48${i}${c}</div></div><span class="chk ${c?'on':''}">${I.check}</span></div>`).join('')}</div>
+ <div class="cta"><span class="btn sec" data-go="hscan">${I.cam} Scan</span><button class="btn" data-modal="complete">Mark as completed</button></div>`}};
+
+S.hpay={tab:'host',html(){return `<div class="scroll tabbed"><h1 style="margin:2px 0 14px;font-size:30px">Payouts</h1>
+ <div class="grid2"><div class="stat" style="text-align:left"><span class="mut">Upcoming</span><b>RM318.60</b></div><div class="stat" style="text-align:left"><span class="mut">Paid out</span><b>RM8,120</b></div></div>
+ <div class="card"><b style="font-weight:600">Beginner Mat Pilates</b><div class="mut" style="margin-bottom:10px">Sun 11 Oct · pays Wed 21 Oct</div>
+ <div class="line"><span class="mut">Gross (12 × RM30)</span><span>RM360.00</span></div><div class="line"><span class="mut">Gateway fees</span><span>−RM5.40</span></div><div class="line"><span class="mut">Platform fee (10%)</span><span>−RM36.00</span></div><div class="line t"><span>You receive</span><span>RM318.60</span></div></div>
+ <div class="mut" style="margin:0 2px 14px">Illustrative numbers. Real fees depend on the gateway agreement.</div>
+ <div class="card row"><div class="sp"><b style="font-weight:600">Payout account</b><div class="mut">Maybank ••4821 · verified</div></div><span class="btn sec sm" data-go="hacct">Edit</span></div></div>`}};
+
+S.hacct={html(){return `<div class="scroll">${nav('Payout account')}<div class="soft">We pay your earnings here 3 working days after each event.</div>
+ <div class="fld"><label>Account holder</label><input value="Mei Studio Sdn Bhd"></div><div class="fld"><label>Bank</label><input value="Maybank"></div><div class="fld"><label>Account number</label><input value="•••• •••• 4821"></div>
+ <div class="card row"><div class="sp"><b style="font-weight:600">Business registration</b><div class="mut">SSM · verified</div></div><span class="st ok">✓ Verified</span></div></div>
+ <div class="cta"><button class="btn" data-toast="Saved" data-back>Save</button></div>`}};
+
+S.hchats={tab:'host',html(){const R=[['A','Aina Rahman','Do I need to bring my own mat? · Sunset Yoga Deck','9:21 AM',1],['D','Daniel Tan','Is there parking nearby? · Sunset Yoga Deck','8:05 AM',1],['S','Sarah Lim','See you on Sunday! · Beginner Mat Pilates','Yesterday',0]];
+ return `<div class="scroll tabbed"><h1 style="margin:2px 0 4px;font-size:30px">Chat</h1><div class="mut" style="margin-bottom:16px">Messages from guests about your events.</div>
+ ${R.map(([i,n,s,w,u])=>`<div class="cli" data-go="hchat"><div class="av">${i}</div><div class="sp"><b>${n}</b><div class="mut">${s}</div></div><div><div class="when">${w}</div>${u?'<i class="dotu"></i>':''}</div></div>`).join('')}</div>`}};
+S.hchat={html(){return thread('hchat','Aina Rahman','Guest')}};
+S.hprofile={tab:'host',html(){return `<div class="scroll tabbed"><h1 style="margin:2px 0 18px;font-size:30px">Profile</h1><div class="center" style="margin-bottom:20px"><div class="av" style="width:84px;height:84px;font:500 32px var(--serif);margin:0 auto 10px">M</div><b style="font:500 22px var(--serif)">Mei Studio</b><div class="mut">★ 4.8 · 36 reviews</div></div>
+ ${[['Payout account','hacct'],['View public profile','hostpub'],['Edit host info','']].map(([x,g])=>`<div class="card row" ${g?`data-go="${g}"`:'data-toast="Not in this prototype"'}><span class="sp">${x}</span><span class="mut">›</span></div>`).join('')}
+ <div class="card row" data-go="home" style="margin-top:14px;background:var(--acc);border-color:var(--acc);color:#fff"><div class="sp"><b>Switch to Attendee mode</b></div><b>→</b></div></div>`}};
+
+/* ================= modals ================= */
+const AREAS=['Bangsar','KLCC','PJ','Sri Hartamas','Mid Valley','Bukit Bintang'];
+const M={
+ signin:()=>{const W={join:['Sign in to join','Free or paid, we need to know who is coming. Browsing stays open.'],save:['Sign in to save','Saved events live in your account, so they follow you across phones.'],chat:['Sign in to chat','Chat is between you and the host, so we need to know who you are.']}[st.why]||['Sign in','Browsing stays open.'];return `<div class="gr"></div><h3>${W[0]}</h3><p class="mut" style="margin:4px 0 16px">${W[1]}</p><button class="btn" data-signin style="margin-bottom:10px">Continue with Google</button><button class="btn sec" data-signin>Continue with phone number</button>`},
+ cancel:()=>{const b=st.bookings.find(x=>x.id===st.pending)||st.bookings[0],e=EV[b.ev];return `<div class="gr"></div><h3>Cancel this booking?</h3><p class="mut" style="margin:4px 0 16px">${e.t} · ${e.date}. You're within the free cancellation window. ${b.paid?`RM${b.paid.toFixed(2)} goes back to your original payment method in 3–7 working days.`:''}</p><button class="btn dng" data-docancel style="margin-bottom:10px">Yes, cancel booking</button><button class="btn sec" data-close>Keep booking</button>`},
+ area:()=>`<div class="gr"></div><h3>Where to?</h3><div class="chips" style="margin:14px 0">${AREAS.map(a=>`<span class="chip ${st.area===a?'on':''}" data-area="${a}">${a}</span>`).join('')}</div><div class="mut" style="margin-bottom:8px">Within</div><div class="chips" style="margin-bottom:18px"><span class="chip" data-pick>2 km</span><span class="chip on" data-pick>5 km</span><span class="chip" data-pick>10 km</span></div><button class="btn" data-close>Show events</button>`,
+ filter:()=>`<div class="gr"></div><h3>Filter</h3><div class="mut" style="margin:10px 0 8px">When</div><div class="chips"><span class="chip on" data-pick>Any time</span><span class="chip" data-pick>Today</span><span class="chip" data-pick>This weekend</span></div><div class="mut" style="margin:14px 0 8px">Price</div><div class="chips"><span class="chip on" data-pick>Any</span><span class="chip" data-pick>Free</span><span class="chip" data-pick>Under RM30</span></div><div class="mut" style="margin:14px 0 8px">Free cancellation</div><div class="chips" style="margin-bottom:18px"><span class="chip" data-pick>Only free cancellation</span></div><button class="btn" data-close>Show events</button>`,
+ complete:()=>`<div class="gr"></div><h3>Mark as completed?</h3><p class="mut" style="margin:4px 0 16px">Guests can leave reviews and your payout is scheduled for 3 working days later. 7 guests didn't check in. If you do nothing, the event completes by itself 24 hours after it ends.</p><button class="btn" data-close data-go="hevents" style="margin-bottom:10px">Yes, mark completed</button><button class="btn sec" data-close>Not yet</button>`,
+ delete:()=>`<div class="gr"></div><h3>Delete this event?</h3><p class="mut" style="margin:4px 0 16px">12 guests have paid RM300 in total. All of them are refunded in full and told the event was cancelled. This can't be undone.</p><button class="btn dng" data-close data-go="hevents" style="margin-bottom:10px">Yes, delete and refund</button><button class="btn sec" data-close>Keep event</button>`
+};
+
+/* ================= engine ================= */
+const ATT=[['home','Explore',I.search],['saved','Saved',I.heart],['bookings','Tickets',I.tix],['chats','Chat',I.chat],['profile','Profile',I.me]];
+const HOST=[['hdash','Home',I.dash],['hevents','Events',I.cal],['hpay','Payouts',I.cash],['hchats','Chat',I.chat],['hprofile','Profile',I.me]];
+const ROOT=['home','saved','bookings','chats','profile','hdash','hevents','hpay','hchats','hprofile'];
+const NAMES={home:'Explore',all:'All events',map:'Map (full screen)',detail:'Event detail',checkout:'Checkout',gw:'Gateway page',processing:'Confirming payment',failed:'Payment failed',confirmed:'Booked (ticket)',bookings:'Tickets',saved:'Saved',chats:'Chat list',chat:'Chat thread',notifs:'Notifications',review:'Review',hostpub:'Host profile (public)',profile:'Profile',hdash:'Home',hevents:'Events',hevent:'Event details',hcreate:'New event',hedit:'Edit event',hscan:'Scan tickets',hbook:'Guest list',hcheck:'Check-in',hpay:'Payouts',hacct:'Payout account',hchats:'Chat list',hchat:'Chat thread',hprofile:'Profile'};
+const GROUPS=[['Attendee',['home','all','map','detail','checkout','gw','processing','failed','confirmed','bookings','saved','chats','chat','notifs','review','hostpub','profile']],['Host',['hdash','hevents','hevent','hcreate','hedit','hscan','hbook','hcheck','hpay','hchats','hchat','hacct','hprofile']]];
+$('jump').innerHTML=GROUPS.map(([l,ks])=>`<optgroup label="${l}">${ks.map(k=>`<option value="${k}">${NAMES[k]}</option>`).join('')}</optgroup>`).join('');
+
+let toastT=null;
+function toast(m){$('toastbox').innerHTML=`<div class="toast">${m}</div>`;clearTimeout(toastT);toastT=setTimeout(()=>$('toastbox').innerHTML='',1800)}
+function render(){const s=S[st.screen];$('screen').innerHTML=s.html();
+ const T=s.tab==='att'?ATT:s.tab==='host'?HOST:null;
+ $('tabs').innerHTML=T?`<div class="tabs">${T.map(([g,l,ic])=>`<div class="${g===st.screen?'on':''}" data-go="${g}">${ic}${l}${g==='chats'&&st.notif.chat?'<span class="bdg">1</span>':''}${g==='hchats'?'<span class="bdg">2</span>':''}</div>`).join('')}</div>`:'';
+ $('modal').innerHTML=st.modal?`<div class="scrim" data-scrim><div class="msheet">${M[st.modal]()}</div></div>`:'';
+ $('status').className='status'+(s.dark?' light':s.hero?' clear':'');$('jump').value=st.screen;hydrate();
+ if(st.screen==='chat'||st.screen==='hchat'){const t=$('thr');if(t)t.scrollTop=1e5}}
+function go(id){if(id!==st.screen){if(ROOT.includes(id))st.hist=[];else st.hist.push(st.screen);st.screen=id}st.modal=null;render()}
+function back(){st.modal=null;if(st.hist.length)st.screen=st.hist.pop();else st.screen=S[st.screen].tab==='host'||st.screen.startsWith('h')?'hdash':'home';render()}
+function needAuth(why,after){if(st.signed)return after();st.why=why;st.after=after;st.modal='signin';render()}
+function book(status){const e=EV[st.ev];let b=st.bookings.find(x=>x.ev===e.id);const tot=e.p*st.people;
+ if(!b){b={id:'b'+Date.now(),ev:e.id,spots:st.people,code:'JOM-'+Math.random().toString(36).slice(2,6).toUpperCase()+'-48XD',paid:tot,pay:e.p?['FPX · Maybank','Card · Visa 2462','TnG eWallet','DuitNow QR'][st.method]:'Free',status};st.bookings.unshift(b)}else b.status=status;st.last=b}
+function sendMsg(key){const i=$('msg');const v=i&&i.value.trim();if(!v)return;st.msgs[key].push(['me',v,'Now']);render();const f=$('msg');if(f)f.focus();
+ if(key==='chat')setTimeout(()=>{if(st.screen!=='chat')return;st.msgs.chat.push(['them','Thanks! See you there 🙂','Now']);render()},900)}
+
+document.addEventListener('click',x=>{const t=x.target;let q;if(!t.closest('.phone'))return;
+ if(t.closest('[data-scrim]')&&!t.closest('.msheet')){st.modal=null;return render()}
+ if(q=t.closest('[data-signin]')){st.signed=true;st.modal=null;const a=st.after;st.after=null;if(a){a();return render()}return render()}
+ if(q=t.closest('[data-join]'))return needAuth('join',()=>go('checkout'));
+ if(q=t.closest('[data-chat]'))return needAuth('chat',()=>go('chat'));
+ if(q=t.closest('[data-fav]')){const id=+q.dataset.fav;return needAuth('save',()=>{st.saved.has(id)?st.saved.delete(id):st.saved.add(id);if(st.screen==='saved')return render();const on=st.saved.has(id);document.querySelectorAll(`[data-fav="${id}"]`).forEach(el=>el.classList.toggle('on',on))})}
+ if(q=t.closest('[data-docancel]')){const i=st.bookings.findIndex(b=>b.id===st.pending);if(i>-1){const b=st.bookings.splice(i,1)[0],e=EV[b.ev];st.past.unshift({t:e.t,art:e.art,host:e.host,date:e.date,status:'cancelled'})}st.modal=null;render();return toast('Booking cancelled. Refund is on its way.')}
+ if(q=t.closest('[data-modal]')){st.modal=q.dataset.modal;if(q.dataset.bk)st.pending=q.dataset.bk;return render()}
+ if(q=t.closest('[data-close]')){const g=q.dataset.go;st.modal=null;if(g)return go(g);return render()}
+ if(q=t.closest('[data-toast]')){toast(q.dataset.toast);if(q.hasAttribute('data-back'))return back();return}
+ if(q=t.closest('[data-back]'))return back();
+ if(q=t.closest('[data-area]')){st.area=q.dataset.area;return render()}
+ if(q=t.closest('[data-pick]')){q.parentElement.querySelectorAll('[data-pick]').forEach(c=>c.classList.remove('on'));q.classList.add('on');return}
+ if(q=t.closest('[data-cat]')){const k=q.dataset.cat;st.cat=st.cat===k?null:k;document.querySelectorAll('.cat').forEach(c=>c.classList.toggle('on',c.dataset.cat===st.cat));$('nearlist').innerHTML=nearHTML();hydrate();return}
+ if(q=t.closest('[data-allfilter]')){st.allCat=q.dataset.allfilter||null;return render()}
+ if(q=t.closest('[data-mapcat]')){st.mapCat=q.dataset.mapcat;return render()}
+ if(q=t.closest('[data-pin]')){st.mapSel=+q.dataset.pin;return render()}
+ if(q=t.closest('[data-ev]')){st.ev=+q.dataset.ev;return go('detail')}
+ if(q=t.closest('[data-hev]')){st.hev=+q.dataset.hev;return go('hevent')}
+ if(q=t.closest('[data-hseg]')){st.hseg=+q.dataset.hseg;return render()}
+ if(q=t.closest('[data-seg]')){st.bk=+q.dataset.seg;return render()}
+ if(q=t.closest('[data-star]')){st.rating=+q.dataset.star;return render()}
+ if(q=t.closest('[data-submit-review]')){st.past[0].status='reviewed';toast('Thanks for your review');return go('bookings')}
+ if(q=t.closest('[data-chk]')){q.classList.toggle('on');return}
+ if(q=t.closest('[data-hchk]')){const i=+q.dataset.hchk;st.hchk[i][1]^=1;return render()}
+ if(q=t.closest('[data-sw]')){const k=q.dataset.sw;if(k==='chat'||k==='review')st.notif[k]^=1;else{q.classList.toggle('on');q.querySelector('.sw').classList.toggle('on');return}return render()}
+ if(q=t.closest('[data-act]')){const e=EV[st.ev],mx=Math.min(2,e.left!=null?e.left:2);st.people=Math.max(1,Math.min(mx,st.people+(q.dataset.act==='pp'?1:-1)));return render()}
+ if(q=t.closest('[data-cap]')){st.cap=Math.max(8,Math.min(40,st.cap+ +q.dataset.cap));return render()}
+ if(q=t.closest('[data-method]')){st.method=+q.dataset.method;return render()}
+ if(q=t.closest('[data-checkout]')){const e=EV[st.ev];if(e.p)return go('gw');book('ok');return go('confirmed')}
+ if(q=t.closest('[data-res]')){const r=q.dataset.res;if(r==='ok'){book('ok');return go('confirmed')}if(r==='fail')return go('failed');book('processing');go('bookings');return toast('Payment is still processing')}
+ if(q=t.closest('[data-scan]')){st.scanned++;return render()}
+ if(q=t.closest('[data-send]'))return sendMsg(q.dataset.send);
+ if(q=t.closest('[data-signout]')){st.signed=!st.signed;render();return toast(st.signed?'Signed in':'Signed out')}
+ if(q=t.closest('[data-go]')){if(q.hasAttribute('data-allcat'))st.allCat=q.dataset.allcat||null;return go(q.dataset.go)}
+});
+document.addEventListener('input',x=>{if(x.target.id==='q'){st.q=x.target.value;$('nearlist').innerHTML=nearHTML();hydrate()}});
+document.addEventListener('keydown',x=>{if(x.key==='Enter'&&x.target.id==='msg')sendMsg(st.screen==='hchat'?'hchat':'chat')});
+$('jump').addEventListener('change',e=>{st.hist=[];st.modal=null;st.screen=e.target.value;if(st.screen==='detail')st.ev=2;if(st.screen.startsWith('h'))st.hev=2;render()});
+function fit(){const s=Math.min(1,(innerHeight-90)/844,(innerWidth-20)/390),w=$('wrap');w.style.width=390*s+'px';w.style.height=844*s+'px';$('ph').style.transform=`scale(${s})`;SC=s}
+addEventListener('resize',fit);fit();if(location.hash&&S[location.hash.slice(1)])st.screen=location.hash.slice(1);if(st.screen.startsWith('h')&&st.screen!=='hostpub')st.hev=2;render();
+</script>
+</body>
+</html>
