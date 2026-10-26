@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/auth_repository.dart';
 import '../presentation/sign_in_sheet.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 /// Why the app is asking someone to sign in: it decides what the sheet says.
 enum AuthReason { join, save, chat }
@@ -38,7 +39,7 @@ class AuthGate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ref.watch(sessionProvider).when(
-          loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+          loading: () => Scaffold(body: SafeArea(child: Skeleton.page())),
           error: (_, _) => signedOut,
           data: (session) => session == null ? signedOut : child,
         );

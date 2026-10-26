@@ -16,6 +16,7 @@ import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/notifications/data/notification_repository.dart';
 import 'package:jom/features/notifications/domain/bell_provider.dart';
 import 'package:jom/shared/models/event_summary.dart';
+import 'package:jom/shared/widgets/skeleton.dart';
 import 'package:jom/shared/widgets/shell.dart';
 
 import 'helpers/fake_auth.dart';
@@ -187,7 +188,7 @@ void main() {
       expect(find.textContaining('Could not load events'), findsOneWidget);
     });
 
-    testWidgets('it shows a spinner while it waits', (t) async {
+    testWidgets('it shows a skeleton while it waits', (t) async {
       final router = createRouter();
       await t.pumpWidget(ProviderScope(
         overrides: [
@@ -201,7 +202,8 @@ void main() {
         child: const JomApp(),
       ));
       await t.pump(const Duration(milliseconds: 200));
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(Skeleton), findsWidgets);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
       await t.pump(const Duration(seconds: 6));
     });
   });
