@@ -45,7 +45,7 @@ void main() {
     await pumpApp(t, FakeAuthRepository());
     const prompts = {
       'Saved': 'Sign in to see your saved events',
-      'Bookings': 'Sign in to see your bookings',
+      'Tickets': 'Sign in to see your tickets',
       'Chat': 'Sign in to see your chats',
       'Profile': 'Sign in to see your profile',
     };
@@ -89,7 +89,7 @@ void main() {
   testWidgets('the Google button on a tab signs in with Google', (t) async {
     final repo = FakeAuthRepository();
     await pumpApp(t, repo);
-    await openTab(t, 'Bookings');
+    await openTab(t, 'Tickets');
     await t.tap(find.text('Continue with Google'));
     await t.pumpAndSettle();
     expect(repo.googleCalls, 1);

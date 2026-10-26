@@ -362,7 +362,7 @@ void main() {
   group('bookings tab', () {
     final soon = clock.add(const Duration(days: 3));
     testWidgets('bookings_upcoming_past_with_status_pills', (t) async {
-      await pumpApp(t, location: '/bookings',
+      await pumpApp(t, location: '/tickets',
           upcoming: [bk('c1', status: 'confirmed', title: 'Pottery', starts: soon), bk('p1', status: 'processing', title: 'Salsa', starts: soon)],
           past: [bk('a1', status: 'attended', title: 'Old Yoga', starts: clock), bk('x1', status: 'cancelled', title: 'Old Run', starts: clock)]);
       expect(key('bookings-screen'), findsOneWidget);
@@ -380,7 +380,7 @@ void main() {
     });
 
     testWidgets('tapping_confirmed_booking_opens_ticket_and_attended_opens_review', (t) async {
-      await pumpApp(t, location: '/bookings', upcoming: [bk('c1', title: 'Pottery', starts: soon)],
+      await pumpApp(t, location: '/tickets', upcoming: [bk('c1', title: 'Pottery', starts: soon)],
           past: [bk('a1', status: 'attended', title: 'Old Yoga', starts: clock), bk('x1', status: 'cancelled', title: 'Old Run', starts: clock)],
           setup: (b) => b.byId['c1'] = bk('c1', title: 'Pottery', starts: soon));
       await t.tap(key('booking-c1'));
@@ -388,7 +388,7 @@ void main() {
       expect(key('ticket-screen'), findsOneWidget);
       await t.tap(key('ticket-done'));
       await t.pumpAndSettle();
-      await t.tap(find.descendant(of: find.byKey(const Key('tab-bar')), matching: find.text('Bookings')));
+      await t.tap(find.descendant(of: find.byKey(const Key('tab-bar')), matching: find.text('Tickets')));
       await t.pumpAndSettle();
       await t.tap(key('seg-past'));
       await t.pumpAndSettle();
@@ -401,7 +401,7 @@ void main() {
     });
 
     testWidgets('nothing booked yet says so', (t) async {
-      await pumpApp(t, location: '/bookings');
+      await pumpApp(t, location: '/tickets');
       expect(find.text('No upcoming bookings'), findsOneWidget);
       await t.tap(key('seg-past'));
       await t.pumpAndSettle();

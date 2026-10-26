@@ -74,14 +74,14 @@ void main() {
     final router = await pumpApp(t);
     expect(where(router), '/explore');
     expect(find.byKey(const Key('home-screen')), findsOneWidget);
-    for (final label in ['Explore', 'Saved', 'Bookings', 'Chat', 'Profile']) {
+    for (final label in ['Explore', 'Saved', 'Tickets', 'Chat', 'Profile']) {
       expect(find.text(label), findsWidgets, reason: label);
     }
   });
 
   testWidgets('tapping each tab opens its screen, and Explore brings you back', (t) async {
     final router = await pumpApp(t);
-    for (final entry in {'Saved': '/saved', 'Bookings': '/bookings', 'Chat': '/chats', 'Profile': '/profile', 'Explore': '/explore'}.entries) {
+    for (final entry in {'Saved': '/saved', 'Tickets': '/tickets', 'Chat': '/chats', 'Profile': '/profile', 'Explore': '/explore'}.entries) {
       await t.tap(find.descendant(of: find.byKey(const Key('tab-bar')), matching: find.text(entry.key)));
       await t.pumpAndSettle();
       expect(where(router), entry.value, reason: entry.key);
@@ -89,7 +89,7 @@ void main() {
         expect(find.byKey(const Key('home-screen')), findsOneWidget);
       } else if (entry.value == '/saved') {
         expect(find.byKey(const Key('saved-screen')), findsOneWidget);
-      } else if (entry.value == '/bookings') {
+      } else if (entry.value == '/tickets') {
         expect(find.byKey(const Key('bookings-screen')), findsOneWidget);
       } else if (entry.value == '/chats') {
         expect(find.byKey(const Key('chat-list-screen')), findsOneWidget);
@@ -107,7 +107,7 @@ void main() {
 
   testWidgets('every route in the plan opens and is not bounced to Explore', (t) async {
     const paths = [
-      '/explore', '/saved', '/bookings', '/chats', '/chats/t1', '/profile', '/event/e1', '/event/e1/checkout',
+      '/explore', '/saved', '/tickets', '/chats', '/chats/t1', '/profile', '/event/e1', '/event/e1/checkout',
       '/booking/b1/gateway', '/booking/b1/processing', '/booking/b1/failed', '/booking/b1/ticket', '/review/b1',
       '/host/h1', '/notifications', '/host-mode/home', '/host-mode/events', '/host-mode/events/e1',
       '/host-mode/events/e1/edit', '/host-mode/events/e1/scan', '/host-mode/events/e1/checkin',
@@ -119,7 +119,7 @@ void main() {
       expect(where(router), p, reason: p);
       final screen = {
         '/explore': 'home-screen', '/saved': 'saved-screen', '/all': 'view-all', '/event/e1': 'event-screen',
-        '/bookings': 'bookings-screen', '/chats': 'chat-list-screen', '/chats/t1': 'thread-screen', '/host-mode/chats': 'chat-list-screen', '/event/e1/checkout': 'checkout-screen', '/booking/b1/gateway': 'gateway-screen',
+        '/tickets': 'bookings-screen', '/chats': 'chat-list-screen', '/chats/t1': 'thread-screen', '/host-mode/chats': 'chat-list-screen', '/event/e1/checkout': 'checkout-screen', '/booking/b1/gateway': 'gateway-screen',
         '/booking/b1/processing': 'processing-screen', '/booking/b1/failed': 'failed-screen', '/booking/b1/ticket': 'ticket-screen', '/notifications': 'notifications-screen',
       }[p] ?? 'screen-title';
       expect(find.byKey(Key(screen)), findsOneWidget, reason: p);
@@ -131,23 +131,24 @@ void main() {
       await pumpApp(t, location: p);
       expect(find.byKey(const Key('tab-bar')), findsNothing, reason: p);
     }
-    for (final p in ['/explore', '/saved', '/bookings', '/chats', '/profile', '/host-mode/home', '/host-mode/events', '/host-mode/payouts', '/host-mode/chats', '/host-mode/profile']) {
+    for (final p in ['/explore', '/saved', '/tickets', '/chats', '/profile', '/host-mode/home', '/host-mode/events', '/host-mode/payouts', '/host-mode/chats', '/host-mode/profile']) {
       await pumpApp(t, location: p);
       expect(find.byKey(const Key('tab-bar')), findsOneWidget, reason: p);
     }
   });
 
-  testWidgets('the floating tab bar sits 22px above the bottom edge, like the prototype, even with a home indicator', (t) async {
+  testWidgets('the tab bar is a full-width white bar flush with the bottom edge, above the home indicator', (t) async {
     // 852 points tall with the iPhone's 47 / 34 points of safe area. Wider than a phone on purpose: the test
-    // font's letters are so wide that "Bookings" would wrap inside a phone-narrow tab.
+    // font's letters are so wide that "Tickets" could wrap inside a phone-narrow tab.
     t.view.physicalSize = const Size(800, 852);
     t.view.devicePixelRatio = 1;
     t.view.padding = const FakeViewPadding(top: 47, bottom: 34);
     t.view.viewPadding = const FakeViewPadding(top: 47, bottom: 34);
     addTearDown(t.view.reset);
     await pumpApp(t);
-    expect(t.getBottomLeft(find.byKey(const Key('tab-bar'))).dy, 852 - 22);
-    expect(t.getSize(find.byKey(const Key('tab-bar'))).height, 62);
+    expect(t.getBottomLeft(find.byKey(const Key('tab-bar'))).dy, 852);
+    expect(t.getSize(find.byKey(const Key('tab-bar'))).width, 800);
+    expect(t.getSize(find.byKey(const Key('tab-bar'))).height, 62 + 34);
   });
 
   testWidgets('host mode has its own five tabs', (t) async {

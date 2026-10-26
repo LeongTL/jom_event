@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jom/core/theme/calm.dart';
 import 'package:jom/core/theme/tokens.dart';
 import 'package:jom/shared/widgets/shell.dart';
 
@@ -11,7 +12,7 @@ Widget host(Widget bar) => MaterialApp(
 void main() {
   testWidgets('shell_shows_five_tabs_for_attendee_and_five_for_host', (t) async {
     await t.pumpWidget(host(AttendeeTabs(currentIndex: 0, onTap: (_) {})));
-    for (final label in ['Explore', 'Saved', 'Bookings', 'Chat', 'Profile']) {
+    for (final label in ['Explore', 'Saved', 'Tickets', 'Chat', 'Profile']) {
       expect(find.text(label), findsOneWidget, reason: label);
     }
     expect(find.byKey(const Key('tab-bar')), findsOneWidget);
@@ -25,7 +26,7 @@ void main() {
 
   testWidgets('the current tab is marked, the others are not', (t) async {
     await t.pumpWidget(host(AttendeeTabs(currentIndex: 2, onTap: (_) {})));
-    expect(find.byKey(const Key('tab-on:Bookings')), findsOneWidget);
+    expect(find.byKey(const Key('tab-on:Tickets')), findsOneWidget);
     expect(find.byKey(const Key('tab-off:Explore')), findsOneWidget);
     expect(find.byKey(const Key('tab-on:Explore')), findsNothing);
   });
@@ -58,14 +59,14 @@ void main() {
     expect(find.descendant(of: find.byKey(const Key('tab-off:Chat')), matching: find.byKey(const Key('tab-badge'))), findsOneWidget);
   });
 
-  testWidgets('the bar takes its colours from the active theme', (t) async {
-    await t.pumpWidget(MaterialApp(
-      theme: jomThemeData(JomTheme.weekend),
-      home: Scaffold(body: AttendeeTabs(currentIndex: 0, onTap: (_) {})),
-    ));
-    final box = t.widget<DecoratedBox>(find.byKey(const Key('tab-bar')));
-    expect((box.decoration as BoxDecoration).color, JomTokens.of(JomTheme.weekend).sheet);
-    final on = t.widget<AnimatedContainer>(find.byKey(const Key('tab-on:Explore')));
-    expect((on.decoration as BoxDecoration).color, JomTokens.of(JomTheme.weekend).accent);
+  testWidgets('the bar is white with a top hairline, the active tab is accent and the badge is C9432F', (t) async {
+    await t.pumpWidget(host(AttendeeTabs(currentIndex: 0, onTap: (_) {}, chatBadge: 2)));
+    final box = t.widget<DecoratedBox>(find.byKey(const Key('tab-bar'))).decoration as BoxDecoration;
+    expect(box.color, Calm.surface);
+    expect((box.border! as Border).top.color, Calm.line);
+    expect(t.widget<Text>(find.text('Explore')).style!.color, Calm.acc);
+    expect(t.widget<Text>(find.text('Saved')).style!.color, Calm.faint);
+    final badge = t.widget<Container>(find.byKey(const Key('tab-badge')));
+    expect((badge.decoration as BoxDecoration).color, const Color(0xFFC9432F));
   });
 }
