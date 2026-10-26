@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KL Local Session · Calm v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF8F5;--surface:#fff;--ink:#1B2430;--mut:#5F6B7A;--faint:#8A94A1;--line:#E7E2DA;
+  --acc:#1F5E5B;--acc-soft:#E3EFEC;--ok:#1E7A4F;--ok-soft:#E4F1E9;
+  --serif:Fraunces,Georgia,serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#ECE8E1;color:var(--ink);font:15px/1.45 Inter,-apple-system,system-ui,sans-serif;padding:24px 16px 48px}
+.cap{margin:0 auto 20px;text-align:center;color:var(--mut);font-size:13px}
+.cap b{display:block;color:var(--ink);font-size:17px;font-weight:600;margin-bottom:2px}
+.row{display:flex;gap:32px;justify-content:center;flex-wrap:wrap}
+.col{display:flex;flex-direction:column;align-items:center;gap:10px}
+.lbl{font-size:12px;color:var(--mut);font-weight:500}
+.phone{width:390px;height:844px;border-radius:44px;background:var(--bg);position:relative;overflow:hidden;box-shadow:0 0 0 8px #1B2430,0 24px 60px rgba(27,36,48,.25)}
+.status{position:absolute;top:0;left:0;right:0;height:44px;padding:16px 28px 0;display:flex;justify-content:space-between;font-size:12px;font-weight:600;z-index:5}
+.scroll{position:absolute;inset:0;overflow:auto;scrollbar-width:none;padding:56px 20px 120px}
+.scroll::-webkit-scrollbar{display:none}
+svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.loc{display:inline-flex;gap:6px;align-items:center;font-weight:500;font-size:14px}
+.ib{width:40px;height:40px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.eye{font-size:11.5px;font-weight:600;letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
+h1{font:500 32px/1.1 var(--serif);letter-spacing:-.015em;margin:6px 0 16px}
+h2{font:600 18px/1.2 var(--serif);margin:0}
+.mut{color:var(--mut);font-size:13px}
+.pills{display:flex;gap:8px;margin-bottom:20px}
+.pill{height:34px;padding:0 16px;border-radius:17px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:500;display:inline-flex;align-items:center}
+.pill.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.art,.tk-art,.bt-top{position:relative;overflow:hidden}
+.art svg,.tk-art svg,.bt-top svg{position:absolute;inset:0;width:100%;height:100%;stroke:none}
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:26px}
+.feat .art{height:150px}
+.live{position:absolute;left:12px;top:12px;z-index:2;background:rgba(255,255,255,.92);border-radius:8px;padding:5px 9px;font-size:12px;font-weight:600;color:var(--ok);display:flex;align-items:center;gap:6px}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.feat .bd{padding:14px 16px 16px}
+.feat h2{font-size:22px;margin-bottom:4px}
+.host{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--mut)}
+.vf{width:14px;height:14px;stroke:var(--acc);stroke-width:2.2;flex:none}
+.going{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--mut)}
+.going b{color:var(--ink);font-weight:600}
+.stack{display:flex}.stack i{width:28px;height:28px;border-radius:50%;border:2px solid #fff;margin-left:-8px;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:600;color:#fff}
+.stack i:first-child{margin-left:0}
+.going .go{margin-left:auto;color:var(--acc);font-weight:600;font-size:14px}
+.sech{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.tl{position:relative}
+.tl::before{content:"";position:absolute;left:55px;top:10px;bottom:10px;border-left:1px solid var(--line)}
+.it{display:flex;gap:0;margin-bottom:14px;position:relative}
+.it .tm{width:48px;flex:none;text-align:right;padding-top:12px;font-weight:600;font-size:13.5px;line-height:1.1}
+.it .tm small{display:block;font-weight:500;color:var(--faint);font-size:11px;margin-top:2px}
+.it::before{content:"";position:absolute;left:51px;top:17px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--acc)}
+.it .c{margin-left:24px;flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px;display:flex;gap:12px}
+.it .art{width:64px;height:64px;border-radius:12px;flex:none}
+.it .tx{min-width:0;flex:1;display:flex;flex-direction:column}
+.it .tx b{font-weight:600;font-size:14.5px;line-height:1.25}
+.it .ft{margin-top:auto;display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut);padding-top:4px}
+.it .ft .p{color:var(--ink);font-weight:600}
+.ok{color:var(--ok);font-weight:500}
+.search{display:flex;gap:10px;margin-bottom:18px}
+.sb{flex:1;height:40px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:0 14px;color:var(--faint);font-size:14px}
+.cats{display:flex;justify-content:space-between;margin-bottom:26px}
+.cat{width:76px;text-align:center;font-size:12.5px;font-weight:500}
+.cat .art{width:64px;height:64px;border-radius:18px;margin:0 auto 7px;border:1px solid var(--line)}
+.off{display:none!important}
+.opts{display:inline-flex;gap:8px;align-items:center;margin-top:10px;font-size:13px}
+.opts select{font:600 13px Inter;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.hrow{display:flex;gap:16px;overflow-x:auto;margin:0 -20px 26px;padding:0 20px;scrollbar-width:none}.hrow::-webkit-scrollbar{display:none}
+.hs{flex:none;width:92px;text-align:center}
+.hav{width:64px;height:64px;border-radius:50%;margin:0 auto 8px;display:grid;place-items:center;color:#fff;font:500 24px var(--serif);position:relative}
+.hav em{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:50%;background:#fff;display:grid;place-items:center;border:1px solid var(--line)}
+.hav em .vf{width:12px;height:12px}
+.hs b{display:block;font-weight:600;font-size:13px;line-height:1.2}.hs span{display:block;font-size:11.5px;color:var(--mut);margin-top:2px}
+.arow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px}
+.ar{height:38px;padding:0 14px;border-radius:19px;background:var(--surface);border:1px solid var(--line);display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500}
+.ar em{font-style:normal;color:var(--acc);font-weight:600;font-size:12.5px}
+.rvs{margin-bottom:26px}
+.rv{flex:none;width:280px;scroll-snap-align:start;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.rv .stars{color:#D69A2D;letter-spacing:2px;font-size:14px}
+.rv p{font:500 15px/1.45 var(--serif);margin:8px 0 10px}
+.rv small{font-size:12px;color:var(--mut);line-height:1.5}.rv small b{color:var(--ink);font-weight:600}
+.map{position:relative;height:170px;border-radius:16px;overflow:hidden;border:1px solid var(--line);margin-bottom:26px}
+.map svg{width:100%;height:100%;stroke:none}
+.map .mb{position:absolute;left:10px;bottom:10px;background:#fff;border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:600}
+.map .mo{position:absolute;right:10px;bottom:10px;background:var(--acc);color:#fff;border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:600}
+.trow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:26px}
+.tr{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 10px;text-align:center}
+.tc{width:40px;height:40px;border-radius:50%;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center;margin:0 auto 8px}
+.tr b{display:block;font-weight:600;font-size:13px}.tr span{display:block;font-size:11.5px;color:var(--mut);line-height:1.35;margin-top:3px}
+.pp{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.pp:last-child{border:0;margin-bottom:12px}
+.pn{width:26px;font:500 30px/1 var(--serif);color:var(--acc);text-align:center}
+.pp .art{width:56px;height:56px;border-radius:12px;flex:none}
+.pp .tx b,.ftc .tx b,.ja .tx b{font-weight:600;font-size:14.5px;line-height:1.25;display:block}
+.pp .tx,.ftc .tx,.ja .tx{min-width:0;flex:1}
+.ftc{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px;margin-bottom:10px}
+.ftc .art{width:56px;height:56px;border-radius:12px;flex:none}
+.ftc .p{font-weight:600;font-size:14px;align-self:flex-start;padding-top:2px}
+.tg{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tg span{font-size:11px;font-weight:500;color:var(--acc);background:var(--acc-soft);border-radius:6px;padding:2px 7px}
+.ja{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.dt{width:46px;height:50px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;align-content:center;flex:none}
+.dt b{font:600 17px/1 var(--serif)}.dt span{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--faint)}
+.ja em{font-style:normal;font-size:10.5px;font-weight:600;color:var(--acc);white-space:nowrap}
+.fm{position:absolute;inset:0;width:100%;height:100%;stroke:none}
+.pin{position:absolute;transform:translate(-50%,-100%);background:#fff;border:1px solid var(--line);border-radius:14px;padding:5px 10px;font-weight:600;font-size:13px;box-shadow:0 2px 6px rgba(27,36,48,.18);white-space:nowrap}
+.pin::after{content:"";position:absolute;left:50%;bottom:-5px;width:9px;height:9px;background:inherit;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:translateX(-50%) rotate(45deg)}
+.pin.sel{background:var(--acc);color:#fff;border-color:var(--acc);font-size:14px;padding:6px 12px;z-index:2}
+.pin.sel::after{border-color:var(--acc)}
+.mtop{position:absolute;top:52px;left:16px;right:16px;display:flex;gap:10px;z-index:3}
+.mtop .sb{box-shadow:0 2px 8px rgba(27,36,48,.12)}.mtop .ib{box-shadow:0 2px 8px rgba(27,36,48,.12)}
+.mchips{position:absolute;top:104px;left:0;right:0;display:flex;gap:8px;padding:0 16px;overflow:hidden;z-index:3}
+.mc{height:34px;padding:0 14px;border-radius:17px;background:#fff;border:1px solid var(--line);font-size:13px;font-weight:500;display:inline-flex;align-items:center;white-space:nowrap;box-shadow:0 2px 6px rgba(27,36,48,.1)}
+.mc.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.msearch{position:absolute;top:152px;left:50%;transform:translateX(-50%);background:#fff;border-radius:18px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--acc);box-shadow:0 2px 8px rgba(27,36,48,.18);z-index:3;display:flex;gap:6px;align-items:center}
+.loc2{position:absolute;right:16px;bottom:268px;width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 2px 8px rgba(27,36,48,.2);z-index:3}
+.mcard{position:absolute;left:0;right:0;bottom:0;background:var(--bg);border-radius:24px 24px 0 0;padding:10px 16px 34px;box-shadow:0 -6px 24px rgba(27,36,48,.15);z-index:4}
+.grip{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+.mrow{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px}
+.mrow .art{width:76px;height:96px;border-radius:12px;flex:none}
+.mrow .tx{flex:1;min-width:0}.mrow .tx b{font:600 16px var(--serif);display:block}
+.mrow .pr{font-weight:600;font-size:16px}
+.mbtn{display:flex;gap:10px;margin-top:12px}
+.btn.sec2{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+/* full ticket */
+.bt{background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 8px 24px rgba(27,36,48,.08)}
+.bt-top{height:120px;position:relative}
+.bt-top .conf{position:absolute;left:14px;top:14px;z-index:2;background:rgba(255,255,255,.94);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;color:var(--ok)}
+.bt-b{padding:16px 18px 18px}
+.bt-b h1{font-size:26px;margin:0 0 2px}
+.bt-when{display:flex;align-items:baseline;gap:10px;margin:14px 0 4px}
+.bt-when b{font:500 40px/1 var(--serif);letter-spacing:-.02em}.bt-when span{font-size:14px;color:var(--mut);font-weight:500}
+.cd{display:inline-flex;font-size:12.5px;font-weight:600;color:var(--acc);background:var(--acc-soft);border-radius:8px;padding:4px 9px}
+.bt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.bt-grid small{display:block;font-size:11.5px;color:var(--faint);font-weight:500}.bt-grid b{font-weight:600;font-size:14px}
+.bt-cut{position:relative;border-top:2px dashed var(--line);margin:0}
+.bt-cut::before,.bt-cut::after{content:"";position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;background:var(--bg);border:1px solid var(--line)}
+.bt-cut::before{left:-11px}.bt-cut::after{right:-11px}
+.bt-qr{padding:20px;text-align:center}
+.bt-qr .qrs{width:170px;height:170px;fill:var(--ink)}
+.bt-qr .code{font:500 13px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:var(--mut);margin-top:10px}
+.bt-qr .mut{margin-top:6px}
+.bt-act{display:flex;gap:10px;margin-top:14px}
+.lnkd{display:block;text-align:center;color:#B3261E;font-weight:500;font-size:14px;padding:14px}
+[data-art]{position:relative;overflow:hidden}
+[data-art]>svg{position:absolute;inset:0;width:100%;height:100%;stroke:none}
+.tkrow{display:flex;align-items:flex-start;gap:12px;overflow-x:auto;margin:-2px -20px 20px;padding:0 20px;scroll-snap-type:x mandatory;scroll-padding-left:20px;scrollbar-width:none}
+.tkrow::-webkit-scrollbar{display:none}
+.tk{flex:none;width:310px;scroll-snap-align:start;color:#fff}
+.tk-top,.tk-bot{background:var(--tkc);position:relative}
+.tk-top{border-radius:20px 20px 0 0;padding:16px 20px 18px;
+  -webkit-mask:radial-gradient(circle 11px at 0 100%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 11px at 100% 100%,#0000 97%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 11px at 0 100%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 11px at 100% 100%,#0000 97%,#000) right/51% 100% no-repeat}
+.tk-top::after{content:"";position:absolute;left:24px;right:24px;bottom:0;border-bottom:2px dashed rgba(255,255,255,.45)}
+.tk-bot{border-radius:0 0 20px 20px;padding:16px 20px 18px;
+  -webkit-mask:radial-gradient(circle 11px at 0 0,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 11px at 100% 0,#0000 97%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 11px at 0 0,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 11px at 100% 0,#0000 97%,#000) right/51% 100% no-repeat}
+.tk-r{display:flex;justify-content:space-between;align-items:center}
+.tk-r small{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.tk-r i{font-style:normal;font-size:11.5px;font-weight:600;background:rgba(255,255,255,.2);border-radius:8px;padding:3px 8px;white-space:nowrap}
+.tk-t{font:500 21px/1.25 var(--serif);margin:12px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-h{font-size:13px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.tk-c{display:flex;justify-content:space-between}
+.tk-c b{display:block;font-weight:600;font-size:17px}.tk-c span{display:block;font-size:12px;opacity:.75;margin-top:2px}
+.tk-c .c{text-align:center}.tk-c .r{text-align:right}
+.tk-big{font:500 44px/1 var(--serif);letter-spacing:-.02em;margin:14px 0 4px}
+.tk-d{font-size:14px;opacity:.9}
+.tk-c2{display:flex;gap:14px;align-items:flex-start;justify-content:space-between}
+.tk-c2 .nm{min-width:0;flex:1}
+.tk-t2{font-weight:600;font-size:16px;line-height:1.25;height:2.5em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tk-c2 .sp{text-align:right;flex:none}.tk-c2 .sp b{display:block;font-weight:600;font-size:17px}.tk-c2 .sp span{font-size:12px;opacity:.75}
+.tkb{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:14px;padding:14px;margin:-2px 0 20px}
+.tkb .l{flex:1;min-width:0}.tkb small{display:block;font-size:11.5px;font-weight:600;color:var(--acc)}.tkb b{display:block;font-weight:600;font-size:16px;margin:2px 0}.tkb .l span{font-size:12.5px;color:var(--mut)}
+.tkb button{border:0;background:var(--acc);color:#fff;font:600 13px Inter;padding:10px 14px;border-radius:10px}
+.tkc{display:flex;align-items:center;gap:14px;background:var(--t-move);border-radius:18px;padding:14px 16px;margin:-2px 0 20px}
+.tkc .big{text-align:center;width:64px;flex:none}.tkc .big b{display:block;font:500 44px/1 var(--serif);color:var(--acc)}.tkc .big span{font-size:12px;font-weight:600;color:var(--acc)}
+.tkc .x{flex:1;min-width:0}.tkc small{display:block;font-size:12px;color:#3B5A55;font-weight:500}.tkc .x b{display:block;font-weight:600;font-size:16px;margin:2px 0 8px}
+.pbar{height:5px;border-radius:3px;background:rgba(31,94,91,.18);overflow:hidden}.pbar i{display:block;height:100%;background:var(--acc);border-radius:3px}
+.ch{color:var(--mut);font-size:20px}
+.tkw{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-radius:20px;padding:16px;min-height:132px;margin:-2px 0 20px;color:#fff;box-shadow:0 8px 20px rgba(27,36,48,.18)}
+.tkw::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(18,30,36,.78),rgba(18,30,36,.25));z-index:0}
+.tkw>*:not(svg){position:relative;z-index:1}
+.tkw small{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85}.tkw b{display:block;font:500 22px/1.15 var(--serif);margin:3px 0}.tkw span{font-size:12.5px;opacity:.9}
+.tkw .wq{background:#fff;border-radius:10px;padding:6px;flex:none}.tkw .qrs{width:54px;height:54px;fill:var(--ink);display:block}
+.tkp{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 14px;margin:-2px 0 18px}
+.tkp .ti{width:36px;height:36px;border-radius:50%;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center;flex:none}
+.tkp .tx{flex:1;min-width:0}.tkp b{display:block;font-weight:600;font-size:14.5px}.tkp .tx span{font-size:12.5px;color:var(--mut)}
+.tkx{display:flex;background:#FFFCF2;border:1.5px dashed #CDBF9E;border-radius:6px;margin:-2px 0 20px;font-family:ui-monospace,Menlo,monospace;color:#3A3326}
+.tkx .px{flex:1;padding:12px 14px}.tkx small{display:block;font-size:10.5px;letter-spacing:.08em;color:#8A7C5C}.tkx b{display:block;font-size:16px;margin:4px 0;letter-spacing:.02em}.tkx .px span{font-size:11.5px;color:#6B5F45}
+.tkx .pn2{border-left:1.5px dashed #CDBF9E;padding:12px;font-size:12px;font-weight:700;text-align:center;display:grid;place-items:center;line-height:1.3;color:#8A7C5C}
+.rows{margin:16px 0 18px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.rows>div{display:flex;justify-content:space-between;padding:12px 14px}.rows>div+div{border-top:1px solid var(--line)}
+.rows small{color:var(--faint);font-size:12.5px}.rows b{font-weight:600;font-size:14px}
+.qrbox{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;text-align:center}
+.qrbox .qrs{width:170px;height:170px;fill:var(--ink)}.qrbox code{display:block;font:500 13px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:var(--mut);margin-top:10px}
+.cdb{background:var(--t-move);border-radius:18px;padding:18px;text-align:center}
+.cdb small{display:block;font-size:12.5px;font-weight:600;color:#3B5A55}.cdb b{display:block;font:500 60px/1.05 var(--serif);color:var(--acc);margin:2px 0 10px}.cdb b span{font:600 18px Inter}
+.cdb em{display:block;font-style:normal;font-size:13px;color:#3B5A55;margin-top:10px;font-weight:500}
+.fw{border-radius:24px;overflow:hidden;box-shadow:0 10px 26px rgba(27,36,48,.18)}
+.fwt{padding:20px;color:#fff;min-height:260px;display:flex;flex-direction:column;justify-content:flex-end}
+.fwt::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,30,36,.15),rgba(18,30,36,.82));z-index:0}
+.fwt>*:not(svg){position:relative;z-index:1}
+.fwt>small{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85}.fwt h1{font-size:28px;margin:4px 0 2px}.fwt>span{font-size:13px;opacity:.9}
+.wg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.wg small{display:block;font-size:11px;opacity:.75}.wg b{font-weight:600;font-size:14px}
+.fwq{background:#fff;padding:20px;text-align:center}.fwq .qrs{width:150px;height:150px;fill:var(--ink)}.fwq code{display:block;font:500 12px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:var(--mut);margin-top:8px}
+.fp{background:#FFFCF2;border:1.5px dashed #CDBF9E;border-radius:6px;padding:20px;font-family:ui-monospace,Menlo,monospace;color:#3A3326;text-align:center}
+.fp .pa{font-size:12px;letter-spacing:.2em;color:#8A7C5C}.fp .pb{font-size:20px;font-weight:700;margin:6px 0 12px;letter-spacing:.02em}
+.fp .pl{border-top:1.5px dashed #CDBF9E;margin:12px 0}
+.fp .pr2{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0}.fp .pr2 span{color:#8A7C5C}
+.fp .qrs{width:140px;height:140px;fill:#3A3326;margin-top:6px}.fp .pc{font-size:12px;letter-spacing:.16em;color:#8A7C5C;margin-top:8px}
+.sg2{display:flex;background:#F0EDE8;border-radius:12px;padding:3px;margin-bottom:16px}
+.sg2 span{flex:1;text-align:center;padding:9px 0;font-size:14px;font-weight:500;color:var(--mut);border-radius:10px}
+.sg2 span.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(27,36,48,.12)}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:0 8px 24px rgba(27,36,48,.07);margin-bottom:14px}
+.tc-h{padding:18px 18px 22px}
+.tc-t{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.tc-t b{font:500 21px/1.15 var(--serif)}
+.tc-t i{font-style:normal;font-size:11.5px;font-weight:600;color:var(--ok);background:var(--ok-soft);border-radius:8px;padding:4px 8px;white-space:nowrap}
+.tc-r{display:flex;justify-content:space-between;align-items:flex-start}
+.tc-r b{display:block;font-weight:600;font-size:19px}.tc-r span{display:block;font-size:12.5px;color:var(--faint);margin-top:2px}
+.tc-r .rt{text-align:right}
+.tc-r .mid{text-align:center;padding-top:2px}.tc-r .mid>b{font-size:14px;margin-top:4px}
+.ln{display:flex;align-items:center;gap:4px}.ln svg{width:20px;height:20px;color:var(--acc)}
+.ln u{width:22px;border-top:2px dotted #A9CFC9}
+.tc-cut{position:relative;border-top:2px dashed var(--line);margin:0 18px}
+.tc-cut::before,.tc-cut::after{content:"";position:absolute;top:-14px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,var(--acc) 0 4.5px,transparent 5px),var(--bg);border:2px solid var(--acc)}
+.tc-cut::before{left:-31px}.tc-cut::after{right:-31px}
+.tc-g,.tc-row{display:flex;justify-content:space-between;padding:16px 0;margin:0 18px;border-top:1.5px dashed var(--line)}
+.tc-g b,.tc-row b{display:block;font-weight:600;font-size:16px}.tc-g span,.tc-row span{display:block;font-size:12.5px;color:var(--faint);margin-top:2px}
+.tc-g .c{text-align:center}.tc-g .r,.tc-row .r{text-align:right}
+.tc-qr{padding:20px 18px 18px;text-align:center}
+.tc-qr .qrs{width:150px;height:150px;fill:var(--ink)}.tc-qr .mut{margin-top:6px}
+.more{font-size:13px;font-weight:600;color:var(--acc)}
+.car{display:flex;gap:12px;overflow-x:auto;margin:0 -20px 26px;padding:0 20px 4px;scroll-snap-type:x mandatory;scroll-padding-left:20px;scrollbar-width:none}
+.car::-webkit-scrollbar{display:none}
+.cc{flex:none;width:262px;scroll-snap-align:start;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.cc .art{height:136px}
+.cc .bd{padding:12px 14px 14px}
+.cc h3{font:600 17px/1.2 var(--serif);margin:0 0 3px}
+.cc .ft{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:11px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mut)}
+.cc .ft b{color:var(--ink);font-weight:600;font-size:14px}
+.cc .stack i{width:24px;height:24px;font-size:10px;margin-left:-7px}.cc .stack i:first-child{margin-left:0}
+.soon{position:absolute;left:12px;top:12px;z-index:2;background:rgba(255,255,255,.92);border-radius:8px;padding:5px 9px;font-size:12px;font-weight:600;color:var(--ink)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:26px}
+.gc{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.gc .art{height:84px}
+.gc .live,.gc .soon{left:8px;top:8px;font-size:11px;padding:3px 7px}
+.gc .bd{padding:10px 12px 12px}
+.gc b{display:block;font-weight:600;font-size:14px;line-height:1.25;margin-bottom:2px}
+.gc .host{font-size:12px}
+.gc .ft{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--mut)}
+.gc .ft .p{color:var(--ink);font-weight:600;font-size:13px}
+.ff{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px}
+.ff .n{display:flex;align-items:baseline;gap:6px;margin-bottom:8px}
+.ff .n b{font:500 34px/1 var(--serif);color:#B5532F}
+.ff .n span{font-size:12px;font-weight:500;color:var(--mut)}
+.ff .bar{height:5px;border-radius:3px;background:#F0E6DE;overflow:hidden;margin-bottom:12px}
+.ff .bar i{display:block;height:100%;background:#C9704F;border-radius:3px}
+.ff .t{font-weight:600;font-size:14px;line-height:1.25;margin-bottom:2px}
+.ff .host{font-size:12px}
+.ff .ft{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--mut)}
+.ff .ft .p{color:var(--ink);font-weight:600;font-size:13px}
+.lr{display:flex;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px;margin-bottom:10px}
+.lr .art{width:72px;height:72px;border-radius:12px;flex:none}
+.lr .tx{min-width:0;flex:1;display:flex;flex-direction:column}
+.lr .tx b{font-weight:600;font-size:14.5px;line-height:1.25}
+.lr .ft{margin-top:auto;display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut);padding-top:4px}
+.lr .ft .p{color:var(--ink);font-weight:600}
+.all{display:flex;align-items:center;justify-content:center;height:46px;border:1px solid var(--line);background:var(--surface);border-radius:12px;font-weight:600;font-size:14px;color:var(--acc);margin-top:4px}
+.tabs{position:absolute;left:0;right:0;bottom:0;height:84px;background:var(--surface);border-top:1px solid var(--line);display:flex;padding:8px 8px 24px;z-index:4}
+.tabs div{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:500;color:var(--faint);padding-top:4px}
+.tabs div.on{color:var(--acc)}
+/* detail */
+.hero{height:260px;margin:-56px -20px 0}
+.hero .ib{position:absolute;top:50px;left:20px;z-index:2}.hero .ib.r{left:auto;right:20px}
+.sheet{position:relative;z-index:2;background:var(--bg);border-radius:24px 24px 0 0;margin:-24px -20px 0;padding:22px 20px 0}
+.tag{display:inline-flex;font-size:12px;font-weight:600;color:var(--acc);background:var(--acc-soft);border-radius:8px;padding:4px 9px;margin-bottom:10px}
+.sheet h1{font-size:30px;margin:0 0 6px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+.fc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.fc small{display:block;color:var(--faint);font-size:11.5px;font-weight:500}.fc b{font-weight:600;font-size:14.5px}
+.who{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:16px}
+.who .stack i{width:34px;height:34px;font-size:12px}
+.who b{font-weight:600}
+.policy{display:flex;gap:12px;background:var(--ok-soft);border-radius:14px;padding:13px 14px;margin-bottom:18px;color:var(--ok)}
+.policy b{display:block;font-weight:600;font-size:14px}.policy span{font-size:13px;color:#2F5C45}
+.quote{border-left:3px solid var(--acc);padding:2px 0 2px 14px;margin:0 0 18px;font:500 17px/1.45 var(--serif);color:var(--ink)}
+.quote small{display:block;font:500 12.5px Inter;color:var(--mut);margin-top:6px}
+.cta{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:14px 20px 30px;display:flex;align-items:center;gap:16px;z-index:4}
+.cta small{display:block;color:var(--mut);font-size:12px}.cta b{font-size:18px;font-weight:600}
+.btn{flex:1;height:50px;border:0;border-radius:12px;background:var(--acc);color:#fff;font:600 16px Inter}
+</style>
+</head>
+<body>
+<div class="cap"><b>KL Local Session · Calm v2</b>Highlight carousel on top, listing below. Same trust cues, with real people on the page.<div class="opts">Compare section: <select id="opt"><option value="rec">Chosen: Next ticket + On the map</option><option value="hosts">Top hosts near you</option><option value="area">Explore by area</option><option value="reviews">What people said</option><option value="plan">Your next plan</option><option value="map">On the map</option><option value="trust">Why book here</option><option value="popular">Popular this week</option><option value="first">First time? Start here</option><option value="new">Just added</option><option value="fast">Filling up fast (previous)</option></select> &nbsp; Ticket style: <select id="tks"><option value="classic">A · Boarding pass (fixed size)</option><option value="minimal">B · Minimal card</option><option value="countdown">C · Countdown</option><option value="wallet">D · Wallet pass</option><option value="bar">E · Slim bar</option><option value="paper">F · Paper stub</option></select></div></div>
+<div class="row">
+
+<div class="col"><div class="lbl">1 · Explore</div>
+<div class="phone">
+  <div class="status"><span>9:41</span><span>5G</span></div>
+  <div class="scroll">
+    <div class="top">
+      <span class="loc"><svg viewBox="0 0 24 24"><path d="M12 21s-6-5.2-6-10a6 6 0 0112 0c0 4.8-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>Bangsar, KL ▾</span>
+      <span class="ib"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15zM10 20a2 2 0 004 0"/></svg></span>
+    </div>
+    <div class="eye">Wed 21 Oct · 7:42 PM</div>
+    <h1>Tonight in Bangsar</h1>
+    
+    <div class="tkrow" data-o="plan rec" data-tk="classic"><div class="tk" style="--tkc:#1F5E5B"><div class="tk-top"><div class="tk-r"><small>Your ticket · Today</small><i>in 22 min</i></div><div class="tk-t">Sunset Yoga Deck</div><div class="tk-h">Mei Studio · Bangsar</div></div><div class="tk-bot"><div class="tk-c"><div><b>21 Oct</b><span>Date</span></div><div class="c"><b>8:04 PM</b><span>Start time</span></div><div class="r"><b>2</b><span>Spots</span></div></div></div></div><div class="tk" style="--tkc:#A8553A"><div class="tk-top"><div class="tk-r"><small>Your ticket</small><i>in 3 days</i></div><div class="tk-t">Batik Painting Workshop for Complete Beginners and Curious Friends</div><div class="tk-h">Batik House Bangsar Community Arts Collective · Bangsar</div></div><div class="tk-bot"><div class="tk-c"><div><b>24 Oct</b><span>Date</span></div><div class="c"><b>2:00 PM</b><span>Start time</span></div><div class="r"><b>2</b><span>Spots</span></div></div></div></div></div>
+    <div data-o="plan rec" data-tk="minimal" class="tkb"><div class="l"><small>Your ticket · Today</small><b>Sunset Yoga Deck</b><span>8:04 PM · Mei Studio rooftop</span></div><button>Show ticket</button></div>
+    <div data-o="plan rec" data-tk="countdown" class="tkc"><div class="big"><b>22</b><span>min</span></div><div class="x"><small>Starts 8:04 PM · Today</small><b>Sunset Yoga Deck</b><div class="pbar"><i style="width:78%"></i></div></div><span class="ch">›</span></div>
+    <div data-o="plan rec" data-tk="wallet" class="tkw" data-art="move"><div class="wt"><small>Your ticket</small><b>Sunset Yoga Deck</b><span>Today · 8:04 PM · Mei Studio</span></div><div class="wq"><svg class="qrs" viewBox="0 0 104 104"></svg></div></div>
+    <div data-o="plan rec" data-tk="bar" class="tkp"><div class="ti"><svg viewBox="0 0 24 24"><path d="M4 8a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg></div><div class="tx"><b>Sunset Yoga Deck</b><span>Today 8:04 PM · in 22 min</span></div><span class="ch">›</span></div>
+    <div data-o="plan rec" data-tk="paper" class="tkx"><div class="px"><small>ADMIT 2 · WED 21 OCT</small><b>SUNSET YOGA DECK</b><span>8:04 PM · MEI STUDIO ROOFTOP</span></div><div class="pn2">No.<br>7K2Q</div></div>
+    <div class="search"><div class="sb"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Search events, hosts, places</div><span class="ib"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></span></div>
+    <div class="cats">
+      <div class="cat"><div class="art" data-art="make"></div>Make</div>
+      <div class="cat"><div class="art" data-art="move"></div>Move</div>
+      <div class="cat"><div class="art" data-art="meet"></div>Meet</div>
+      <div class="cat"><div class="art" data-art="free"></div>Free</div>
+    </div>
+
+    <div class="sech"><h2>This weekend</h2><span class="more">View all ›</span></div>
+    <div class="car">
+      <div class="cc"><div class="art" data-art="move"><span class="soon">Sat 6:30 AM</span></div><div class="bd"><h3>Sunrise Hike Bukit Kiara</h3><div class="host">Kiara Hikers <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+        <div class="ft"><div class="stack"><i style="background:#C9704F">A</i><i style="background:#4F8F86">S</i><i style="background:#6C7BC0">N</i></div><span><b>Free</b> · 18 going</span></div></div></div>
+      <div class="cc"><div class="art" data-art="free"><span class="soon">Sat 10:00 AM</span></div><div class="bd"><h3>Bangsar Flea Market</h3><div class="host">Bangsar Makers <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+        <div class="ft"><div class="stack"><i style="background:#4F8F86">S</i><i style="background:#B58A3C">M</i></div><span><b>Free</b> · 40 going</span></div></div></div>
+      <div class="cc"><div class="art" data-art="make"><span class="soon">Sat 2:00 PM</span></div><div class="bd"><h3>Batik Painting Workshop</h3><div class="host">Batik House <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+        <div class="ft"><div class="stack"><i style="background:#6C7BC0">N</i><i style="background:#C9704F">A</i><i style="background:#4F8F86">S</i></div><span><b>RM60</b> · 8 left</span></div></div></div>
+      <div class="cc"><div class="art" data-art="meet2"><span class="soon">Sun 10:30 AM</span></div><div class="bd"><h3>Sketch &amp; Brunch</h3><div class="host">Ink &amp; Eggs <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+        <div class="ft"><div class="stack"><i style="background:#B58A3C">M</i><i style="background:#4F8F86">S</i></div><span><b>RM38</b> · 6 left</span></div></div></div>
+    </div>
+
+    <div data-o="hosts"><div class="sech"><h2>Top hosts near you</h2><span class="more">View all ›</span></div><div class="hrow"><div class="hs"><div class="hav" style="background:#4F8F86">M<em><svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></em></div><b>Mei Studio</b><span>★ 4.8 · 38 events</span></div><div class="hs"><div class="hav" style="background:#C9704F">C<em><svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></em></div><b>Clay &amp; Co</b><span>★ 4.9 · 52 events</span></div><div class="hs"><div class="hav" style="background:#6C7BC0">K<em><svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></em></div><b>KL Run Crew</b><span>★ 4.7 · 64 events</span></div><div class="hs"><div class="hav" style="background:#B58A3C">B<em><svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></em></div><b>Batik House</b><span>★ 4.8 · 21 events</span></div><div class="hs"><div class="hav" style="background:#8E6BA8">G<em><svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></em></div><b>Game Haus</b><span>★ 4.6 · 30 events</span></div></div></div>
+
+    <div data-o="area"><div class="sech"><h2>Explore by area</h2><span class="more">View all ›</span></div><div class="arow"><span class="ar">Bangsar<em>12</em></span><span class="ar">KLCC<em>8</em></span><span class="ar">Mid Valley<em>5</em></span><span class="ar">Sri Hartamas<em>4</em></span><span class="ar">PJ<em>6</em></span><span class="ar">Brickfields<em>3</em></span><span class="ar">Chinatown<em>3</em></span></div></div>
+
+    <div data-o="reviews"><div class="sech"><h2>What people said</h2><span class="more">View all ›</span></div><div class="car rvs"><div class="rv"><div class="stars">★★★★★</div><p>“Small group, kind teacher, and the sunset was unreal. Felt safe walking in alone.”</p><small><b>Nadia</b> · Sunset Yoga Deck<br><span class="ok">✓ Attended</span></small></div><div class="rv"><div class="stars">★★★★★</div><p>“Host replied within minutes and the refund was instant when I had to cancel.”</p><small><b>Daniel</b> · Batik Painting Workshop<br><span class="ok">✓ Attended</span></small></div><div class="rv"><div class="stars">★★★★★</div><p>“Exactly as described. Easy to find, friendly crowd.”</p><small><b>Priya</b> · Pokémon Trade Night<br><span class="ok">✓ Attended</span></small></div></div></div>
+
+    <div data-o="map rec"><div class="sech"><h2>On the map</h2><span class="more">View all ›</span></div><div class="map"><svg viewBox="0 0 350 170" preserveAspectRatio="xMidYMid slice"><rect width="350" height="170" fill="#EFEBE3"/><path d="M-10 120 C80 150 140 80 230 125 S330 150 370 110" fill="none" stroke="#BFD9E6" stroke-width="16" stroke-linecap="round"/><ellipse cx="70" cy="45" rx="48" ry="26" fill="#D3E5CC"/><ellipse cx="290" cy="40" rx="36" ry="20" fill="#D3E5CC"/><g stroke="#fff" stroke-width="7" fill="none"><path d="M0 80 L350 60"/><path d="M110 0 L150 170"/><path d="M250 0 C235 70 270 110 250 170"/></g><g stroke="#fff" stroke-width="3" fill="none"><path d="M0 130 L350 150"/><path d="M40 0 L20 170"/><path d="M320 0 L330 170"/></g>
+<g fill="#1F5E5B" stroke="#fff" stroke-width="2.5"><circle cx="130" cy="70" r="9"/><circle cx="205" cy="52" r="9"/><circle cx="260" cy="95" r="9"/><circle cx="90" cy="110" r="9"/></g><circle cx="175" cy="92" r="6" fill="#2F6BFF" stroke="#fff" stroke-width="3"/></svg><span class="mb">5 events within 2 km</span><span class="mo">Open map</span></div></div>
+
+    <div data-o="trust"><div class="sech"><h2>Why book here</h2></div><div class="trow"><div class="tr"><div class="tc"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg></div><b>Verified hosts</b><span>Checked before they can list</span></div><div class="tr"><div class="tc"><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"/><path d="M4 12h10a6 6 0 010 12" transform="translate(0 -6)"/></svg></div><b>Free cancel</b><span>Clear refund rules up front</span></div><div class="tr"><div class="tc"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div><b>Secure pay</b><span>Bank or e-wallet, no card stored</span></div></div></div>
+
+    <div data-o="popular"><div class="sech"><h2>Popular this week</h2><span class="more">View all ›</span></div><div class="pp"><div class="pn">1</div><div class="art" data-art="free"></div><div class="tx"><b>Bangsar Flea Market</b><div class="host">Bangsar Makers <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><span class="mut">40 going this week</span></div></div><div class="pp"><div class="pn">2</div><div class="art" data-art="move"></div><div class="tx"><b>Sunrise Hike Bukit Kiara</b><div class="host">Kiara Hikers <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><span class="mut">18 going this week</span></div></div><div class="pp"><div class="pn">3</div><div class="art" data-art="free"></div><div class="tx"><b>Pokémon Trade Night</b><div class="host">KLCC Pokémon Club <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><span class="mut">12 going this week</span></div></div><div class="pp"><div class="pn">4</div><div class="art" data-art="move"></div><div class="tx"><b>Sunset Yoga Deck</b><div class="host">Mei Studio <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><span class="mut">12 going this week</span></div></div></div>
+
+    <div data-o="first"><div class="sech"><h2>First time? Start here</h2><span class="more">View all ›</span></div><div class="ftc"><div class="art" data-art="move"></div><div class="tx"><b>Sunset Yoga Deck</b><div class="host">Mei Studio <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="tg"><span>All levels</span><span>Mats provided</span></div></div><div class="p">RM25</div></div><div class="ftc"><div class="art" data-art="meet2"></div><div class="tx"><b>Sketch &amp; Brunch</b><div class="host">Ink &amp; Eggs <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="tg"><span>No experience</span><span>Small group · 12</span></div></div><div class="p">RM38</div></div><div class="ftc"><div class="art" data-art="make"></div><div class="tx"><b>Pottery Wheel Basics</b><div class="host">Clay &amp; Co <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="tg"><span>Beginner</span><span>Solo friendly</span></div></div><div class="p">RM45</div></div></div>
+
+    <div data-o="new"><div class="sech"><h2>Just added</h2><span class="more">View all ›</span></div><div class="ja"><div class="dt"><b>24</b><span>OCT</span></div><div class="tx"><b>Kolam Art Workshop</b><div class="host">Rangoli Lab <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div></div><em>NEW · 2h</em></div><div class="ja"><div class="dt"><b>31</b><span>OCT</span></div><div class="tx"><b>Photo Walk: Old KL</b><div class="host">KL Lens Club <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div></div><em>NEW · 5h</em></div><div class="ja"><div class="dt"><b>1</b><span>NOV</span></div><div class="tx"><b>Vinyl Swap Meet</b><div class="host">Spin Collective <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div></div><em>NEW · Yday</em></div><div class="ja"><div class="dt"><b>7</b><span>NOV</span></div><div class="tx"><b>Intro to Muay Thai</b><div class="host">Garuda Gym <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div></div><em>NEW · Yday</em></div></div>
+
+    <div data-o="fast"><div class="sech"><h2>Filling up fast</h2><span class="more">View all ›</span></div>
+    <div class="grid">
+      <div class="ff"><div class="n"><b>2</b><span>spots left</span></div><div class="bar"><i style="width:80%"></i></div><div class="t">Batik Painting Workshop</div><div class="host">Batik House <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="ft"><span>Sat 2:00 PM</span><span class="p">RM60</span></div></div>
+      <div class="ff"><div class="n"><b>3</b><span>spots left</span></div><div class="bar"><i style="width:75%"></i></div><div class="t">Late Pottery Drop-in</div><div class="host">Clay &amp; Co <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="ft"><span>Tonight 9:15 PM</span><span class="p">RM45</span></div></div>
+      <div class="ff"><div class="n"><b>4</b><span>spots left</span></div><div class="bar"><i style="width:80%"></i></div><div class="t">Salsa Social</div><div class="host">Salsa KL <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="ft"><span>Tonight 9:00 PM</span><span class="p">RM15</span></div></div>
+      <div class="ff"><div class="n"><b>5</b><span>spots left</span></div><div class="bar"><i style="width:71%"></i></div><div class="t">Sunset Yoga Deck</div><div class="host">Mei Studio <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="ft"><span>Tonight 8:04 PM</span><span class="p">RM25</span></div></div>
+    </div></div>
+
+    <div class="sech"><h2>Near you</h2><span class="more">View all ›</span></div>
+      <div class="lr"><div class="art" data-art="make"></div><div class="tx"><b>Late Pottery Drop-in</b><div class="host">Clay &amp; Co <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="ft"><span>9:15 PM · 3.4 km</span><span class="p">RM45</span></div><div class="ok" style="font-size:12px">✓ Free cancellation</div></div></div>
+      <div class="lr"><div class="art" data-art="free"></div><div class="tx"><b>Midvalley Night Market</b><div class="host">Midvalley <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="ft"><span>Until 11 PM · 4.5 km</span><span class="p">Free</span></div></div></div>
+      <div class="lr"><div class="art" data-art="move"></div><div class="tx"><b>Supper Run Club</b><div class="host">KL Run Crew <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="ft"><span>11:00 PM · 1.0 km</span><span class="p">Free</span></div></div></div>
+      <div class="lr"><div class="art" data-art="meet"></div><div class="tx"><b>Midnight Board Games</b><div class="host">Game Haus <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="ft"><span>10:30 PM · 2.4 km</span><span class="p">RM12</span></div><div class="ok" style="font-size:12px">✓ Free cancellation</div></div></div>
+    <div class="all">View all 24 events</div>
+  </div>
+  <div class="tabs">
+    <div class="on"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Explore</div>
+    <div><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/></svg>Saved</div>
+    <div><svg viewBox="0 0 24 24"><path d="M4 8a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"/></svg>Tickets</div>
+    <div><svg viewBox="0 0 24 24"><path d="M5 6h14a2 2 0 012 2v7a2 2 0 01-2 2h-7l-4 3.5V17H5a2 2 0 01-2-2V8a2 2 0 012-2z"/></svg>Chat</div>
+    <div><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1-4 4-5.5 7-5.5s6 1.5 7 5.5"/></svg>Profile</div>
+  </div>
+</div></div>
+
+<div class="col"><div class="lbl">2 · Event detail</div>
+<div class="phone">
+  <div class="status"><span>9:41</span><span>5G</span></div>
+  <div class="scroll">
+    <div class="art hero" data-art="move">
+      <span class="ib"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></span>
+      <span class="ib r"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/></svg></span>
+    </div>
+    <div class="sheet">
+      <span class="tag">Move · Starts in 22 min</span>
+      <h1>Sunset Yoga Deck</h1>
+      <div class="host" style="font-size:13.5px">Hosted by Mei Studio <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> <span style="color:var(--acc);font-weight:500">Verified host</span></div>
+
+      <div class="facts">
+        <div class="fc"><small>When</small><b>Wed 8:04 – 9:15 PM</b></div>
+        <div class="fc"><small>Where</small><b>Bangsar · 1.9 km</b></div>
+      </div>
+
+      <div class="who">
+        <div class="stack"><i style="background:#C9704F">A</i><i style="background:#4F8F86">S</i><i style="background:#6C7BC0">N</i><i style="background:#B58A3C">+9</i></div>
+        <div><b>12 going</b><div class="mut">5 spots left</div></div>
+      </div>
+
+      <div class="policy"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg>
+        <div><b>Free cancellation</b><span>Full refund up to 24 hours before it starts.</span></div></div>
+
+      <div class="quote">A relaxed 70-minute beginner flow on the rooftop as the sun goes down. Mats provided, just bring water.<small>— Mei, your host</small></div>
+    </div>
+  </div>
+  <div class="cta"><div><small>Per person</small><b>RM25</b></div><button class="btn">Book a spot</button></div>
+</div></div>
+
+<div class="col"><div class="lbl">3 · Full-screen map (opens from "On the map")</div>
+<div class="phone">
+  <svg class="fm" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><rect width="390" height="844" fill="#EFEBE3"/>
+<path d="M-20 560 C90 620 160 480 260 560 S380 640 420 560" fill="none" stroke="#BFD9E6" stroke-width="26" stroke-linecap="round"/>
+<ellipse cx="80" cy="180" rx="70" ry="44" fill="#D3E5CC"/><ellipse cx="330" cy="140" rx="50" ry="34" fill="#D3E5CC"/><ellipse cx="60" cy="700" rx="60" ry="40" fill="#D3E5CC"/>
+<g stroke="#fff" stroke-width="10" fill="none"><path d="M0 300 L390 260"/><path d="M130 100 L190 844"/><path d="M290 100 C270 300 320 500 290 844"/></g>
+<g stroke="#fff" stroke-width="4" fill="none"><path d="M0 440 L390 480"/><path d="M60 100 L30 844"/><path d="M360 100 L370 844"/><path d="M0 700 L390 660"/><path d="M0 200 L390 190"/></g>
+<g font-family="Inter" font-size="11" font-weight="600" fill="#8A94A1"><text x="40" y="330">Bangsar</text><text x="230" y="150">KLCC</text><text x="240" y="610">Mid Valley</text></g>
+<circle cx="190" cy="360" r="22" fill="#2F6BFF" fill-opacity=".15"/><circle cx="190" cy="360" r="7" fill="#2F6BFF" stroke="#fff" stroke-width="3"/></svg><div class="pin" style="left:120px;top:250px">Free</div><div class="pin sel" style="left:250px;top:200px">✓ Booked</div><div class="pin" style="left:300px;top:330px">RM10</div><div class="pin" style="left:90px;top:400px">RM45</div><div class="pin" style="left:210px;top:440px">Free</div><div class="pin" style="left:320px;top:480px">RM15</div><div class="pin" style="left:150px;top:520px">RM12</div>
+  <div class="status"><span>9:41</span><span>5G</span></div>
+  <div class="mtop"><span class="ib"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></span><div class="sb" style="color:var(--ink);font-weight:500">Bangsar, KL</div><span class="ib"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></span></div>
+  <div class="mchips"><span class="mc on">All</span><span class="mc">Make</span><span class="mc">Move</span><span class="mc">Meet</span><span class="mc">Free</span><span class="mc">Tonight</span></div>
+  <div class="msearch">Search this area</div>
+  <div class="loc2"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
+  <div class="mcard"><div class="grip"></div>
+    <div class="mrow"><div class="art" data-art="move"></div><div class="tx"><span class="tag" style="margin-bottom:4px">In 22 min</span><b>Sunset Yoga Deck</b><div class="host">Mei Studio <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> · 1.9 km</div><div class="mut" style="margin-top:2px">Today 8:04 PM · <span class="ok">✓ Free cancel</span></div></div><div class="pr">RM25</div></div>
+    <div class="mbtn"><button class="btn sec2">Directions</button><button class="btn">View event</button></div>
+    <div class="mut" style="text-align:center;margin-top:10px">7 events in this area · swipe up for list</div>
+  </div>
+</div></div>
+
+<div class="col"><div class="lbl">4 · Ticket (tap the ticket on Explore)</div>
+<div class="phone">
+  <div class="status"><span>9:41</span><span>5G</span></div>
+  <div class="scroll">
+    <div class="top" data-tk="minimal countdown wallet bar paper" style="margin-bottom:14px"><span class="ib"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></span><b style="font-weight:600">Your ticket</b><span class="ib"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></span></div>
+    <div data-tk="classic">
+      <h1 style="font-size:30px;margin:2px 0 14px">Tickets</h1>
+      <div class="sg2"><span class="on">Upcoming</span><span>Previous</span></div>
+      <div class="tcard">
+        <div class="tc-h">
+          <div class="tc-t"><b>Sunset Yoga Deck</b><i>✓ Confirmed</i></div>
+          <div class="tc-r"><div><b>8:04 PM</b><span>Starts</span></div>
+            <div class="mid"><div class="ln"><u></u><svg viewBox="0 0 24 24"><path d="M4 8a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg><u></u></div><b>1h 11m</b></div>
+            <div class="rt"><b>9:15 PM</b><span>Ends</span></div></div>
+        </div>
+        <div class="tc-cut"></div>
+        <div class="tc-qr"><svg class="qrs" viewBox="0 0 104 104"></svg><div class="mut">Show this at the entrance</div></div>
+        <div class="tc-g"><div><b>Wed 21 Oct</b><span>Date</span></div><div class="r"><b>2</b><span>Spots</span></div></div>
+        <div class="tc-row"><div><b>Leong</b><span>Attendee</span></div><div class="r"><b>JOM-7K2Q</b><span>Booking code</span></div></div>
+        <div class="tc-row"><div><b>Mei Studio <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b><span>Host</span></div><div class="r"><b>Bangsar</b><span>Area</span></div></div>
+        <div class="tc-row"><div><b>FPX · Maybank</b><span>Payment method</span></div><div class="r"><b>RM52.00</b><span>Price paid</span></div></div>
+      </div>
+    </div>
+    <div class="fm1" data-tk="minimal bar"><div class="eye" style="color:var(--ok)">Confirmed · 2 spots</div><h1 style="margin-top:6px">Sunset Yoga Deck</h1><div class="host">Mei Studio <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="rows"><div><small>When</small><b>Wed 21 Oct · 8:04 PM</b></div><div><small>Where</small><b>Mei Studio rooftop</b></div><div><small>Paid</small><b>RM52.00</b></div></div><div class="qrbox"><svg class="qrs" viewBox="0 0 104 104"></svg><code>JOM-7K2Q-48XD</code><div class="mut">Show this at the entrance</div></div></div>
+    <div class="fm1" data-tk="countdown"><div class="cdb"><small>Starts in</small><b>22<span> min</span></b><div class="pbar"><i style="width:78%"></i></div><em>Today · 8:04 PM</em></div><h1 style="margin-top:16px">Sunset Yoga Deck</h1><div class="host">Mei Studio <svg class="vf" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> · 2 spots</div><div class="rows"><div><small>When</small><b>Wed 21 Oct · 8:04 PM</b></div><div><small>Where</small><b>Mei Studio rooftop</b></div><div><small>Paid</small><b>RM52.00</b></div></div><div class="qrbox"><svg class="qrs" viewBox="0 0 104 104"></svg><code>JOM-7K2Q-48XD</code><div class="mut">Show this at the entrance</div></div></div>
+    <div class="fw" data-tk="wallet"><div class="fwt" data-art="move"><small>Your ticket · 2 spots</small><h1>Sunset Yoga Deck</h1><span>Mei Studio</span><div class="wg"><div><small>Date</small><b>Wed 21 Oct</b></div><div><small>Time</small><b>8:04 PM</b></div><div><small>Where</small><b>Rooftop</b></div></div></div><div class="fwq"><svg class="qrs" viewBox="0 0 104 104"></svg><code>JOM-7K2Q-48XD</code></div></div>
+    <div class="fp" data-tk="paper"><div class="pa">ADMIT 2</div><div class="pb">SUNSET YOGA DECK</div><div class="pl"></div><div class="pr2"><span>DATE</span><b>WED 21 OCT 2026</b></div><div class="pr2"><span>TIME</span><b>8:04 PM</b></div><div class="pr2"><span>VENUE</span><b>MEI STUDIO ROOFTOP</b></div><div class="pr2"><span>PAID</span><b>RM52.00</b></div><div class="pl"></div><svg class="qrs" viewBox="0 0 104 104"></svg><div class="pc">JOM-7K2Q-48XD</div></div>
+    <div class="bt-act"><button class="btn sec2">Directions</button><button class="btn">Add to calendar</button></div>
+    <a class="lnkd">Cancel booking</a>
+  </div>
+  <div class="tabs" data-tk="classic">
+    <div><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Explore</div>
+    <div><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/></svg>Saved</div>
+    <div class="on"><svg viewBox="0 0 24 24"><path d="M4 8a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"/></svg>Tickets</div>
+    <div><svg viewBox="0 0 24 24"><path d="M5 6h14a2 2 0 012 2v7a2 2 0 01-2 2h-7l-4 3.5V17H5a2 2 0 01-2-2V8a2 2 0 012-2z"/></svg>Chat</div>
+    <div><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1-4 4-5.5 7-5.5s6 1.5 7 5.5"/></svg>Profile</div>
+  </div>
+</div></div>
+
+</div>
+<script>
+const P={
+ free:['#F3EAD0','<circle cx="300" cy="150" r="70" fill="#E8B74A"/><circle cx="300" cy="150" r="104" fill="none" stroke="#E8B74A" stroke-opacity=".4" stroke-width="2"/><circle cx="300" cy="150" r="140" fill="none" stroke="#E8B74A" stroke-opacity=".22" stroke-width="2"/><path d="M0 230 Q110 170 220 230 T440 230 V300 H0Z" fill="#D9C58E"/>'],
+ move:['#DDEBE4','<circle cx="90" cy="90" r="46" fill="#F3D9A4"/><path d="M0 170 Q60 130 120 170 T240 170 T360 170 T480 170 V300 H0Z" fill="#9CC4B6"/><path d="M0 215 Q60 180 120 215 T240 215 T360 215 T480 215 V300 H0Z" fill="#4F8F86"/><path d="M0 260 Q60 235 120 260 T240 260 T360 260 T480 260 V300 H0Z" fill="#1F5E5B"/>'],
+ meet:['#E1E6F2','<circle cx="150" cy="150" r="90" fill="#7F8FD0" fill-opacity=".75"/><circle cx="240" cy="150" r="90" fill="#F0B7A4" fill-opacity=".8"/><circle cx="195" cy="150" r="28" fill="#fff" fill-opacity=".55"/>'],
+ meet2:['#EEE3EC','<circle cx="130" cy="170" r="80" fill="#C98BB0" fill-opacity=".7"/><circle cx="230" cy="120" r="80" fill="#E8A87C" fill-opacity=".75"/><circle cx="300" cy="190" r="50" fill="#7F8FD0" fill-opacity=".6"/>'],
+ make:['#F3E6DD','<path d="M70 300 V150 a80 80 0 0 1 160 0 V300Z" fill="#D98B6A"/><path d="M110 300 V160 a40 40 0 0 1 80 0 V300Z" fill="#FBF1E8"/><circle cx="300" cy="80" r="26" fill="#C9704F" fill-opacity=".55"/><rect x="250" y="210" width="110" height="90" rx="4" fill="#E9C3AB"/>']
+};
+var sel=document.getElementById('opt'),sel2=document.getElementById('tks');function ap(){document.querySelectorAll('[data-o],[data-tk]').forEach(function(el){var ok=true;if(el.dataset.o)ok=el.dataset.o.split(' ').indexOf(sel.value)>-1;if(ok&&el.dataset.tk)ok=el.dataset.tk.split(' ').indexOf(sel2.value)>-1;el.classList.toggle('off',!ok)})}
+sel.onchange=sel2.onchange=ap;ap();
+document.querySelectorAll('.qrs').forEach(function(el){var o='';for(var y=0;y<13;y++)for(var x=0;x<13;x++){var c=(x<4&&y<4)||(x>8&&y<4)||(x<4&&y>8);var r=((x*7+y*13+x*y)%5<2);if(c?((x%3!==1||y%3!==1)&&!(x===1&&y===1)):r)o+='<rect x="'+x*8+'" y="'+y*8+'" width="8" height="8"/>'}el.innerHTML=o});
+document.querySelectorAll('[data-art]').forEach(function(el){var p=P[el.dataset.art];el.style.background=p[0];el.insertAdjacentHTML('afterbegin','<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">'+p[1]+'</svg>')});
+</script>
+</body>
+</html>

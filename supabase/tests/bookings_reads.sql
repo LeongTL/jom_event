@@ -30,7 +30,7 @@ select pg_temp.bk(9, 'e1000000-0000-0000-0000-000000000001', 'cccccccc-0000-0000
 select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-000000000002","role":"authenticated"}', true);
 set local role authenticated;
 select is((select count(*)::int from bookings.bookings), 6, 'user_sees_only_own_bookings');
-select is((select string_agg(ticket_code, ',' order by starts_at_sort) from (
+select is((select string_agg(ticket_code, ',' order by starts_at_sort, ticket_code) from (
     select ticket_code, event_starts_at as starts_at_sort from bookings.my_bookings('upcoming')) q),
   'KLS-00001,KLS-00002', 'my_bookings upcoming: confirmed and processing, not held or cancelled');
 select is((select string_agg(ticket_code, ',' order by ticket_code) from bookings.my_bookings('past')),
