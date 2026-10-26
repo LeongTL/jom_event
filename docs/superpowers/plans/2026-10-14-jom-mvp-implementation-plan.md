@@ -1,6 +1,6 @@
 # Jom MVP Implementation Plan
 
-Oct 14, 2026 · @Leong
+Oct 14, 2026 · @Leong · updated Oct 26, 2026 for the Calm design (Tasks 19A to 19G added; Tasks 13, 15, 16, 17 and 20 to 25 revised)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task by task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,9 +8,9 @@ Oct 14, 2026 · @Leong
 
 **Architecture:** a Flutter client talks only to one Supabase project. The backend is a modular monolith with six modules (`identity`, `events`, `bookings`, `payments`, `reviews`, `chat`), each owning its own Postgres schema, migrations and edge functions, plus a small `shared` schema for helpers. Payments and SMS sit behind interfaces with mock implementations in the MVP.
 
-**Tech stack:** Flutter and Dart, Riverpod, go_router, supabase_flutter, mobile_scanner (QR scan), qr_flutter (ticket QR), geolocator, url_launcher, Supabase (Postgres, Auth, Storage, Realtime, Edge Functions in TypeScript/Deno, pg_cron), pgTAP, k6, GitHub Actions.
+**Tech stack:** Flutter and Dart, Riverpod, go_router, supabase_flutter, mobile_scanner (QR scan), qr_flutter (ticket QR), geolocator, url_launcher, flutter_map and latlong2 (map), bundled Inter and Fraunces fonts, Supabase (Postgres, Auth, Storage, Realtime, Edge Functions in TypeScript/Deno, pg_cron), pgTAP, k6, GitHub Actions.
 
-**Spec:** `docs/superpowers/specs/2026-10-14-jom-mvp-design.md` (the approved design). The prototype `prototype/jom-hifi.html` is the source of truth for screens and copy. Executors read both alongside this plan.
+**Spec:** `docs/superpowers/specs/2026-10-14-jom-mvp-design.md` (the approved design). The prototype `docs/superpowers/kl-local-session-calm.html` (the Calm design, agreed Oct 26, 2026) is the source of truth for screens, layout and copy; `kl-local-session-hifi.html` is the earlier look and is no longer followed. Where the spec's wording about Home, the look or tab names disagrees with the Calm prototype, the Calm prototype and this plan win. Executors read the spec, the prototype and this plan together.
 
 ## Global constraints
 
@@ -27,10 +27,14 @@ Every task's requirements include these, copied from the spec.
 - Check-in: the host scans the ticket QR (signed token), online only; the manual list is the fallback. No-shows get no refund and cannot review.
 - Chat: text only, one thread per attendee and host; phone numbers, WhatsApp and Instagram handles are rejected in chat and event text.
 - Notifications: in-app only (bell badge, Chat badge, list). No push in the MVP.
-- Time: tabs are computed in `Asia/Kuala_Lumpur` whatever the phone's zone. Now = live or starting within 120 minutes; Night = later tonight until 04:00; Weekend = Saturday and Sunday; All = the View-all page.
-- Home: top 9 events by score `(live ? 3 : 0) + (starts in under 30 min ? 2 : 0) + (free ? 1 : 0) − distanceKm × 0.35`; pins at least 72 px apart, scaled to about 215 × 190 px and centred, stable per event id.
+- Time: tabs are computed in `Asia/Kuala_Lumpur` whatever the phone's zone. Now = live or starting within 120 minutes; Night = later tonight until 04:00; Weekend = Saturday and Sunday; All = the View-all page. In the Calm Home there are no time tabs; the weekend feed fills "This weekend", and the "Happening now" badge follows the Now rule.
+- Home (Calm): header with area and bell; a boarding-pass row of the user's upcoming tickets (signed in only); search; four category tiles (Make, Move, Meet, Free) that filter the Near-you list; "This weekend" carousel (the weekend feed, top 9 by score `(live ? 3 : 0) + (starts in under 30 min ? 2 : 0) + (free ? 1 : 0) − distanceKm × 0.35`); "On the map" card; "Near you" list (nearest first, 4 shown) and a View all page. No time tabs, odometer, pin radar or dock.
 - Privacy (PDPA): location only with permission, rounded to about 1 km, never stored on the server; area-sheet fallback. Phone numbers never public. In-app account deletion. Privacy policy and terms before launch.
-- Look: tokens copied from the prototype's CSS variables (`.phone[data-t=...]`), lime `#c8ff2e` odometer, film grain, accent per theme.
+- Look (Calm): one light palette copied from the Calm prototype's `:root` variables (bg `#FAF8F5`, surface `#FFFFFF`, ink `#1B2430`, accent `#1F5E5B`); Fraunces for headings and big numbers, Inter for everything else; 12 px radius on buttons and fields, 16 px on cards, 20 to 22 px on tickets; one illustration per category instead of emoji; no gradients, grain, glow or looping animation. Tickets take their header colour from the event's primary category (make `#A8553A`, move `#1F5E5B`, meet `#4B5A9E`, free `#7A6A2B`).
+- Pricing display: the guest pays `price × people` with no service fee line anywhere; platform and gateway fees come out of the host's side only. A booking holds at most 2 people.
+- Attendee privacy on screens: show how many people are going, never their names, initials or avatars; stacked circles are decorative.
+- Map: `flutter_map` with tiles from `AppConfig.mapTileUrl`; the public OpenStreetMap tiles are for `dev` and `staging` only; show "© OpenStreetMap contributors" wherever OSM tiles are shown.
+- Tab names: Explore, Saved, Tickets (was Bookings), Chat, Profile; routes `/tickets`, `/explore/all?category=`, `/explore/map`.
 - Out of the MVP (do not build): real payment gateway, real SMS provider, push notifications, host eKYC, full event editing, admin backend, offline scanning, reminders before events.
 
 ## Review focus
@@ -41,15 +45,15 @@ The spec is silent on these inputs, and each would hurt a real user. The task th
 2. The same ticket is scanned twice, a ticket for another event is scanned, or a cancelled or unpaid booking is scanned: a clear message, no second check-in. Owned by Task 8.
 3. Contact details disguised in chat or event text (spaced digits `0 1 2 3`, `wa.me/…`, `@handle`, "zero one two"): rejected. Owned by Task 2.
 4. An event across midnight, a phone set to another time zone, or a Saturday-night event: the tab it appears in follows `Asia/Kuala_Lumpur`. Owned by Task 5.
-5. Location permission denied, or no events match the tab and area: Home falls back to the selected area and shows "Nothing right now", no crash or empty dock. Owned by Task 15.
+5. Location permission denied, no events match, a very long event or host name, or a user with 0, 1 or 10 tickets: Home, the map and the ticket row fall back to the selected area, show a plain empty state, truncate with an ellipsis and keep every ticket the same size, with no crash or overflow. Owned by Tasks 19C, 19D and 19E.
 
 ## File structure
 
 ```
 jom/
 ├── app/                          Flutter app
-│   ├── lib/core/                 config, theme (tokens), router, supabase client, money, grain
-│   ├── lib/shared/               models, widgets (Odometer, PinMap, PosterCard, StatusPill)
+│   ├── lib/core/                 config, theme (Calm tokens), router, supabase client, money, time_format
+│   ├── lib/shared/               models, widgets (CategoryArt, EventArt, PeopleStack, VerifiedBadge, StatusPill)
 │   ├── lib/features/             auth, home, event, booking, chat, notifications, reviews,
 │   │                             profile, host (each: presentation, domain, data)
 │   ├── test/                     unit and widget tests, mirroring lib/
@@ -62,7 +66,7 @@ jom/
 │   ├── tests/                    pgTAP tests
 │   └── seed.sql                  6 areas, 20 hosts, 87 events across the tabs
 ├── tools/loadtest/               k6 scripts (Task 24)
-├── prototype/jom-hifi.html       the visual source of truth
+├── docs/superpowers/kl-local-session-calm.html  the visual source of truth (Calm)
 └── .github/workflows/            ci.yml, deploy-staging.yml, release.yml
 ```
 
@@ -272,6 +276,8 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 
 ### Task 13: Core app: theme, router, money, data layer and shell
 
+> **Calm redesign note (Oct 26):** the time-of-day themes, grain and `JomTheme` described here are replaced by Task 19B; the tab bar and the Bookings tab are renamed and restyled in 19B and 19C.
+
 **Files:**
 - Create: `app/lib/core/theme/tokens.dart`, `app/lib/core/theme/grain.dart`, `app/lib/core/router/app_router.dart`, `app/lib/core/money.dart`, `app/lib/core/supabase_client.dart`, `app/lib/shared/widgets/shell.dart`, `app/lib/shared/widgets/status_pill.dart`, `app/lib/shared/models/event_summary.dart`, tests under `app/test/core/` and `app/test/shared/`.
 
@@ -302,6 +308,8 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 
 ### Task 15: Home: tabs, odometer, pin map, dock and area sheet
 
+> **Calm redesign note (Oct 26):** this Home is replaced by Task 19D (odometer, pin map, dock and time tabs are deleted there). The area sheet and `coarseLocation` stay.
+
 **Files:**
 - Create: `app/lib/features/home/domain/pin_layout.dart`, `home_feed.dart`, `app/lib/features/home/data/home_repository.dart`, `app/lib/features/home/presentation/home_screen.dart`, `odometer.dart`, `pin_map.dart`, `dock.dart`, `area_sheet.dart`, `app/lib/core/location.dart`, tests under `app/test/features/home/`.
 
@@ -317,6 +325,8 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 
 ### Task 16: View all, event pages, hearts and Saved
 
+> **Calm redesign note (Oct 26):** View all is rebuilt in 19D and the event page in 19F; hearts and Saved keep their logic and are restyled in 19D, 19F and 19G.
+
 **Files:**
 - Create: `app/lib/features/event/presentation/view_all_screen.dart`, `event_screen.dart`, `poster_card.dart`, `app/lib/features/event/data/event_repository.dart`, `app/lib/features/event/presentation/saved_screen.dart`, `app/lib/features/event/domain/saved_controller.dart`, tests under `app/test/features/event/`.
 
@@ -331,6 +341,8 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 - [x] **Step 5: Commit** `git commit -am "feat(event): view all, event pages, hearts, saved"`.
 
 ### Task 17: Checkout, payment, ticket, cancellation and Bookings
+
+> **Calm redesign note (Oct 26):** the ticket and Bookings screens are rebuilt in 19C (Tickets tab) and checkout, gateway, processing and failed are restyled in 19F. Booking logic and tests stay.
 
 **Files:**
 - Create: `app/lib/features/booking/data/booking_repository.dart`, `app/lib/features/booking/data/payment_gateway_client.dart`, `app/lib/features/booking/presentation/checkout_screen.dart`, `gateway_screen.dart`, `processing_screen.dart`, `failed_screen.dart`, `ticket_screen.dart`, `cancel_sheet.dart`, `bookings_screen.dart`, `app/lib/features/booking/domain/hold_timer.dart`, tests under `app/test/features/booking/`.
@@ -373,15 +385,139 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 - [x] **Step 4: Run** the tests. Expected: PASS.
 - [x] **Step 5: Commit** `git commit -am "feat(notifications): in-app list, bell, switches"`.
 
+## Phase 2B: Calm design refresh (added Oct 26, 2026)
+
+Not in the original 25. The prototype was redesigned to feel calmer and more trustworthy; these tasks bring the built app and its backend in line. Order matters: 19A feeds every later task, 19B gives them the widgets, 19C builds the ticket widgets that 19D's Home reuses.
+
+### Task 19A: Card, search, map and ticket data for the Calm design (backend)
+
+**Files:**
+- Create: `supabase/migrations/0100_events_cards.sql`, `supabase/tests/events_cards.sql`
+- Modify: `supabase/tests/events_feed.sql` (the column lists changed)
+
+**Interfaces:**
+- Produces `identity.host_cards(p_ids uuid[]) returns table(user_id uuid, host_name text, verified bool)`; `bookings.going_count(p_event_id uuid) returns int` (people in `confirmed` and `attended` bookings, a number only); `events.host_event_count(p_host_id uuid) returns int` (published or ended events).
+- Card columns (type `events.event_card`), shared by the functions below: `event_id uuid, title text, description text, categories text[], poster_url text, starts_at timestamptz, ends_at timestamptz, price_sen int, cancel_policy text, area text, lat float8, lng float8, host_id uuid, host_name text, host_verified bool, distance_km float8, is_live bool, spots_left int, going int`.
+- `events.feed(...)` and `events.list_all(p_category, p_lat, p_lng, p_km, p_now, p_query text default null)` return the card columns plus `score` (drop and recreate; `p_query` matches title, host name or area, case-insensitive, `%` and `_` taken literally); new `events.cards(p_ids uuid[], p_lat float8, p_lng float8) returns table(<card columns>)` (published or ended only); new `events.map_pins(p_lat, p_lng, p_km int default 5, p_category text default 'all', p_tonight bool default false, p_now timestamptz default now()) returns table(<card columns>)` (at most 30, by score; `p_tonight` keeps only events that start before 04:00 KL time tomorrow).
+- Ruling (Oct 26): no `bookings.my_tickets`; `bookings.my_bookings` already lists upcoming and past, so it only gains a trailing `payment_method text` (`free` when the amount is 0, else `payments.paid_method`), and the Tickets tab gets the event card from `events.cards`. Card columns are one composite type `events.event_card` (the listed columns plus the old `glyph, color_a, color_b`, which stay until 19G) returned by `feed`, `list_all`, `map_pins` and `cards`.
+- Module rule kept: `events` reads host data only through `identity.host_cards` and counts only through `bookings.going_count`. `events.tab_counts` and `events.hero_stats` stay but have no caller.
+
+- [x] **Step 1: Write failing pgTAP tests.** `feed_rows_carry_host_name_cancel_policy_going_and_coordinates`; `host_verified_is_false_until_verified_at_is_set`; `going_counts_people_in_confirmed_and_attended_only` (a 2-person booking counts 2; held, expired, cancelled count 0); `going_returns_a_number_and_no_attendee_ids`; `list_all_query_matches_title_host_and_area_case_insensitively`; `list_all_query_percent_sign_matches_nothing_unless_a_title_has_one`; `list_all_category_and_query_combine_with_and`; `map_pins_returns_at_most_30_within_the_radius_by_score`; `map_pins_tonight_excludes_next_week_events`; `map_pins_category_matches_any_of_the_event_categories`; `cards_returns_only_requested_published_or_ended_ids`; `host_event_count_ignores_drafts_and_cancelled`; `lat_lng_are_the_events_not_the_callers`.
+- [x] **Step 2: Run** `supabase test db`. Expected: FAIL.
+- [x] **Step 3: Implement** the functions above; change the Task 5 functions with `drop function` then `create`, and update that task's tests to the new column lists.
+- [x] **Step 4: Run** `supabase db reset && supabase test db` (PASS), (CI deploys staging on merge).
+- [x] **Step 5: Commit** `git commit -am "feat(events): card columns, search, map pins, my tickets"`.
+
+### Task 19B: Calm design system
+
+**Files:**
+- Create: `app/lib/core/theme/calm_tokens.dart`, `calm_theme.dart`, `app/lib/core/time_format.dart`, `app/lib/shared/widgets/category_art.dart`, `event_art.dart`, `verified_badge.dart`, `people_stack.dart`, `app/assets/fonts/` (Inter 400, 500, 600; Fraunces 500, 600; SIL OFL), tests under `app/test/core/` and `app/test/shared/`.
+- Modify: `app/pubspec.yaml` (font families), `app/lib/shared/widgets/shell.dart`, `status_pill.dart`, `jom_button.dart`, `jom_switch.dart`, `screen_parts.dart`, `app/lib/core/router/app_router.dart` (rename `/bookings` to `/tickets`, add `/explore/all` and `/explore/map`).
+- Add to git: `docs/superpowers/kl-local-session-calm.html` (the source of truth; untracked today).
+- Keep for now: `tokens.dart`, `grain.dart` (the old Home still uses them; Task 19D deletes them).
+
+**Interfaces:**
+- Produces `abstract final class Calm` with the colours from the prototype's `:root`: `bg 0xFFFAF8F5`, `surface 0xFFFFFFFF`, `ink 0xFF1B2430`, `mut 0xFF5F6B7A`, `faint 0xFF8A94A1`, `line 0xFFE7E2DA`, `acc 0xFF1F5E5B`, `accSoft 0xFFE3EFEC`, `ok 0xFF1E7A4F`, `okSoft 0xFFE4F1E9`, `bad 0xFFB3261E`, `badSoft 0xFFFBE9E7`, `warn 0xFF9A6200`, `warnSoft 0xFFFBF0D9`, `badge 0xFFC9432F`; `ThemeData calmTheme()`. (Check each hex against the prototype's `:root` when implementing; the prototype wins.)
+- `String primaryCategory(List<String> categories)` (first that is not `free`, `other` counts as `meet`, else `free`); `Color ticketColor(String primary)`; `enum ArtKind { free, move, meet, meet2, make }`; `ArtKind artKindFor(String eventId, List<String> categories)` (`meet` alternates with `meet2` by the parity of the sum of the id's code units); `CategoryArt({required ArtKind kind})` painting the prototype's shapes with a `CustomPainter`; `EventArt({String? posterUrl, required ArtKind kind})` (poster when present, else the art); `VerifiedBadge()` (14 px accent tick); `PeopleStack({required int count})` (up to 3 overlapping circles with a person glyph, no text).
+- time_format, all in `Asia/Kuala_Lumpur`: `String timeLabel(DateTime t)` (`8:04 PM`); `String dayLabel(DateTime t, DateTime now)` (`Today`, `Tomorrow`, `Sat 24 Oct`); `String durationLabel(Duration d)` (`1h 11m`, `3h`, `45m`); `String relativeStart(DateTime starts, DateTime ends, DateTime now)`: `Happening now` when started and not ended; under 120 min `in 22 min`; under 24 h `in 3h 18m` (`in 3h` when the minutes are 0); then `in 1 day`, `in 3 days`; `String eyebrow(DateTime now)` (`WED 21 OCT · 7:42 PM`).
+
+- [ ] **Step 1: Write failing tests.** `calm_tokens_match_the_prototype_values` (every hex above); `ticketColor_per_category` (move `1F5E5B`, make `A8553A`, meet `4B5A9E`, free `7A6A2B`); `primaryCategory_rules` (`[free, meet]` gives meet, `[free]` free, `[other]` meet, `[move, meet]` move); `artKindFor_is_deterministic_and_meet_alternates_with_meet2`; `relativeStart_cases` (live, 22 min, 93 min, 120 min gives `in 2h`, 3h18m, 30 hours gives `in 1 day`, 3 days); `dayLabel_and_timeLabel_use_kuala_lumpur_when_the_device_zone_is_new_york`; `durationLabel_cases`; `shell_tab_bar_is_white_with_a_top_border_accent_active_tab_and_C9432F_badge`; `shell_tab_labels_are_Explore_Saved_Tickets_Chat_Profile`; `people_stack_contains_no_text_widgets`; `pubspec_declares_inter_and_fraunces` (parse the file).
+- [ ] **Step 2: Run** `flutter test test/core test/shared`. Expected: FAIL.
+- [ ] **Step 3: Implement** the files; `MaterialApp` switches to `calmTheme()` here (screens that still read the old tokens keep working until Tasks 19D and 19G).
+- [ ] **Step 4: Run** `flutter test && flutter analyze`. Expected: PASS.
+- [ ] **Step 5: Commit** `git add docs/superpowers/kl-local-session-calm.html && git commit -am "feat(app): Calm design system, fonts, time formats, tab bar"`.
+
+### Task 19C: Tickets tab, ticket card and boarding pass
+
+**Files:**
+- Create: `app/lib/features/booking/domain/ticket.dart`, `data/ticket_repository.dart`, `presentation/tickets_screen.dart`, `ticket_card.dart`, `boarding_pass_tile.dart`, `ticket_actions.dart`, tests under `app/test/features/booking/`.
+- Modify: `presentation/ticket_screen.dart` (the "You're booked" page), `cancel_sheet.dart`.
+- Delete: `presentation/bookings_screen.dart` and its test.
+
+**Interfaces:**
+- Produces `class Ticket { Booking booking; EventSummary event; String paymentMethod; }`; `enum TicketScope { upcoming, past }`; `final ticketsProvider = FutureProvider.family<List<Ticket>, TicketScope>` (calls `bookings.my_tickets`, then `events.cards` for the event ids); `Map<String, List<Ticket>> groupByDay(List<Ticket> t, DateTime now)` (`Today` first, then days in order); `BoardingPassTile({required Ticket ticket, required VoidCallback onTap})` (fixed size, header colour `ticketColor(primaryCategory)`, title and host each one line with an ellipsis, a dashed divider with a real half-circle hole at each edge, columns Date, Start time, Spots); `TicketCard({required Ticket ticket})` (coloured header with title, Confirmed or Processing chip, start, duration and end; dashed divider with ring-shaped holes; QR and "Show this at the entrance"; rows Date and Spots, Attendee and Booking code, Host with tick and Area, Payment method and Price paid); `TicketActions` (two equal buttons, Directions and Add to calendar, and a small grey underlined "Cancel booking" link below).
+- Consumes: `bookings.my_tickets`, `events.cards` (19A), `BookingRepository.ticketToken`, `qr_flutter`, 19B widgets.
+
+- [ ] **Step 1: Write failing tests.** `tickets_tab_is_labelled_Tickets_and_lives_at_slash_tickets`; `upcoming_groups_by_day_with_Today_first_then_in_date_order`; `each_ticket_header_uses_its_category_colour`; `ticket_card_rows_appear_in_the_designed_order` (compare vertical positions); `ticket_card_price_equals_booking_amount_and_has_no_service_fee_line`; `processing_ticket_shows_the_Processing_chip_and_a_hint_instead_of_the_qr`; `actions_are_two_buttons_and_a_muted_cancel_link`; `cancel_link_is_hidden_after_the_cutoff_and_for_policy_none`; `cancel_link_opens_the_sheet_and_the_ticket_leaves_upcoming`; `previous_lists_attended_and_cancelled_and_attended_opens_review`; `empty_upcoming_says_No_upcoming_tickets_with_an_Explore_button`; `signed_out_tickets_tab_shows_the_sign_in_prompt`; `boarding_pass_tiles_have_the_same_height_for_a_short_and_a_90_character_title_and_host` (review focus 5); `tickets_tab_with_0_1_and_10_tickets_does_not_overflow` (review focus 5); `boarding_pass_clip_has_a_hole_on_each_edge_at_the_divider`; `booked_page_shows_You_are_booked_and_the_same_ticket_card`; `done_on_the_booked_page_returns_to_where_the_user_came_from` (keeps the earlier fix).
+- [ ] **Step 2: Run** `flutter test test/features/booking`. Expected: FAIL.
+- [ ] **Step 3: Implement** the files; draw the holes with a `CustomClipper<Path>` using `Path.combine(PathOperation.difference, ...)` so the card border follows the hole; the Tickets tab replaces the Bookings tab and follows the prototype's `bookings` screen.
+- [ ] **Step 4: Run** the tests and look at the Tickets tab on the simulator with 0, 1 and 3 tickets. Expected: PASS.
+- [ ] **Step 5: Commit** `git commit -am "feat(booking): Tickets tab, colour-coded ticket card, boarding pass"`.
+
+### Task 19D: Calm Home and View all
+
+**Files:**
+- Create: `app/lib/features/home/presentation/home_ticket_row.dart`, `category_row.dart`, `home_search.dart`, `weekend_carousel.dart`, `near_you_list.dart`, `map_preview_card.dart`, `app/lib/features/event/presentation/event_card.dart`, `event_row.dart`, `app/lib/features/home/domain/home_query.dart`, tests.
+- Rewrite: `home_screen.dart`, `view_all_screen.dart`, `home_repository.dart`; restyle `area_sheet.dart`.
+- Modify: `app/lib/shared/models/event_summary.dart` (add `hostId, hostName, hostVerified, categories, cancelPolicy, going, lat, lng, posterUrl`), `event_repository.dart` (`listAll` takes `query`).
+- Delete: `odometer.dart`, `pin_map.dart`, `dock.dart`, `pin_layout.dart`, `home_feed.dart`, `app/lib/core/theme/tokens.dart`, `grain.dart`, and the tests of all of them.
+
+**Interfaces:**
+- Produces `class HomeQuery { LatLng at; int km; String? category; String query; }`; `final weekendProvider = FutureProvider.family<List<EventSummary>, HomeQuery>` (`events.feed('weekend')`); `final nearYouProvider = FutureProvider.family<List<EventSummary>, HomeQuery>` (`events.list_all`, nearest first; the screen shows 4); `String homeTitle(DateTime now, String area)` (`Today in X` before 17:00 KL time, `Tonight in X` from 17:00); `EventCard` (262 px wide: art with badge and heart, title, host with tick, people stack and price, `n left` or `n going`); `EventRow` (72 px art, title, host, time and distance, price).
+- Consumes: 19A and 19B, `BoardingPassTile` and `ticketsProvider` (19C), `coarseLocation`, `savedProvider`.
+
+- [ ] **Step 1: Write failing tests.** `title_switches_from_Today_to_Tonight_at_17_00_in_kuala_lumpur`; `header_has_area_pill_and_bell_with_unread_badge`; `ticket_row_hidden_when_signed_out_or_without_upcoming_and_shows_at_most_5_by_start_time`; `ticket_row_with_0_1_and_10_tickets_does_not_overflow` (review focus 5); `search_waits_300ms_then_calls_list_all_once`; `category_tile_filters_near_you_and_a_second_tap_clears`; `no_matches_shows_Nothing_matches_yet`; `weekend_section_is_hidden_when_empty`; `event_card_shows_badge_heart_title_host_tick_people_stack_price_and_spots_or_going`; `host_tick_only_for_verified_hosts`; `going_shows_a_count_and_no_names` (privacy); `very_long_titles_end_with_an_ellipsis_on_cards_and_rows`; `heart_state_is_shared_with_the_event_page`; `map_card_says_N_events_within_km_and_opens_explore_map`; `location_denied_uses_the_selected_area_centre_and_says_so` (review focus 5); `view_all_has_category_chips_count_and_nearest_first`; `view_all_links_from_each_section_pass_the_category`.
+- [ ] **Step 2: Run** `flutter test test/features/home test/features/event`. Expected: FAIL.
+- [ ] **Step 3: Implement** the files and delete the old ones; until 19E the map card draws the prototype's static illustration.
+- [ ] **Step 4: Run** `flutter test && flutter analyze`, then `rg -n "Odometer|PinMap|layoutPins|GrainBackground|JomTheme" app/lib app/test` (expect no matches). Run Home on the simulator against staging.
+- [ ] **Step 5: Commit** `git commit -am "feat(home): Calm Home with ticket row, carousel, map card, list, View all"`.
+
+### Task 19E: Map screen
+
+**Files:**
+- Create: `app/lib/features/home/presentation/map_screen.dart`, `price_pin.dart`, `map_event_card.dart`, `map_chips.dart`, `app/lib/features/home/data/map_repository.dart`, tests.
+- Modify: `app/pubspec.yaml` (`flutter_map`, `latlong2`), `app/lib/core/config/app_config.dart`, `.env.example`, `app/android/app/src/main/AndroidManifest.xml` (add `INTERNET`; only the debug and profile manifests have it today), `map_preview_card.dart` (live preview), `docs/release/staging.md`.
+
+**Interfaces:**
+- Produces `AppConfig.mapTileUrl` (`dev` and `staging` default to `https://tile.openstreetmap.org/{z}/{x}/{y}.png`; `prod` needs `MAP_TILE_URL` and throws `StateError` without it) and `mapUserAgentPackage` (the app's bundle id); `MapRepository.pins({required LatLng at, required int km, String category = 'all', bool tonight = false}) → Future<List<EventSummary>>` (calls `events.map_pins`); `String pinLabel(EventSummary e, Set<String> bookedEventIds)` (`✓ Booked`, `Free`, or `formatMoney`).
+- Screen: back button, area field and filter button; chips All, Make, Move, Meet, Free, Tonight; price-bubble pins, the selected one in accent, booked ones dark; blue dot for the user; "Search this area" pill; locate button; bottom card with the event, Directions and View event.
+
+- [ ] **Step 1: Write failing tests.** `prod_config_requires_map_tile_url_and_dev_staging_default_to_osm`; `pinLabel_booked_free_and_paid`; `selecting_a_pin_updates_the_bottom_card_and_highlights_the_pin`; `category_chips_refetch_and_Tonight_sets_the_tonight_flag`; `search_this_area_appears_only_after_the_map_moves_and_refetches_once_at_the_centre`; `locate_recentres_and_with_permission_denied_says_showing_the_selected_area`; `no_results_shows_an_empty_card_and_no_pins` (review focus 5); `directions_opens_a_maps_uri_with_the_event_lat_lng`; `attribution_openstreetmap_contributors_is_visible`; `view_event_opens_the_event_and_back_keeps_the_selection`; `user_position_sent_to_the_server_is_rounded_to_0_01_degrees`.
+- [ ] **Step 2: Run** `flutter test test/features/home test/core`. Expected: FAIL.
+- [ ] **Step 3: Implement** the files; pins are `Marker`s with `PricePin`; "Search this area" listens to `MapOptions.onPositionChanged` with `hasGesture` and a 500 m threshold.
+- [ ] **Step 4: Run** the tests, then build a **release** Android bundle and open the map on a device to prove the tiles load with the `INTERNET` permission, and run the iOS simulator. Expected: PASS.
+- [ ] **Step 5: Commit** `git commit -am "feat(map): full-screen map with price pins and tile config"`.
+
+### Task 19F: Event page, checkout and payment screens in the Calm look
+
+**Files:**
+- Modify: `app/lib/features/event/presentation/event_screen.dart`, `app/lib/features/booking/presentation/checkout_screen.dart`, `gateway_screen.dart`, `processing_screen.dart`, `failed_screen.dart`, `app/lib/features/event/data/event_repository.dart`, tests.
+- Delete: the separate free-event page widget and its test (one layout now).
+
+**Interfaces:**
+- Produces: `EventDetail` gains `going`, `hostEventCount`, `hostRating`, `hostReviewCount`; consumes `events.cards`, `events.host_event_count`, `reviews.host_rating`.
+- Event page: art hero with back and heart, category and start tag, title, host line with tick, When and Where tiles, going card, policy card, description as a quote with the host's name, host card with rating, reviews, events hosted and Message; bottom bar with price and "Book a spot" (paid) or "Join for free". Checkout: event card, hold chip (paid only), spots stepper, contact, price details, policy card with the refund amount and cutoff time. The gateway page stays neutral white (it is the third party's page).
+
+- [ ] **Step 1: Write failing tests.** `one_layout_serves_free_and_paid_with_the_right_button_text`; `policy_card_text_per_policy` (24h, 48h and 7d give "Full refund up to … before it starts", none gives "No refunds once booked", free gives "Free event"); `detail_shows_when_where_going_and_spots_left`; `going_card_shows_a_count_and_no_names_or_initials`; `host_card_shows_rating_reviews_events_hosted_and_message_button`; `hero_uses_the_poster_when_present_else_the_category_art`; `checkout_total_is_price_times_people_with_no_service_fee_line`; `spots_stepper_stops_at_2_and_never_exceeds_spots_left`; `checkout_policy_card_states_the_refund_amount_and_the_cutoff_time_in_kuala_lumpur`; `gateway_page_is_neutral_white_and_not_themed`; `processing_and_failed_copy_is_unchanged`.
+- [ ] **Step 2: Run** `flutter test test/features/event test/features/booking`. Expected: FAIL.
+- [ ] **Step 3: Implement** the changes.
+- [ ] **Step 4: Run** the tests, then walk a paid booking (success, failed, slow) on the simulator against staging; this also closes the open manual check in Task 17. Expected: PASS.
+- [ ] **Step 5: Commit** `git commit -am "feat(event): Calm event page and checkout, no service fee"`.
+
+### Task 19G: Saved, Chat, Notifications and sign-in in the Calm look
+
+**Files:**
+- Modify: `app/lib/features/event/presentation/saved_screen.dart`, `app/lib/features/chat/presentation/chat_list_screen.dart`, `chat_thread_screen.dart`, `app/lib/features/notifications/presentation/notifications_screen.dart`, `app/lib/features/auth/presentation/sign_in_sheet.dart`, `signed_out_tab.dart`, tests.
+
+**Interfaces:** none new; screens use `EventRow`, `Calm` colours and `calmTheme`. Restyle only, no logic changes.
+
+- [ ] **Step 1: Write failing tests.** `saved_uses_event_rows_and_the_empty_text_is_Nothing_saved_yet`; `chat_list_has_a_large_Chat_heading_and_category_art_tiles_in_attendee_mode_and_initial_avatars_in_host_mode`; `my_bubbles_are_accent_and_theirs_are_white_with_times`; `notifications_show_title_body_time_and_an_unread_dot_with_no_emoji`; `sign_in_sheet_keeps_the_three_headings_and_uses_accent_buttons`.
+- [ ] **Step 2: Run** `flutter test test/features`. Expected: FAIL.
+- [ ] **Step 3: Implement** the restyle.
+- [ ] **Step 4: Run** `flutter test && flutter analyze`, then `rg -n "Bricolage|Odometer|GrainBackground|JomTheme|c8ff2e" app/lib app/test` (expect no matches).
+- [ ] **Step 5: Commit** `git commit -am "feat(app): Calm look for Saved, Chat, Notifications and sign-in"`.
+
+## Phase 2C: attendee app, remaining screens (revised for the Calm design)
+
 ### Task 20: Reviews, host public profile and Profile
 
 **Files:**
 - Create: `app/lib/features/reviews/presentation/review_screen.dart`, `my_reviews_screen.dart`, `app/lib/features/reviews/data/review_repository.dart`, `app/lib/features/profile/presentation/profile_screen.dart`, `help_screen.dart`, `legal_screen.dart`, `host_public_screen.dart`, tests under `app/test/features/reviews/` and `app/test/features/profile/`.
 
 **Interfaces:**
-- Produces: `ReviewRepository { Future<void> submit(String bookingId, int stars, List<String> tags, String body); Future<List<Review>> mine(); Future<HostPublic> host(String hostId); }`; Profile rows My reviews, Notifications, Help & support, Terms & privacy, Log out, Delete account (confirm dialog calling `delete-account`), and the highlighted Switch to Host mode card.
+- Produces: `ReviewRepository { Future<void> submit(String bookingId, int stars, List<String> tags, String body); Future<List<Review>> mine(); Future<HostPublic> host(String hostId); }`; Profile rows My reviews, Notifications, Help & support, Terms & privacy, Sign out, Delete account (confirm dialog calling `delete-account`), and the accent Switch to Host mode card. Calm look: large "Profile" heading with avatar, name and phone. Review screen: five stars, four tag toggles, text box, "Verified attendee". Host public page: category-art hero, avatar with tick, rating, reviews and guests tiles, a "Coming up" carousel (`EventCard`) and a "What people said" card.
 
-- [ ] **Step 1: Write failing tests.** `review_has_five_tappable_stars_four_tags_and_verified_attendee_label`; `submit_requires_at_least_one_star_and_calls_repository_once`; `only_attended_booking_opens_review`; `host_public_shows_stats_coming_up_and_reviews`; `profile_log_out_returns_to_explore_signed_out`; `delete_account_asks_confirmation_then_calls_function_and_signs_out`; `host_with_active_events_gets_clear_refusal_message`; `terms_and_privacy_pages_render_from_assets`.
+- [ ] **Step 1: Write failing tests.** `review_has_five_tappable_stars_four_tags_and_verified_attendee_label`; `submit_requires_at_least_one_star_and_calls_repository_once`; `only_attended_booking_opens_review`; `host_public_shows_hero_avatar_tick_stats_coming_up_carousel_and_what_people_said`; `profile_signed_out_shows_the_sign_in_prompt`; `profile_log_out_returns_to_explore_signed_out`; `delete_account_asks_confirmation_then_calls_function_and_signs_out`; `host_with_active_events_gets_clear_refusal_message`; `terms_and_privacy_pages_render_from_assets`.
 - [ ] **Step 2: Run** `flutter test test/features/reviews test/features/profile`. Expected: FAIL.
 - [ ] **Step 3: Implement** the screens; terms and privacy text ship as markdown assets (drafted in Task 25).
 - [ ] **Step 4: Run** the tests. Expected: PASS.
@@ -391,19 +527,23 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 
 ### Task 21: Host mode: apply, dashboard, events list, create, edit, delete
 
+> **Look (Oct 26):** follow the Calm prototype's host screens (`hdash`, `hevents`, `hcreate`, `hedit`, `hacct`, `hprofile`): accent payout card, next-event card with fill bar and Guest list and Scan buttons, a segmented Draft / Published / Ended list, lock icons on locked fields, "New event" button above the tab bar.
+
 **Files:**
 - Create: `app/lib/features/host/data/host_repository.dart`, `app/lib/features/host/presentation/host_home_screen.dart`, `host_events_screen.dart`, `event_form_screen.dart`, `delete_sheet.dart`, `apply_host_screen.dart`, `host_profile_screen.dart`, `app/lib/features/host/domain/event_form_state.dart`, tests under `app/test/features/host/`.
 
 **Interfaces:**
 - Produces: `HostRepository { Future<void> apply(HostApplication a); Future<String> saveDraft(EventForm f); Future<void> publish(String id); Future<void> update(String id, {String? title, String? description, int? capacity}); Future<DeleteResult> delete(String id); Future<List<HostEventRow>> events(String status); Future<HostDashboard> dashboard(); }`; `EventForm` validation mirrors the SQL rules (title, venue, end after start, spots 1..40, price ≥ 0, description passes a client-side contact check as a hint only; the server is authoritative); `enum EditMode { create, publishedEdit }` where `publishedEdit` locks date, venue, categories, price, switch and refund window and clamps the spots stepper to `[seatsSold, 40]`.
 
-- [ ] **Step 1: Write failing tests.** `first_switch_to_host_opens_apply_with_payout_account_and_optional_ssm`; `host_home_shows_payout_card_next_event_fill_bar_and_tiles`; `events_tabs_draft_published_ended_list_cards_with_paid_over_spots_pill`; `new_event_form_has_description_when_where_price_spots_policy_chips_and_completion_note`; `publish_disabled_until_valid`; `contact_info_in_description_shows_server_error`; `edit_published_locks_date_venue_price_policy_and_clamps_spots_at_sold`; `edit_can_change_title_description_spots_and_saves`; `delete_sheet_shows_guest_count_and_total_and_confirms_then_returns_to_events`; `delete_after_start_is_hidden`; `host_profile_rows_and_switch_back_to_attendee`.
+- [ ] **Step 1: Write failing tests.** `first_switch_to_host_opens_apply_with_payout_account_and_optional_ssm`; `host_home_shows_payout_card_next_event_fill_bar_and_tiles`; `events_tabs_draft_published_ended_list_cards_with_paid_over_spots_pill`; `new_event_form_has_description_when_where_price_spots_policy_chips_and_completion_note`; `publish_disabled_until_valid`; `contact_info_in_description_shows_server_error`; `edit_published_locks_date_venue_price_policy_and_clamps_spots_at_sold`; `edit_can_change_title_description_spots_and_saves`; `delete_sheet_shows_guest_count_and_total_and_confirms_then_returns_to_events`; `delete_after_start_is_hidden`; `host_profile_rows_and_switch_back_to_attendee`; `new_event_button_sits_above_the_tab_bar_and_does_not_hide_the_last_card`.
 - [ ] **Step 2: Run** `flutter test test/features/host`. Expected: FAIL.
 - [ ] **Step 3: Implement** the files; poster upload goes to a Supabase Storage bucket `posters` (public read, host-write to own folder), resized to 1200 px wide before upload.
 - [ ] **Step 4: Run** the tests. Expected: PASS.
 - [ ] **Step 5: Commit** `git commit -am "feat(host): apply, dashboard, events, create, edit, delete"`.
 
 ### Task 22: Host event details, scanner, check-in list, completion, guests, payouts
+
+> **Look (Oct 26):** follow the Calm prototype's `hevent`, `hscan`, `hcheck`, `hbook`, `hpay` screens; only the scanner's camera area is dark.
 
 **Files:**
 - Create: `app/lib/features/host/presentation/host_event_screen.dart`, `scan_screen.dart`, `checkin_screen.dart`, `guest_list_screen.dart`, `complete_sheet.dart`, `payouts_screen.dart`, `payout_account_screen.dart`, `app/lib/features/host/domain/scan_controller.dart`, tests under `app/test/features/host/`.
@@ -425,10 +565,10 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 **Files:**
 - Create: `app/integration_test/attendee_journey_test.dart`, `host_journey_test.dart`, `app/integration_test/helpers/seed.dart`, `.github/workflows/e2e.yml`
 
-- [ ] **Step 1: Write the failing journeys** against a local Supabase with the seed. `attendee_journey`: browse signed out → heart opens the sign-in sheet → phone sign-in with the test OTP → heart saves → join a paid event → mock payment success → ticket QR visible → message the host and see the reply → after the host completes, review. `free_join_journey`: free event → Join → sign-in → Confirm my spot → ticket. `host_journey`: apply as host → create and publish an event → a guest books → scan the guest's ticket token → Mark as completed → payout row exists with `due_at` 3 working days later and the amount equals the fee maths. `delete_journey`: a guest holds a paid booking, the host deletes the event, the guest sees a cancellation notification and a refund row exists.
+- [ ] **Step 1: Write the failing journeys** against a local Supabase with the seed. `attendee_journey`: browse signed out → heart opens the sign-in sheet → phone sign-in with the test OTP → heart saves → join a paid event → mock payment success → ticket QR visible → message the host and see the reply → after the host completes, review. `free_join_journey`: free event → Join → sign-in → Confirm my spot → ticket. `host_journey`: apply as host → create and publish an event → a guest books → scan the guest's ticket token → Mark as completed → payout row exists with `due_at` 3 working days later and the amount equals the fee maths. `delete_journey`: a guest holds a paid booking, the host deletes the event, the guest sees a cancellation notification and a refund row exists. `tickets_journey`: after paying, the ticket appears in Home's ticket row and in the Tickets tab with its category colour; cancelling from the Tickets tab moves it to Previous. `map_and_search_journey`: typing in Home search narrows the Near-you list; a category tile filters it; the map card opens the map, a pin is picked and View event opens the event.
 - [ ] **Step 2: Run** `flutter test integration_test -d <emulator>`. Expected: FAIL until wired.
 - [ ] **Step 3: Implement** helpers (create users through the admin API, advance time by calling the SQL functions with explicit `p_now` where available or by updating event times in the seed) and the CI workflow (Android emulator job).
-- [ ] **Step 4: Run** all four journeys. Expected: PASS.
+- [ ] **Step 4: Run** all six journeys. Expected: PASS.
 - [ ] **Step 5: Commit** `git commit -am "test: end-to-end journeys"`.
 
 ### Task 24: Load and device performance
@@ -439,7 +579,7 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 - [ ] **Step 1: Write the k6 scripts with thresholds.** `last_seat.js`: 200 virtual users call `create_booking` on an event with 5 seats; assert exactly 5 succeed and the rest get `sold_out`. `feed.js`: 100 users call `events.feed` on the 87-event seed; `p95 < 400 ms`. `chat.js`: 50 users send 20 messages each; 0 errors.
 - [ ] **Step 2: Run** against the staging project. Expected: fail first if an index is missing.
 - [ ] **Step 3: Fix** any breach with indexes on `bookings(event_id, status)`, `events(status, starts_at)` and `chat.messages(thread_id, created_at)`; add the migration.
-- [ ] **Step 4: Run** again. Expected: all thresholds pass. On one low-end Android and one iPhone, check Home dock scrolling with grain and glow stays at 50 fps or better; if not, turn the grain down on low-end devices.
+- [ ] **Step 4: Run** again. Expected: all thresholds pass. On one low-end Android and one iPhone, check that scrolling Home (carousels and map card) and panning the map screen stay at 50 fps or better; if not, replace the live map preview on Home with a static image.
 - [ ] **Step 5: Commit** `git commit -am "perf: load tests and indexes"`.
 
 ### Task 25: Closed beta and store release
@@ -447,7 +587,7 @@ Added after Task 12 so the app (Tasks 13 onward) runs against a real hosted back
 **Files:**
 - Create: `docs/release/checklist.md`, `app/assets/legal/privacy.md`, `app/assets/legal/terms.md`, `.github/workflows/release.yml`
 
-- [ ] **Step 1: Write the release checklist** and make each line checkable by a command or a screenshot: staging and prod Supabase projects with identical migrations (`supabase db diff` is empty); privacy policy (PDPA: what is collected, location rounded to 1 km and not stored, how to delete); terms (platform role, host refund policy, no-show rule, "fees illustrative until gateway live"); app name and bundle id checked on both stores (assumed free; confirm); store listings and screenshots from the prototype; Google sign-in client IDs for both platforms; email provider for receipts chosen; scheduled jobs running on prod.
+- [ ] **Step 1: Write the release checklist** and make each line checkable by a command or a screenshot: staging and prod Supabase projects with identical migrations (`supabase db diff` is empty); privacy policy (PDPA: what is collected, location rounded to 1 km and not stored, how to delete); terms (platform role, host refund policy, no-show rule, "fees illustrative until gateway live"); app name and bundle id checked on both stores (assumed free; confirm); store listings and screenshots from the Calm prototype; Google sign-in client IDs for both platforms; email provider for receipts chosen; scheduled jobs running on prod; a production map tile provider with its key in the release config (OpenStreetMap's public tiles are not for production traffic); the signed Android release opens the map and loads Home data (proves the `INTERNET` permission); `docs/superpowers/kl-local-session-calm.html` committed.
 - [ ] **Step 2: Confirm the gateway status.** Because the real gateway is not built, the closed beta runs in `staging` mode with the mock gateway and every price labelled as test payments, or all events are free. State the choice in `docs/release/checklist.md`; no real money moves until the "After the MVP" payment task is done.
 - [ ] **Step 3: Onboard 20 seed hosts by hand:** you verify holder name against host name, then set `verified_at` in the dashboard; rehearse one full event with a real host and 5 real guests.
 - [ ] **Step 4: Build and ship** with `release.yml` (signed Android bundle, iOS archive) to TestFlight and Play internal testing; invite 20 to 50 people; track the KPIs from `project-plan.md` section 9.
@@ -459,10 +599,12 @@ Each item keeps the interface already in place: real payment gateway behind `Pay
 
 ## Self-review
 
-- **Spec coverage:** every screen in the design's attendee and host tables maps to a task: Explore, View all, Area sheet (15, 16); events and sign-in (14, 16); checkout to cancel, Bookings (17); Saved (16); Chat (18); Review, host profile, Profile (20); Notifications (19); Host Home to Delete sheet (21); Event details, Scan, Complete sheet, Guest list, Check-in, Payouts, Payout account (22). Rules: booking and money (6, 7), check-in and completion (8), delete (9), chat filter (2, 11), time tabs and scoring (5), delete account (12).
+- **Spec coverage:** every screen in the design's attendee and host tables maps to a task: Explore, View all, Area sheet, Map (15, 16, rebuilt in 19D and 19E); events and sign-in (14, 16); checkout to cancel and the ticket (17, restyled in 19C and 19F); Tickets tab (19C); Saved (16); Chat (18); Review, host profile, Profile (20); Notifications (19); Host Home to Delete sheet (21); Event details, Scan, Complete sheet, Guest list, Check-in, Payouts, Payout account (22). Rules: booking and money (6, 7), check-in and completion (8), delete (9), chat filter (2, 11), time tabs and scoring (5), delete account (12).
 - **Interfaces:** function names match across tasks (`create_booking`, `apply_gateway_result`, `refund_booking`, `check_in(event_id, token)`, `complete_event`, `schedule_payout`, `send_message`).
+- **Calm design conflicts resolved:** the prototype's service-fee line, 4-person stepper and initial-lettered avatars contradicted the money, booking and privacy rules, so the prototype was corrected and 19C, 19D and 19F carry tests that pin the corrected behaviour.
+- **Left unused, by decision:** `events.tab_counts` and `events.hero_stats` (Task 5) have no caller in the Calm Home; they stay until a cleanup.
 - **Not built, by decision:** real gateway, real SMS, push, eKYC, full edit, admin, offline scan.
 
 ## Execution handoff
 
-Plan complete. Please review it. Which execution approach do you prefer: **subagent-driven** (a fresh subagent per task, reviewed before the next; most thorough) or **native** (I implement every task myself in one session, then one fresh reviewer checks the branch)? I recommend subagent-driven because the backend tasks (6 to 9) depend on each other's exact function signatures and a mistake in money or refunds would be costly.
+Plan updated for the Calm design (new Tasks 19A to 19G; Tasks 20 to 25 revised). Please review it. Which execution approach do you prefer: **subagent-driven** (a fresh subagent per task, reviewed before the next; most thorough) or **native** (I implement every task myself in one session, then one fresh reviewer checks the branch)? I recommend subagent-driven because the backend tasks (6 to 9) depend on each other's exact function signatures and a mistake in money or refunds would be costly.
