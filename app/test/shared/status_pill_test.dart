@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jom/core/theme/calm.dart';
-import 'package:jom/core/theme/tokens.dart';
 import 'package:jom/shared/widgets/status_pill.dart';
 
-Widget host(Widget child) => MaterialApp(theme: jomThemeData(JomTheme.now), home: Scaffold(body: Center(child: child)));
+Widget host(Widget child) => MaterialApp(theme: calmTheme(), home: Scaffold(body: Center(child: child)));
 
 Color? pillColor(WidgetTester t) {
   final box = t.widget<DecoratedBox>(find.descendant(of: find.byType(StatusPill), matching: find.byType(DecoratedBox)));

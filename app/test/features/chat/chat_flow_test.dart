@@ -11,7 +11,7 @@ import 'package:jom/features/chat/domain/chat.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/notifications/domain/bell_provider.dart';
-import 'package:jom/features/home/domain/home_feed.dart';
+import 'package:jom/shared/models/event_summary.dart';
 
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_chat.dart';
@@ -39,7 +39,8 @@ Future<void> pumpApp(WidgetTester t, {required String location, FakeChat? repo, 
       eventRepositoryProvider.overrideWithValue(FakeEvents(details: {'e1': detailOf(sum('e1', title: 'Batik Workshop'))})),
       chatRepositoryProvider.overrideWithValue(chat),
       nowProvider.overrideWithValue(() => clock.add(t.binding.clock.now().difference(start))),
-      homeFeedProvider.overrideWith((ref, q) async => HomeFeed(tab: q.tab, top9: const [], stats: const HeroStats(total: 0, live: 0, free: 0, closestKm: null))),
+      weekendProvider.overrideWith((ref, a) async => <EventSummary>[]),
+      nearYouProvider.overrideWith((ref, q) async => <EventSummary>[]),
       deviceLocationProvider.overrideWithValue(() async => null),
       bellCountProvider.overrideWith((ref) => Stream.value(0)),
     ],

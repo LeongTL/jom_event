@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/router/app_router.dart';
-import 'core/theme/tokens.dart';
+import 'core/theme/calm.dart';
 
 class JomApp extends ConsumerWidget {
   const JomApp({super.key});
@@ -12,7 +12,7 @@ class JomApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Jom',
       debugShowCheckedModeBanner: false,
-      theme: jomThemeData(ref.watch(jomThemeProvider)),
+      theme: calmTheme(),
       routerConfig: ref.watch(routerProvider),
     );
   }

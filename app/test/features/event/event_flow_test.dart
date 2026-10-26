@@ -15,7 +15,7 @@ import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/event/domain/event_detail.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/notifications/domain/bell_provider.dart';
-import 'package:jom/features/home/domain/home_feed.dart';
+import 'package:jom/shared/models/event_summary.dart';
 
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_bookings.dart';
@@ -26,7 +26,7 @@ late FakeEvents events;
 late FakeAuthRepository auth;
 final launched = <Uri>[];
 
-Future<GoRouter> pumpApp(WidgetTester t, {String location = '/all', bool signedIn = true, FakeEvents? repo}) async {
+Future<GoRouter> pumpApp(WidgetTester t, {String location = '/explore/all', bool signedIn = true, FakeEvents? repo}) async {
   // wider than a phone on purpose: the test font's letters are so wide that tab names would wrap
   t.view.physicalSize = const Size(800, 1700);
   t.view.devicePixelRatio = 1;
@@ -48,7 +48,8 @@ Future<GoRouter> pumpApp(WidgetTester t, {String location = '/all', bool signedI
         launched.add(u);
         return true;
       }),
-      homeFeedProvider.overrideWith((ref, q) async => HomeFeed(tab: q.tab, top9: const [], stats: const HeroStats(total: 0, live: 0, free: 0, closestKm: null))),
+      weekendProvider.overrideWith((ref, a) async => events.all),
+      nearYouProvider.overrideWith((ref, q) async => events.all),
       deviceLocationProvider.overrideWithValue(() async => null),
       bellCountProvider.overrideWith((ref) => Stream.value(0)),
     ],
@@ -59,6 +60,8 @@ Future<GoRouter> pumpApp(WidgetTester t, {String location = '/all', bool signedI
 }
 
 Finder poster(String id) => find.byKey(Key('poster-$id'));
+Finder card(String id) => find.byKey(Key('event-card-$id'));
+Finder row(String id) => find.byKey(Key('event-row-$id'));
 Finder heartOn(String id) => find.byKey(Key('heart-on:$id'));
 Finder heartOff(String id) => find.byKey(Key('heart-off:$id'));
 Future<void> signInWithPhone(WidgetTester t) async {
@@ -78,46 +81,47 @@ final c = sum('c', title: 'Board Games', cats: ['meet', 'make'], price: 1500);
 
 void main() {
   group('View all', () {
-    testWidgets('view_all_has_category_chips_with_counts_and_sections_for_all', (t) async {
+    testWidgets('view_all_has_category_chips_the_count_and_nearest_first_rows', (t) async {
       await pumpApp(t, repo: FakeEvents(all: [a, b, c]));
       expect(find.byKey(const Key('view-all')), findsOneWidget);
-      expect(find.text('All 3 events'), findsOneWidget);
-      expect(find.text('EVERYTHING IN KL'), findsOneWidget);
-      for (final (key, label, n) in [('all', '✨ All', 3), ('make', '🎨 Make', 2), ('move', '🏃 Move', 1), ('meet', '🫶 Meet', 1), ('free', '🆓 Free', 1)]) {
-        final chip = find.byKey(Key('chip-$key'));
-        expect(chip, findsOneWidget, reason: key);
-        expect(t.widget<Text>(find.descendant(of: chip, matching: find.byType(Text))).textSpan!.toPlainText(), '$label $n', reason: key);
+      expect(find.text('All events'), findsOneWidget);
+      expect(find.text('3 events · nearest first'), findsOneWidget);
+      for (final key in ['all', 'make', 'move', 'meet', 'free']) {
+        expect(find.byKey(Key('chip-$key')), findsOneWidget, reason: key);
       }
-      // sections: one header per category, an event under every category it belongs to
-      for (final h in ['🎨 Make', '🏃 Move', '🫶 Meet', '🆓 Free']) {
-        expect(find.text(h), findsOneWidget, reason: h);
+      for (final id in ['a', 'b', 'c']) {
+        expect(row(id), findsOneWidget, reason: id);
       }
-      expect(poster('a'), findsOneWidget);
-      expect(poster('c'), findsNWidgets(2)); // Meet and Make
     });
 
-    testWidgets('a category nobody has gets no chip and no section', (t) async {
-      await pumpApp(t, repo: FakeEvents(all: [a]));
-      expect(find.byKey(const Key('chip-move')), findsNothing);
-      expect(find.text('🏃 Move'), findsNothing);
-    });
-
-    testWidgets('selecting_a_chip_shows_only_that_grid', (t) async {
+    testWidgets('selecting_a_chip_shows_only_that_category_and_All_brings_everything_back', (t) async {
       await pumpApp(t, repo: FakeEvents(all: [a, b, c]));
       await t.tap(find.byKey(const Key('chip-move')));
       await t.pumpAndSettle();
-      expect(poster('b'), findsOneWidget);
-      expect(poster('a'), findsNothing);
-      expect(poster('c'), findsNothing);
-      expect(find.text('🏃 Move'), findsNothing, reason: 'one grid, no section headers');
+      expect(row('b'), findsOneWidget);
+      expect(row('a'), findsNothing);
+      expect(find.text('1 event · nearest first'), findsOneWidget);
+      await t.tap(find.byKey(const Key('chip-free')));
+      await t.pumpAndSettle();
+      expect(row('b'), findsOneWidget, reason: 'free means price 0');
+      await t.tap(find.byKey(const Key('chip-make')));
+      await t.pumpAndSettle();
+      expect(row('a'), findsOneWidget);
+      expect(row('c'), findsOneWidget, reason: 'c is meet and make');
       await t.tap(find.byKey(const Key('chip-all')));
       await t.pumpAndSettle();
-      expect(poster('a'), findsOneWidget);
+      expect(row('b'), findsOneWidget);
+    });
+
+    testWidgets('a_section_link_opens_View_all_on_its_category', (t) async {
+      await pumpApp(t, location: '/explore/all?category=move', repo: FakeEvents(all: [a, b, c]));
+      expect(row('b'), findsOneWidget);
+      expect(row('a'), findsNothing);
     });
 
     testWidgets('the close button goes back', (t) async {
       final router = await pumpApp(t, location: '/explore');
-      router.push('/all');
+      router.push('/explore/all');
       await t.pumpAndSettle();
       await t.tap(find.byKey(const Key('view-all-close')));
       await t.pumpAndSettle();
@@ -129,46 +133,56 @@ void main() {
       expect(find.text('Nothing right now'), findsOneWidget);
     });
 
-    testWidgets('a poster opens its event', (t) async {
+    testWidgets('a row opens its event', (t) async {
       await pumpApp(t, repo: FakeEvents(all: [a], details: {'a': detailOf(a)}));
-      await t.tap(poster('a').first);
+      await t.tap(row('a'));
       await t.pumpAndSettle();
       expect(find.byKey(const Key('event-screen')), findsOneWidget);
       expect(find.text('Join · RM 30'), findsOneWidget);
     });
+
+    testWidgets('a long title ends with an ellipsis instead of overflowing', (t) async {
+      final long = sum('long', title: 'A' * 120);
+      await pumpApp(t, repo: FakeEvents(all: [long]));
+      expect(t.takeException(), isNull);
+      expect(t.widget<Text>(find.descendant(of: row('long'), matching: find.text('A' * 120))).overflow, TextOverflow.ellipsis);
+    });
   });
 
-  group('posters', () {
-    testWidgets('poster_tags_happening_countdown_under_2h_clock_otherwise', (t) async {
+  group('event cards', () {
+    testWidgets('badge_says_Happening_now_or_how_soon_or_which_day', (t) async {
       final live = sum('l', live: true, starts: clock.subtract(const Duration(minutes: 30)));
       final soon = sum('s', starts: clock.add(const Duration(minutes: 17, seconds: 42)));
       final hour = sum('h', starts: clock.add(const Duration(hours: 1, minutes: 32, seconds: 5)));
-      final tonight = sum('t', starts: DateTime.utc(2030, 1, 9, 12)); // 8 PM KL
       final later = sum('x', starts: DateTime.utc(2030, 1, 12, 1));
-      await pumpApp(t, repo: FakeEvents(all: [live, soon, hour, tonight, later]));
-      String tag(String id) => t.widget<Text>(find.descendant(of: poster(id), matching: find.byKey(Key('tag-$id')))).data!;
-      expect(tag('l'), 'HAPPENING');
-      // pumping the app already moved the test clock a little, so read the second off the screen
-      final shown = RegExp(r'^⏱ in 17:(\d\d)$').firstMatch(tag('s'))!;
-      final sec = int.parse(shown.group(1)!);
-      expect(sec, inInclusiveRange(38, 42));
-      expect(tag('h'), startsWith('⏱ in 1h 3'));
-      expect(tag('t'), '🌙 8:00 PM');
-      expect(tag('x'), 'SAT 9:00 AM');
-      await t.pump(const Duration(seconds: 1));
-      expect(tag('s'), '⏱ in 17:${(sec - 1).toString().padLeft(2, '0')}', reason: 'the countdown ticks each second');
+      await pumpApp(t, location: '/explore', repo: FakeEvents(all: [live, soon, hour, later]));
+      String tag(String id) => t.widget<Text>(find.descendant(of: card(id), matching: find.descendant(of: find.byKey(const Key('event-badge')), matching: find.byType(Text)))).data!;
+      expect(tag('l'), 'Happening now');
+      expect(tag('s'), 'in 17 min');
+      expect(tag('h'), 'in 92 min');
+      expect(tag('x'), 'Sat 12 Jan');
     });
 
-    testWidgets('a poster shows price, title and distance', (t) async {
-      await pumpApp(t, repo: FakeEvents(all: [a, b]));
-      expect(find.descendant(of: poster('a').first, matching: find.text('RM 30')), findsOneWidget);
-      expect(find.descendant(of: poster('b').first, matching: find.text('Free')), findsOneWidget);
-      expect(find.descendant(of: poster('a').first, matching: find.text('Batik Workshop')), findsOneWidget);
-      expect(find.descendant(of: poster('a').first, matching: find.textContaining('1.2 km')), findsOneWidget);
+    testWidgets('a card shows price, title, host with a tick only when verified, and spots or going', (t) async {
+      final verified = EventSummary.fromJson({
+        'event_id': 'v', 'title': 'Verified Fun', 'starts_at': '2030-01-12T01:00:00Z', 'ends_at': '2030-01-12T03:00:00Z', 'price_sen': 0,
+        'area': 'Bangsar', 'is_live': false, 'spots_left': 7, 'score': 0, 'host_name': 'Aina Crew', 'host_verified': true, 'going': 5,
+      });
+      final plain = EventSummary.fromJson({
+        'event_id': 'p', 'title': 'Plain Fun', 'starts_at': '2030-01-12T01:00:00Z', 'ends_at': '2030-01-12T03:00:00Z', 'price_sen': 3000,
+        'area': 'Bangsar', 'is_live': false, 'spots_left': 100, 'score': 0, 'host_name': 'Bob Crew', 'host_verified': false, 'going': 5,
+      });
+      await pumpApp(t, location: '/explore', repo: FakeEvents(all: [verified, plain]));
+      expect(find.descendant(of: card('v'), matching: find.textContaining('Free', findRichText: true)), findsOneWidget);
+      expect(find.descendant(of: card('v'), matching: find.textContaining('7 left', findRichText: true)), findsOneWidget);
+      expect(find.descendant(of: card('p'), matching: find.textContaining('RM 30 · 5 going', findRichText: true)), findsOneWidget);
+      expect(find.descendant(of: card('v'), matching: find.byKey(const Key('verified-badge'))), findsOneWidget);
+      expect(find.descendant(of: card('p'), matching: find.byKey(const Key('verified-badge'))), findsNothing);
+      expect(find.descendant(of: card('v'), matching: find.byKey(const Key('people-stack'))), findsOneWidget);
     });
 
     testWidgets('tapping_heart_signed_out_opens_sign_in_save_then_saves_after_signing_in', (t) async {
-      await pumpApp(t, signedIn: false, repo: FakeEvents(all: [a]));
+      await pumpApp(t, location: '/explore', signedIn: false, repo: FakeEvents(all: [a]));
       await t.tap(find.byKey(const Key('heart-off:a')).first);
       await t.pumpAndSettle();
       expect(find.text('Sign in to save'), findsOneWidget);
@@ -180,7 +194,7 @@ void main() {
     });
 
     testWidgets('closing the sign-in sheet saves nothing', (t) async {
-      await pumpApp(t, signedIn: false, repo: FakeEvents(all: [a]));
+      await pumpApp(t, location: '/explore', signedIn: false, repo: FakeEvents(all: [a]));
       await t.tap(find.byKey(const Key('heart-off:a')).first);
       await t.pumpAndSettle();
       await t.tapAt(const Offset(10, 10)); // the dim area above the sheet
@@ -190,7 +204,7 @@ void main() {
     });
 
     testWidgets('double_tap_does_not_duplicate', (t) async {
-      await pumpApp(t, repo: FakeEvents(all: [a], saveDelay: const Duration(milliseconds: 200)));
+      await pumpApp(t, location: '/explore', repo: FakeEvents(all: [a], saveDelay: const Duration(milliseconds: 200)));
       final h = find.byKey(const Key('heart-off:a')).first;
       await t.tap(h);
       await t.pump(const Duration(milliseconds: 20));
@@ -202,7 +216,7 @@ void main() {
     });
 
     testWidgets('a hearted event starts out hearted', (t) async {
-      await pumpApp(t, repo: FakeEvents(all: [a, b], hearts: {'b'}));
+      await pumpApp(t, location: '/explore', repo: FakeEvents(all: [a, b], hearts: {'b'}));
       expect(heartOn('b'), findsWidgets);
       expect(heartOff('a'), findsWidgets);
     });
@@ -211,10 +225,10 @@ void main() {
   group('event pages', () {
     testWidgets('heart_state_is_shared_between_poster_hero_and_bottom_bar', (t) async {
       final repo = FakeEvents(all: [a], details: {'a': detailOf(a)});
-      await pumpApp(t, repo: repo);
+      await pumpApp(t, location: '/explore', repo: repo);
       await t.tap(find.byKey(const Key('heart-off:a')).first);
       await t.pumpAndSettle();
-      await t.tap(poster('a').first);
+      await t.tap(card('a'));
       await t.pumpAndSettle();
       expect(find.byKey(const Key('hero-heart')), findsOneWidget);
       expect(find.descendant(of: find.byKey(const Key('hero-heart')), matching: find.byKey(const Key('heart-on:a'))), findsOneWidget);
@@ -225,7 +239,7 @@ void main() {
       expect(find.descendant(of: find.byKey(const Key('bar-heart')), matching: find.byKey(const Key('heart-off:a'))), findsOneWidget);
       await t.tap(find.byKey(const Key('event-back')));
       await t.pumpAndSettle();
-      expect(heartOff('a'), findsWidgets, reason: 'the poster behind agrees');
+      expect(heartOff('a'), findsWidgets, reason: 'the card behind agrees');
       expect(heartOn('a'), findsNothing);
     });
 

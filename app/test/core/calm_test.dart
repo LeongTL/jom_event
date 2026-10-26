@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jom/core/theme/calm.dart';
-import 'package:jom/core/theme/tokens.dart';
 import 'package:jom/shared/widgets/category_art.dart';
 
 // Every value is copied from the :root of docs/superpowers/kl-local-session-calm.html.
@@ -37,15 +36,13 @@ void main() {
     expect(artKindFor('a', ['meet']), artKindFor('a', ['meet']));
   });
 
-  test('the theme is the calm one on every sky: light, warm white, Inter', () {
-    for (final t in JomTheme.values) {
-      final data = jomThemeData(t);
-      expect(data.brightness, Brightness.light);
-      expect(data.scaffoldBackgroundColor, Calm.bg);
-      expect(data.extension<JomTokens>()!.accent, Calm.acc);
-      expect(data.extension<JomTokens>()!.sheet, Calm.bg);
-    }
-    expect(calmTheme().textTheme.bodyMedium!.fontFamily, 'Inter');
+  test('the theme is the calm one: light, warm white, Inter, with the tokens attached', () {
+    final data = calmTheme();
+    expect(data.brightness, Brightness.light);
+    expect(data.scaffoldBackgroundColor, Calm.bg);
+    expect(data.extension<JomTokens>()!.accent, Calm.acc);
+    expect(data.extension<JomTokens>()!.sheet, Calm.bg);
+    expect(data.textTheme.bodyMedium!.fontFamily, 'Inter');
   });
 
   test('pubspec_declares_inter_and_fraunces', () {

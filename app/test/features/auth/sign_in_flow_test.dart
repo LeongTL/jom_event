@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jom/core/theme/tokens.dart';
+import 'package:jom/core/theme/calm.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:jom/features/auth/domain/auth_gate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -35,7 +35,7 @@ class Probe extends ConsumerWidget {
 Future<void> pumpProbe(WidgetTester t, FakeAuthRepository repo, {AuthReason why = AuthReason.join, required VoidCallback onDone, VoidCallback? onRefused}) =>
     t.pumpWidget(ProviderScope(
       overrides: <Override>[authRepositoryProvider.overrideWithValue(repo)],
-      child: MaterialApp(theme: jomThemeData(JomTheme.now), home: Scaffold(body: Probe(why: why, onDone: onDone, onRefused: onRefused))),
+      child: MaterialApp(theme: calmTheme(), home: Scaffold(body: Probe(why: why, onDone: onDone, onRefused: onRefused))),
     ));
 
 Future<void> tapText(WidgetTester t, String text) async {

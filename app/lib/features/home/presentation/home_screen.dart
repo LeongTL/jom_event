@@ -1,340 +1,260 @@
-import 'dart:math' as math;
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/clock.dart';
 import '../../../core/location.dart';
-import '../../../core/theme/grain.dart';
-import '../../../core/theme/tokens.dart';
+import '../../../core/theme/calm.dart';
+import '../../../shared/models/event_summary.dart';
+import '../../../shared/widgets/category_art.dart';
 import '../../auth/data/auth_repository.dart';
+import '../../booking/data/booking_repository.dart';
+import '../../booking/domain/ticket.dart';
+import '../../booking/presentation/boarding_pass_tile.dart';
+import '../../event/domain/event_labels.dart';
+import '../../event/presentation/event_cards.dart';
 import '../../notifications/presentation/bell_button.dart';
 import '../data/home_repository.dart';
-import '../domain/home_feed.dart';
+import '../domain/home_query.dart';
 import 'area_sheet.dart';
-import 'dock.dart';
-import 'odometer.dart';
-import 'pin_map.dart';
-import 'sky.dart';
+import 'map_preview_card.dart';
 
-/// Explore: the area pill and bell, the big number, the pin map, the dock of cards and the Now / Night /
-/// Weekend / All tabs. The tab picks the sky (jomThemeProvider); All opens View all.
-class HomeScreen extends ConsumerWidget {
+const _tiles = [('make', 'Make', ArtKind.make), ('move', 'Move', ArtKind.move), ('meet', 'Meet', ArtKind.meet), ('free', 'Free', ArtKind.free)];
+
+/// Explore (Calm): area and bell, the day's title, your tickets, search, four category tiles, This weekend, the map
+/// card and Near you.
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tab = ref.watch(jomThemeProvider);
-    final k = context.jom;
-    final sel = ref.watch(areaSelectionProvider);
-    final centre = ref.watch(homeCentreProvider);
-    return DefaultTextStyle.merge(
-      style: TextStyle(color: k.ink),
-      child: Stack(
-        key: const Key('home-screen'),
-        children: [
-          Positioned.fill(child: HomeSky(tab: tab)),
-          Positioned.fill(
-            child: GrainBackground(
-              child: SafeArea(
-                bottom: false,
-                // 96 at the bottom: the dial ends just above the tab bar (prototype .dial bottom:96px)
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
-                  child: Column(
-                    children: [
-                      const _Header(),
-                      const SizedBox(height: 8),
-                      Expanded(
-                        child: centre.when(
-                          loading: () => const _Wait(),
-                          error: (e, _) => const _Message(
-                            'Could not work out where to look',
-                          ),
-                          data: (c) => ref
-                              .watch(
-                                homeFeedProvider((
-                                  tab: tab,
-                                  lat: c.lat,
-                                  lng: c.lng,
-                                  km: sel.km,
-                                )),
-                              )
-                              .when(
-                                loading: () => const _Wait(),
-                                error: (e, _) => const _Message(
-                                  'Could not load events. Check your connection.',
-                                ),
-                                // too tall for a small phone: shrink the whole block, never overflow
-                                data: (feed) => LayoutBuilder(
-                                  builder: (context, box) => FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    alignment: Alignment.topCenter,
-                                    // at least 520 tall: the spare height goes to the map, and a shorter
-                                    // screen scales the block down instead of overflowing
-                                    child: SizedBox(
-                                      width: box.maxWidth,
-                                      height: math.max(box.maxHeight, 520),
-                                      child: _FeedBody(
-                                        key: ValueKey((tab, c, sel.km)),
-                                        feed: feed,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                        ),
-                      ),
-                      _Dial(tab: tab),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _Header extends ConsumerWidget {
-  const _Header();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final k = context.jom;
-    final user = ref.watch(sessionProvider).value?.user;
-    final name =
-        ((user?.userMetadata?['full_name'] ?? user?.userMetadata?['name'])
-                as String?)
-            ?.trim() ??
-        '';
-    return Row(
-      children: [
-        GestureDetector(
-          key: const Key('area-pill'),
-          onTap: () => showModalBottomSheet<void>(
-            context: context,
-            isScrollControlled: true,
-            builder: (_) => const AreaSheet(),
-          ),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-            decoration: BoxDecoration(
-              color: k.glass,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: k.glassBorder),
-            ),
-            child: Text(
-              '📍 ${ref.watch(areaSelectionProvider).area}  ▾',
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-        ),
-        const Spacer(),
-        const BellButton(),
-        if (user != null) ...[
-          const SizedBox(width: 8),
-          GestureDetector(
-            key: const Key('avatar'),
-            onTap: () => context.go('/profile'),
-            child: Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: k.accent,
-                shape: BoxShape.circle,
-              ),
-              child: Text(
-                name.isEmpty ? '•' : name.characters.first.toUpperCase(),
-                style: TextStyle(
-                  color: k.accentInk,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-/// One tab's content. Keyed by the query, so a new tab or area starts with a fresh dock and selection.
-class _FeedBody extends ConsumerStatefulWidget {
-  const _FeedBody({super.key, required this.feed});
-  final HomeFeed feed;
-
-  @override
-  ConsumerState<_FeedBody> createState() => _FeedBodyState();
-}
-
-class _FeedBodyState extends ConsumerState<_FeedBody> {
-  final _selected = ValueNotifier<int>(0);
-  final _controller = PageController(viewportFraction: 208 / 390);
-  late final _events = [...widget.feed.top9]
-    ..sort((a, b) => (a.distanceKm ?? 99).compareTo(b.distanceKm ?? 99));
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final _search = TextEditingController();
+  Timer? _debounce;
 
   @override
   void dispose() {
-    _selected.dispose();
-    _controller.dispose();
+    _debounce?.cancel();
+    _search.dispose();
     super.dispose();
+  }
+
+  void _onSearch(String text) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () => ref.read(homeFilterProvider.notifier).setQuery(text));
   }
 
   @override
   Widget build(BuildContext context) {
-    final k = context.jom;
-    final stats = widget.feed.stats;
-    return Column(
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                heroEyebrow(widget.feed.tab, DateTime.now()),
-                key: const Key('eyebrow'),
-                style: TextStyle(
-                  color: k.sub,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              const SizedBox(height: 6),
-              // the number is part of the sentence, so it wraps with it ("22 things are / happening near you")
-              Text.rich(
-                TextSpan(
-                  children: [
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: Odometer(
-                        key: const Key('odometer'),
-                        value: stats.total,
-                      ),
-                    ),
-                    TextSpan(
-                      text: ' ${heroTail(widget.feed.tab, stats.total)}',
-                    ),
-                  ],
-                ),
-                style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  height: 1.05,
-                  letterSpacing: -.6,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                heroSub(stats, shown: _events.length),
-                style: TextStyle(color: k.sub, fontSize: 13),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 4),
-        Expanded(
-          child: PinMap(
-            key: const Key('pin-map'),
-            events: _events,
-            selected: _selected,
-            onTap: (i) => _controller.animateToPage(
-              i,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            ),
-          ),
-        ),
-        if (_events.isNotEmpty)
-          Dock(
-            events: _events,
-            controller: _controller,
-            onPage: (i) => _selected.value = i,
-            onOpen: (e) => context.push('/event/${e.id}'),
-          ),
-      ],
-    );
-  }
-}
-
-class _Dial extends ConsumerWidget {
-  const _Dial({required this.tab});
-  final JomTheme tab;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final k = context.jom;
-    Widget label(String text, bool on, VoidCallback onTap) => Expanded(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Container(
-          height: 36,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: on ? k.accent : Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Text(
-            text,
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              color: on ? k.accentInk : k.ink,
-            ),
-          ),
-        ),
-      ),
-    );
-    return Container(
-      key: const Key('dial'),
-      height: 44,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: k.glass,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: k.glassBorder),
-      ),
-      child: Row(
+    final now = ref.read(nowProvider)();
+    final sel = ref.watch(areaSelectionProvider);
+    final centre = ref.watch(homeCentreProvider);
+    final filter = ref.watch(homeFilterProvider);
+    final signedIn = ref.watch(sessionProvider).value != null;
+    return Scaffold(
+      key: const Key('home-screen'),
+      backgroundColor: Calm.bg,
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(20, MediaQuery.paddingOf(context).top + 12, 20, 40),
         children: [
-          label(
-            'Now',
-            tab == JomTheme.now,
-            () => ref.read(jomThemeProvider.notifier).select(JomTheme.now),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            GestureDetector(
+              key: const Key('area-pill'),
+              onTap: () => showModalBottomSheet<void>(context: context, isScrollControlled: true, backgroundColor: Calm.bg, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))), builder: (_) => const AreaSheet()),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.place_outlined, size: 20),
+                const SizedBox(width: 6),
+                Text('${sel.area}, KL ▾', style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+              ]),
+            ),
+            const BellButton(),
+          ]),
+          const SizedBox(height: 18),
+          Text(eyebrow(now), key: const Key('eyebrow'), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, letterSpacing: 1.15, color: Calm.faint)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 6, 0, 16),
+            child: Text(homeTitle(now, sel.area), key: const Key('home-title'), style: const TextStyle(fontFamily: Calm.serif, fontSize: 32, fontWeight: FontWeight.w500, height: 1.1, letterSpacing: -.5)),
           ),
-          label(
-            'Night',
-            tab == JomTheme.night,
-            () => ref.read(jomThemeProvider.notifier).select(JomTheme.night),
+          if (signedIn) const _TicketRow(),
+          _SearchBar(controller: _search, onChanged: _onSearch),
+          _Tiles(selected: filter.category),
+          centre.when(
+            loading: () => const Padding(padding: EdgeInsets.only(top: 60), child: Center(child: CircularProgressIndicator())),
+            error: (_, _) => const Padding(padding: EdgeInsets.only(top: 60), child: Center(child: Text('Could not work out where to look'))),
+            data: (c) => _Feed(area: (lat: c.lat, lng: c.lng, km: sel.km), filter: filter, usingDevice: sel.useDevice),
           ),
-          label(
-            'Weekend',
-            tab == JomTheme.weekend,
-            () => ref.read(jomThemeProvider.notifier).select(JomTheme.weekend),
-          ),
-          label('All', false, () => context.push('/all')),
         ],
       ),
     );
   }
 }
 
-class _Wait extends StatelessWidget {
-  const _Wait();
+class _TicketRow extends ConsumerWidget {
+  const _TicketRow();
+
   @override
-  Widget build(BuildContext context) =>
-      const Center(child: CircularProgressIndicator());
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = ref.read(nowProvider)();
+    final tickets = ref.watch(ticketsProvider(TicketScope.upcoming)).value ?? const <Ticket>[];
+    if (tickets.isEmpty) return const SizedBox.shrink();
+    final shown = ([...tickets]..sort((a, b) => a.event.startsAt.compareTo(b.event.startsAt))).take(5).toList();
+    return SingleChildScrollView(
+      key: const Key('ticket-row'),
+      scrollDirection: Axis.horizontal,
+      clipBehavior: Clip.none,
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Row(children: [
+        for (final t in shown) Padding(padding: const EdgeInsets.only(right: 12), child: BoardingPassTile(ticket: t, now: now, onTap: () => context.go('/tickets'))),
+      ]),
+    );
+  }
 }
 
-class _Message extends StatelessWidget {
-  const _Message(this.text);
-  final String text;
+class _SearchBar extends StatelessWidget {
+  const _SearchBar({required this.controller, required this.onChanged});
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
   @override
-  Widget build(BuildContext context) =>
-      Center(child: Text(text, textAlign: TextAlign.center));
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 18),
+        child: Row(children: [
+          Expanded(
+            child: Container(
+              height: 44,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(color: Calm.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: Calm.line)),
+              child: Row(children: [
+                const Icon(Icons.search, size: 20, color: Calm.faint),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    key: const Key('home-search'),
+                    controller: controller,
+                    onChanged: onChanged,
+                    style: const TextStyle(fontSize: 14),
+                    decoration: const InputDecoration(border: InputBorder.none, isDense: true, hintText: 'Search events, hosts, places', hintStyle: TextStyle(color: Calm.faint)),
+                  ),
+                ),
+              ]),
+            ),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            key: const Key('filter-button'),
+            onTap: () => showModalBottomSheet<void>(context: context, isScrollControlled: true, backgroundColor: Calm.bg, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))), builder: (_) => const AreaSheet()),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(color: Calm.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: Calm.line)),
+              child: const Icon(Icons.tune, size: 20),
+            ),
+          ),
+        ]),
+      );
+}
+
+class _Tiles extends ConsumerWidget {
+  const _Tiles({required this.selected});
+  final String? selected;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => Padding(
+        padding: const EdgeInsets.only(bottom: 26),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          for (final (key, label, kind) in _tiles)
+            GestureDetector(
+              key: Key('tile-$key'),
+              behavior: HitTestBehavior.opaque,
+              onTap: () => ref.read(homeFilterProvider.notifier).toggleCategory(key),
+              child: SizedBox(
+                width: 76,
+                child: Column(children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(18), border: Border.all(color: selected == key ? Calm.acc : Calm.line, width: 2)),
+                    child: CategoryArt(kind: kind),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(label, style: TextStyle(fontSize: 12.5, fontWeight: selected == key ? FontWeight.w600 : FontWeight.w500, color: selected == key ? Calm.acc : Calm.ink)),
+                ]),
+              ),
+            ),
+        ]),
+      );
+}
+
+class _Header extends StatelessWidget {
+  const _Header(this.title, this.more, this.onMore);
+  final String title, more;
+  final VoidCallback onMore;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+          Text(title, style: const TextStyle(fontFamily: Calm.serif, fontSize: 18, fontWeight: FontWeight.w600, height: 1.2)),
+          GestureDetector(onTap: onMore, child: Text(more, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Calm.acc))),
+        ]),
+      );
+}
+
+class _Feed extends ConsumerWidget {
+  const _Feed({required this.area, required this.filter, required this.usingDevice});
+  final HomeArea area;
+  final HomeFilter filter;
+  final bool usingDevice;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final q = (lat: area.lat, lng: area.lng, km: area.km, category: filter.category, query: filter.query);
+    final weekend = ref.watch(weekendProvider(area));
+    final near = ref.watch(nearYouProvider(q));
+    String allRoute() => filter.category == null ? '/explore/all' : '/explore/all?category=${filter.category}';
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      if ((weekend.value ?? const <EventSummary>[]).isNotEmpty) ...[
+        _Header('This weekend', 'View all ›', () => context.push('/explore/all')),
+        SingleChildScrollView(
+          key: const Key('weekend-carousel'),
+          scrollDirection: Axis.horizontal,
+          clipBehavior: Clip.none,
+          padding: const EdgeInsets.only(bottom: 26),
+          child: Row(children: [for (final e in weekend.value!) Padding(padding: const EdgeInsets.only(right: 12), child: EventCard(event: e))]),
+        ),
+      ],
+      _Header('On the map', 'Open map ›', () => context.push('/explore/map')),
+      Padding(padding: const EdgeInsets.only(bottom: 26), child: MapPreviewCard(count: near.value?.length ?? 0, km: area.km)),
+      _Header('Near you', 'View all ›', () => context.push(allRoute())),
+      near.when(
+        loading: () => const Padding(padding: EdgeInsets.symmetric(vertical: 26), child: Center(child: CircularProgressIndicator())),
+        error: (_, _) => const Padding(padding: EdgeInsets.symmetric(vertical: 26), child: Center(child: Text('Could not load events. Check your connection.', style: TextStyle(color: Calm.mut)))),
+        data: (list) => list.isEmpty
+            ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 26),
+                child: Center(child: Text(filter.category == null && filter.query.isEmpty ? 'Nothing right now' : 'Nothing matches yet. Try another word or category.', textAlign: TextAlign.center, style: const TextStyle(color: Calm.mut, fontSize: 14))),
+              )
+            : Column(children: [
+                for (final e in list.take(4)) EventRow(event: e),
+                GestureDetector(
+                  key: const Key('view-all-button'),
+                  onTap: () => context.push(allRoute()),
+                  child: Container(
+                    height: 46,
+                    margin: const EdgeInsets.only(top: 4),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(color: Calm.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: Calm.line)),
+                    child: Text('View all ${list.length} events', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Calm.acc)),
+                  ),
+                ),
+              ]),
+      ),
+      if (!usingDevice) const SizedBox.shrink(),
+    ]);
+  }
 }

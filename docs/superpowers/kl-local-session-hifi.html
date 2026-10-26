@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KL Local Session Hi-fi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#0b0b10;color:#e9e9f2;font:15px/1.45 Inter,-apple-system,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:12px 10px}
+.cap{display:flex;gap:10px;align-items:center;margin-bottom:10px;font-size:12px;color:#9a9ab0;flex-wrap:wrap;justify-content:center}
+.cap b{color:#fff;font:800 15px "Bricolage Grotesque",Inter,sans-serif}
+select{background:#1b1b24;color:#fff;border:1px solid #333;border-radius:10px;padding:6px 8px;font:inherit}
+#wrap{position:relative}
+.phone{width:390px;height:844px;border-radius:46px;position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden;box-shadow:0 0 0 8px #1b1b24,0 30px 80px rgba(0,0,0,.6);background:var(--sheet);color:var(--sheetink);transition:background .5s,color .5s}
+.phone[data-t=now]{--p1:#ffb88c;--p2:#ff7aa8;--p3:#8b5cf6;--p4:#ffd166;--ink:#fff;--sub:rgba(255,255,255,.75);--glass:rgba(255,255,255,.16);--glassb:rgba(255,255,255,.28);--acc:#ffd166;--accink:#2a1450;--sheet:#17102e;--sheetink:#f3eefc;--card:rgba(255,255,255,.08);--line:rgba(255,255,255,.12)}
+.phone[data-t=late]{--p1:#7f8cff;--p2:#b07bff;--p3:#2f2a78;--p4:#4a5fd6;--ink:#fff;--sub:rgba(255,255,255,.72);--glass:rgba(255,255,255,.12);--glassb:rgba(255,255,255,.22);--acc:#9db0ff;--accink:#0b1030;--sheet:#0c0e22;--sheetink:#eef0ff;--card:rgba(255,255,255,.07);--line:rgba(255,255,255,.1)}
+.phone[data-t=sat]{--p1:#7fd0ff;--p2:#ffe08a;--p3:#a8ecc8;--p4:#6aa8ff;--ink:#0d2038;--sub:rgba(13,32,56,.7);--glass:rgba(255,255,255,.5);--glassb:rgba(255,255,255,.8);--acc:#0d2038;--accink:#fff;--sheet:#fff;--sheetink:#14213a;--card:#f1f6fb;--line:rgba(20,33,58,.1)}
+.phone[data-t=later]{--ink:#fff;--sub:rgba(255,255,255,.75);--glass:rgba(255,255,255,.14);--glassb:rgba(255,255,255,.26);--acc:#8ff0c0;--accink:#06241c;--sheet:#0e2230;--sheetink:#e9f6f6;--card:rgba(255,255,255,.07);--line:rgba(255,255,255,.12)}
+.phone[data-t=sun]{--ink:#3a1030;--sub:rgba(58,16,48,.72);--glass:rgba(255,255,255,.45);--glassb:rgba(255,255,255,.75);--acc:#3a1030;--accink:#ffe6d6;--sheet:#fff8f4;--sheetink:#3a1030;--card:#fdeee6;--line:rgba(58,16,48,.1)}
+.phone.home{color:var(--ink)}
+.skyL,.skystars,.orb{opacity:0;pointer-events:none}
+.skyL{position:absolute;inset:0;transition:opacity .7s}
+.phone.home[data-t=now] .skyL[data-s=now],.phone.home[data-t=late] .skyL[data-s=late],.phone.home[data-t=sat] .skyL[data-s=sat],.phone.home[data-t=sun] .skyL[data-s=sun],.phone.home[data-t=later] .skyL[data-s=later]{opacity:1}
+.skyL[data-s=now]{background:linear-gradient(180deg,#1a0f3d 0%,#4a1f7a 34%,#d4467c 68%,#ff9a62 100%)}
+.skyL[data-s=late]{background:linear-gradient(180deg,#050816 0%,#0f1538 45%,#2a1f5c 100%)}
+.skyL[data-s=sat]{background:linear-gradient(180deg,#59b8ff 0%,#9be0ff 45%,#fff0c9 100%)}
+.skyL[data-s=later]{background:linear-gradient(180deg,#0b2a3a 0%,#1c5d73 40%,#52b6a6 76%,#d8f3c4 100%)}
+.skyL[data-s=sun]{background:linear-gradient(180deg,#ffb68a 0%,#ff9fb2 45%,#b9a6ff 100%)}
+.skystars{position:absolute;inset:0;transition:opacity .7s;background-image:radial-gradient(1.5px 1.5px at 30px 70px,#fff,transparent),radial-gradient(1px 1px at 90px 130px,#fff,transparent),radial-gradient(1.5px 1.5px at 160px 50px,#fff,transparent),radial-gradient(1px 1px at 230px 110px,#fff,transparent),radial-gradient(1.5px 1.5px at 300px 60px,#fff,transparent),radial-gradient(1px 1px at 350px 140px,#fff,transparent)}
+.phone.home[data-t=late] .skystars{opacity:.9}.phone.home[data-t=now] .skystars{opacity:.35}
+.orb{position:absolute;width:150px;height:150px;border-radius:50%;transition:all .8s cubic-bezier(.5,0,.2,1)}
+.phone.home[data-t=now] .orb{left:200px;top:330px;background:radial-gradient(circle,#ffe29a 0%,#ffb35c 45%,rgba(255,150,90,0) 70%);opacity:.9}
+.phone.home[data-t=late] .orb{left:250px;top:70px;width:90px;height:90px;background:radial-gradient(circle at 35% 35%,#fff 0%,#dfe3ff 55%,rgba(200,210,255,0) 72%);opacity:.95}
+.phone.home[data-t=sat] .orb{left:230px;top:30px;background:radial-gradient(circle,#fffbe0 0%,#fff3a0 40%,rgba(255,243,160,0) 70%);opacity:1}
+.phone.home[data-t=later] .orb{left:250px;top:330px;width:110px;height:110px;background:radial-gradient(circle,#eaffd8 0%,#9be7c4 45%,rgba(155,231,196,0) 70%);opacity:.85}
+.phone.home[data-t=sun] .orb{left:30px;top:300px;background:radial-gradient(circle,#fff6e0 0%,#ffd9a8 45%,rgba(255,217,168,0) 70%);opacity:.9}
+.status{position:absolute;top:0;left:0;right:0;height:40px;padding:14px 28px 0;display:flex;justify-content:space-between;font-size:12px;font-weight:600;z-index:20;pointer-events:none}
+#screen{position:absolute;inset:0}
+.glass{background:var(--glass);border:1px solid var(--glassb);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:var(--ink)}
+/* shared */
+.scroll{position:absolute;inset:0;overflow:auto;scrollbar-width:none;padding:0 20px 120px}.scroll::-webkit-scrollbar{display:none}
+.scroll.nopad{padding:0 0 130px}
+.nav{display:flex;align-items:center;gap:12px;padding:52px 0 14px}
+.nav b{flex:1;font:800 20px "Bricolage Grotesque",Inter,sans-serif;letter-spacing:-.01em}
+.nav.center b{text-align:center}
+.rb{width:40px;height:40px;border-radius:50%;border:0;background:var(--card);color:var(--sheetink);display:grid;place-items:center;font-size:20px;cursor:pointer;flex:none}
+.rb.gl{background:rgba(0,0,0,.28);color:#fff;backdrop-filter:blur(10px)}
+h2{margin:6px 0 8px;font:800 28px/1.08 "Bricolage Grotesque",Inter,sans-serif;letter-spacing:-.02em}
+h3{margin:0 0 4px;font:800 22px/1.1 "Bricolage Grotesque",Inter,sans-serif}
+.kick{font:700 11px Inter;letter-spacing:.12em;text-transform:uppercase;opacity:.6}
+.mut{opacity:.62;font-size:13px}
+.btn{height:54px;border-radius:27px;border:0;font:700 16px Inter;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn.pri{background:var(--acc);color:var(--accink)}
+.btn.sec{background:var(--card);color:var(--sheetink)}
+.btn.link{background:none;color:var(--sheetink);height:40px;font-weight:600;opacity:.7;text-decoration:underline}
+.btn.sm{height:38px;width:auto;padding:0 16px;font-size:13px;border-radius:19px}
+.cta{position:absolute;left:0;right:0;bottom:0;padding:26px 20px 28px;background:linear-gradient(180deg,transparent,var(--sheet) 38%);z-index:6;display:flex;gap:10px}
+.cta .btn{flex:1}.cta .rb{width:54px;height:54px}
+.card{background:var(--card);border-radius:22px;padding:16px;margin-bottom:12px}
+.row{display:flex;gap:12px;align-items:center}
+.row .sp{flex:1;min-width:0}
+.av{width:44px;height:44px;border-radius:50%;background:linear-gradient(145deg,#ff9a62,#d4467c);display:grid;place-items:center;font-weight:800;color:#fff;flex:none}
+.st{font:700 11px Inter;padding:4px 10px;border-radius:99px;background:var(--card);display:inline-block}
+.st.ok{background:#1fbf75;color:#fff}.st.warn{background:#ffb020;color:#2a1a00}.st.bad{background:#ff5a67;color:#fff}
+.seg{display:flex;background:var(--card);border-radius:22px;padding:4px;margin-bottom:16px}
+.seg button{flex:1;height:36px;border:0;border-radius:18px;background:none;color:var(--sheetink);font:600 13px Inter;cursor:pointer;opacity:.7}
+.seg button.on{background:var(--acc);color:var(--accink);opacity:1}
+.fld{background:var(--card);border-radius:18px;padding:12px 16px;margin-bottom:10px}
+.fld label{display:block;font:600 11px Inter;letter-spacing:.08em;text-transform:uppercase;opacity:.55;margin-bottom:2px}
+.fld input,.fld textarea,.fld .v{width:100%;background:none;border:0;outline:0;color:var(--sheetink);font:600 16px Inter;padding:0;resize:none}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{height:36px;padding:0 14px;border-radius:18px;background:var(--card);display:inline-flex;align-items:center;gap:6px;font:600 13px Inter;cursor:pointer;white-space:nowrap;border:2px solid transparent}
+.chip.on{background:var(--acc);color:var(--accink)}
+.tabs{position:absolute;left:24px;right:24px;bottom:22px;height:62px;border-radius:31px;display:flex;padding:6px;z-index:8;background:var(--sheet);box-shadow:0 14px 34px rgba(0,0,0,.35);border:1px solid var(--line)}
+.tabs div{flex:1;border-radius:25px;display:grid;place-items:center;color:var(--sheetink);opacity:.55;cursor:pointer;font:600 10px Inter;align-content:center;transition:all .3s}
+.tabs div.on{background:var(--acc);color:var(--accink);opacity:1}
+.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:30;display:flex;align-items:flex-end;animation:fade .25s}
+.msheet{background:var(--sheet);color:var(--sheetink);width:100%;border-radius:30px 30px 0 0;padding:12px 20px 32px;animation:rise .35s cubic-bezier(.2,.8,.2,1)}
+.msheet .gr{width:40px;height:5px;border-radius:3px;background:var(--line);filter:brightness(1.8);margin:0 auto 16px}
+@keyframes fade{from{opacity:0}}@keyframes rise{from{transform:translateY(40px);opacity:0}}
+.heroart{height:300px;position:relative;overflow:hidden}
+.heroart .big{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%) rotate(-8deg);font-size:150px;filter:drop-shadow(0 14px 24px rgba(0,0,0,.28))}
+.heroart::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 25% 20%,rgba(255,255,255,.35),transparent 45%);z-index:1}
+.heroart .rb{position:absolute;top:52px;z-index:3}
+.sbody{position:relative;background:var(--sheet);border-radius:30px 30px 0 0;margin-top:-30px;padding:24px 20px 0;z-index:2}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}
+.facts div{background:var(--card);border-radius:20px;padding:12px 8px;text-align:center}
+.facts i{display:block;font-style:normal;font-size:20px;margin-bottom:2px}.facts b{display:block;font-size:14px}.facts small{opacity:.6;font-size:11px}
+.soft{background:var(--card);border-radius:16px;padding:12px 14px;font-size:13px;margin:12px 0}
+.mini{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:28px;flex:none}
+.poster{position:relative;overflow:hidden;border-radius:26px;color:#fff;cursor:pointer;flex:none;animation:pop2 .45s backwards}
+@keyframes pop2{from{opacity:0;transform:translateY(14px)}}
+.poster .big{position:absolute;right:-6px;top:6px;font-size:92px;transform:rotate(-10deg);filter:drop-shadow(0 8px 14px rgba(0,0,0,.25))}
+.poster::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 15%,rgba(255,255,255,.28),transparent 45%),linear-gradient(180deg,transparent 40%,rgba(0,0,0,.55))}
+.poster .tp{position:absolute;left:12px;top:12px;z-index:2}.poster .bt{position:absolute;left:12px;right:12px;bottom:12px;z-index:2}
+.poster .bt b{display:block;font:800 17px/1.08 "Bricolage Grotesque",Inter,sans-serif;margin-bottom:4px}.poster .bt span{font-size:11px;opacity:.92}
+.poster .price{position:absolute;right:12px;top:12px;z-index:2;font:800 12px Inter;background:#fff;color:#111;border-radius:99px;padding:4px 9px}
+.poster .heart{position:absolute;right:10px;bottom:10px;z-index:3;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.22);backdrop-filter:blur(8px);display:grid;place-items:center;border:0;color:#fff;font-size:14px;cursor:pointer}
+.poster .heart.on{background:#fff;color:#ff3d6e}
+.poster .tagc{letter-spacing:.02em;padding:4px 8px;font-size:9px}
+.tagc{font:700 10px Inter;letter-spacing:.06em;border-radius:99px;padding:4px 9px;background:rgba(0,0,0,.4);backdrop-filter:blur(8px);display:inline-flex;gap:6px;align-items:center}
+.live{width:7px;height:7px;border-radius:50%;background:#ff4d5e;display:inline-block;animation:blink 1.4s infinite}
+@keyframes blink{0%{box-shadow:0 0 0 0 rgba(255,77,94,.7)}70%{box-shadow:0 0 0 7px rgba(255,77,94,0)}100%{box-shadow:0 0 0 0 rgba(255,77,94,0)}}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ring{width:130px;height:130px;border-radius:50%;display:grid;place-items:center;margin:6px auto 18px}
+.ring div{width:104px;height:104px;border-radius:50%;background:var(--sheet);display:grid;place-items:center;text-align:center;font:800 28px "Bricolage Grotesque";line-height:1}
+.ring small{display:block;font:500 11px Inter;opacity:.6;margin-top:4px}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--acc);border-radius:4px}
+.sw{width:50px;height:30px;border-radius:15px;background:var(--line);position:relative;cursor:pointer;flex:none;transition:.25s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.25s}
+.swwrap.on .sw{background:var(--acc)}.swwrap.on .sw::after{left:23px}
+.cond{display:none}.swwrap.on .cond{display:block}
+.chk{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;cursor:pointer;color:transparent;flex:none}
+.chk.on{background:#1fbf75;border-color:#1fbf75;color:#fff}
+.spin{width:84px;height:84px;border-radius:50%;border:6px solid var(--line);border-top-color:var(--acc);animation:rot 1s linear infinite;margin:0 auto}
+@keyframes rot{to{transform:rotate(360deg)}}
+.center{text-align:center}
+.pop{width:92px;height:92px;border-radius:50%;background:#1fbf75;color:#fff;display:grid;place-items:center;font-size:44px;margin:0 auto;animation:pp .6s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pp{from{transform:scale(0)}}
+.ticket{border-radius:28px;overflow:hidden;background:var(--card);margin:14px 0}
+.ticket .th{padding:18px;color:#fff;position:relative;overflow:hidden}.ticket .th .big{position:absolute;right:-6px;top:-4px;font-size:88px;transform:rotate(-10deg);opacity:.9}
+.ticket .tb{padding:18px;text-align:center;border-top:2px dashed var(--line)}
+.stars{font-size:38px;letter-spacing:6px;text-align:center;cursor:pointer;user-select:none}
+.stars span{opacity:.25}.stars span.on{opacity:1;color:#ffb020}
+/* gateway (hosted by gateway: neutral white) */
+.gw{position:absolute;inset:0;background:#f6f7f9;color:#111;overflow:auto;padding-bottom:110px}
+.gw .gh{background:#fff;padding:52px 20px 14px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;font-weight:700}
+.gw .meth{background:#fff;border:2px solid #e5e7eb;border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;cursor:pointer}
+.gw .meth.on{border-color:#2f6bff}.gw .rad{width:20px;height:20px;border-radius:50%;border:2px solid #c3c8d1;flex:none}.gw .meth.on .rad{border:6px solid #2f6bff}
+.gw .gbtn{position:absolute;left:0;right:0;bottom:0;padding:16px 20px 28px;background:#f6f7f9}
+.gw .gbtn button{width:100%;height:52px;border:0;border-radius:12px;background:#2f6bff;color:#fff;font:700 16px Inter;cursor:pointer}
+.dockx{position:absolute!important;left:0;right:0;top:568px;padding:20px 97px 20px!important;scroll-padding:0;z-index:4}
+.dc{position:relative;transition:transform .32s cubic-bezier(.2,.9,.3,1.25),box-shadow .32s;flex:none;width:196px;height:104px;border-radius:24px;display:flex;gap:10px;align-items:center;padding:10px;scroll-snap-align:center;cursor:pointer}
+.dc.mid{transform:translateY(-12px) scale(1.06);z-index:2;box-shadow:0 14px 22px -6px rgba(0,0,0,.38)}
+.dc.mid+.dc,.dc:has(+.dc.mid){transform:translateX(10px) scale(.96)}
+.dc:has(+.dc.mid){transform:translateX(-10px) scale(.96)}
+.dc.mid+.dc+.dc{transform:translateX(4px)}
+.dc:has(+.dc+.dc.mid){transform:translateX(-4px)}
+.dc .da{width:64px;height:84px;border-radius:16px;display:grid;place-items:center;font-size:34px;flex:none}
+.dc .di{min-width:0;flex:1}.dc .di b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font:800 14px/1.1 "Bricolage Grotesque",Inter,sans-serif}.dc .di span{display:block;font-size:10.5px;color:var(--sub);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dc .di i{font:800 13px Inter,sans-serif;font-style:normal;margin-top:3px;display:block}
+.scx{display:flex;gap:12px;overflow-x:auto;padding:4px 20px 14px;scroll-snap-type:x mandatory;scroll-padding-left:20px;scrollbar-width:none}.scx::-webkit-scrollbar{display:none}
+.node.cl{background:var(--glass);border:2px dashed var(--ink);color:var(--ink);backdrop-filter:blur(8px);font:800 17px Inter,sans-serif}
+.node.cl small{position:absolute;top:100%;left:50%;transform:translateX(-50%);font:600 9px Inter;white-space:nowrap;margin-top:3px;color:var(--ink)}
+.zchip{position:absolute;left:0;top:-2px;z-index:6;border-radius:99px;padding:6px 12px;font:700 12px Inter;cursor:pointer}
+.tick{position:absolute;font:600 9px Inter;color:var(--sub);transform:translate(-50%,-50%);white-space:nowrap}
+/* home */
+.hhead{position:absolute;top:44px;left:20px;right:20px;display:flex;justify-content:space-between;align-items:center;z-index:3}
+.pill{font:600 13px Inter;border-radius:99px;padding:8px 13px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.hero{position:absolute;top:100px;left:20px;right:20px;z-index:3}
+.eyebrow{font:600 11px Inter;letter-spacing:.14em;color:var(--sub)}
+.hero h1{margin:6px 0 6px;font:800 30px/1.05 "Bricolage Grotesque",Inter,sans-serif;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;background:var(--acc);color:var(--accink);padding:0 10px;border-radius:14px;display:inline-block;transform:rotate(-3deg);margin-right:2px}
+.hero .sub{font-size:13px;color:var(--sub)}
+.radar{position:absolute;top:226px;left:20px;width:350px;height:214px}
+.rg{position:absolute;left:175px;top:var(--cy,112px);border-radius:50%;border:1px solid var(--glassb);transform:translate(-50%,-50%)}
+.rg.a{width:114px;height:calc(76px*var(--ky,1))}.rg.b{width:210px;height:calc(140px*var(--ky,1))}.rg.c{width:306px;height:calc(204px*var(--ky,1))}
+.pulse{position:absolute;left:175px;top:var(--cy,112px);width:30px;height:30px;border-radius:50%;border:2px solid var(--ink);opacity:0;animation:out 3s ease-out infinite;transform:translate(-50%,-50%)}.pulse.p2{animation-delay:1.5s}
+@keyframes out{0%{opacity:.6;transform:translate(-50%,-50%) scale(.6)}100%{opacity:0;transform:translate(-50%,-50%) scale(7)}}
+.you{position:absolute;left:175px;top:var(--cy,112px);width:14px;height:14px;border-radius:50%;background:var(--ink);transform:translate(-50%,-50%);box-shadow:0 0 0 5px var(--glass),0 0 22px var(--ink)}
+.node{position:absolute;width:46px;height:46px;border-radius:50%;transform:translate(-50%,-50%);display:grid;place-items:center;font-size:24px;border:3px solid #fff;box-shadow:0 6px 16px rgba(0,0,0,.35);cursor:pointer;transition:transform .25s,opacity .3s;animation:popn .5s backwards}
+.node:hover,.node.sel{transform:translate(-50%,-50%) scale(1.25);z-index:3}
+.node.sel{z-index:4;box-shadow:0 0 0 5px rgba(255,255,255,.45),0 0 26px rgba(255,255,255,.7),0 10px 24px rgba(0,0,0,.4)}
+.node.sel::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid rgba(255,255,255,.8);animation:out2 1.8s ease-out infinite}
+@keyframes out2{0%{transform:scale(.9);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+@keyframes popn{from{transform:translate(-50%,-50%) scale(0)}}
+.node.dim{opacity:.18;pointer-events:none}
+.dial{position:absolute;bottom:96px;left:24px;right:24px;height:44px;border-radius:22px;display:grid;grid-template-columns:repeat(4,1fr);padding:4px;z-index:7}
+.dial .thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/4);border-radius:18px;background:var(--acc);transition:transform .45s cubic-bezier(.5,0,.2,1)}
+.dial button{position:relative;z-index:1;border:0;background:none;font:700 13px Inter;color:var(--ink);cursor:pointer;transition:color .3s}
+.dial button.on{color:var(--accink)}
+.node .nl{position:absolute;top:100%;left:50%;transform:translateX(-50%);font:700 9px Inter;white-space:nowrap;margin-top:4px;color:var(--ink);opacity:.8;pointer-events:none}
+.vsv{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.vsv .ln{stroke:var(--ink);stroke-opacity:.28;stroke-width:1.2;fill:none}
+.vsv .tw{fill:var(--ink);animation:tw 3s ease-in-out infinite}
+@keyframes tw{50%{opacity:.15}}
+.hz{position:absolute;transform:translateX(-50%);font:700 11px Inter;border-radius:99px;padding:6px 12px;white-space:nowrap}
+.hz.e{font:600 9px Inter;letter-spacing:.12em;opacity:.7;padding:0}
+/* ---- chat, tabs badge, danger ---- */
+.tabs div{position:relative}
+.bdg{position:absolute;top:5px;left:calc(50% + 6px);min-width:16px;height:16px;border-radius:8px;background:#ff4d6d;color:#fff;font:700 10px/16px Inter;text-align:center;padding:0 4px;text-decoration:none}
+.bub{max-width:78%;padding:10px 14px;border-radius:18px;font:500 14px/1.35 Inter;margin-bottom:4px;width:fit-content}
+.bub.me{margin-left:auto;background:var(--acc);color:var(--accink);border-bottom-right-radius:6px}
+.bub.them{background:var(--card);border-bottom-left-radius:6px}
+.btime{font:500 10px Inter;opacity:.5;margin:0 6px 12px}.btime.me{text-align:right}
+.cli{display:flex;gap:12px;align-items:center;background:var(--card);border-radius:20px;padding:12px 14px;margin-bottom:8px;cursor:pointer}
+.cli .sp{min-width:0}.cli .sp b{display:block}.cli .sp .mut{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cli .when{font:500 11px Inter;opacity:.5;text-align:right}
+.cli .dotu{display:block;margin:6px 0 0 auto;width:10px;height:10px;border-radius:50%;background:#ff4d6d}
+.msgbar{display:flex;gap:10px;align-items:center}.msgbar .fld{flex:1;margin:0;padding:12px 16px;border-radius:26px}
+.btn.dng{background:#ff5a5a;color:#fff}
+.btn.lnk-d{background:none;color:#ff6b7a;font:700 14px Inter;border:0;cursor:pointer;width:100%;padding:14px}
+/* ---- count styles ---- */
+.phone[data-t]{--inkc:#c8ff2e}
+.hero h1{isolation:isolate;position:relative}.hero .eyebrow{position:relative;z-index:1}.hero:is(.cs-splat,.cs-burst) h1{margin-top:16px}
+.hero h1 em.cn{position:relative}
+.cn .cb{position:absolute;left:50%;top:50%;width:0;height:0;z-index:-1;pointer-events:none}
+.cn .cb svg{position:absolute;left:0;top:0;transform:translate(-50%,-50%);overflow:visible}
+.cn b{font-weight:800}
+@keyframes spop{from{transform:translate(-50%,-50%) scale(.1) rotate(-25deg);opacity:0}}
+.hero:is(.cs-splat,.cs-burst,.cs-ticket,.cs-odo,.cs-neon,.cs-marker,.cs-stamp) h1 em.cn{background:none;transform:none;padding:0 14px;margin-right:4px}
+.cs-splat h1 em.cn{color:#1a0b3a;padding:0 18px!important;transform:rotate(-4deg)!important}
+.cs-splat .cb svg{width:104px;height:74px;animation:spop .75s cubic-bezier(.2,1.5,.4,1) both}
+.cs-burst h1 em.cn{color:#1a1a1a;padding:0 16px!important;transform:rotate(-6deg)!important}
+.cs-burst .cb svg{width:94px;height:76px;animation:spop .6s cubic-bezier(.2,1.6,.4,1) both}
+.cs-ticket h1 em.cn{color:var(--accink);background:radial-gradient(circle at 0 50%,transparent 7px,var(--acc) 7.5px) left/51% 100% no-repeat,radial-gradient(circle at 100% 50%,transparent 7px,var(--acc) 7.5px) right/51% 100% no-repeat!important;border-radius:6px;padding:2px 18px!important;transform:rotate(-3deg)!important}
+.cs-ticket em.cn b::before{content:"★ ";font-size:.42em;vertical-align:middle;opacity:.7}
+.cs-ticket em.cn::after{content:"";position:absolute;right:9px;top:5px;bottom:5px;border-left:2px dashed currentColor;opacity:.35}
+.od{display:inline-block;height:1.15em;overflow:hidden;background:var(--inkc);color:#1a0b3a;border-radius:7px;margin:0 2px;padding:0 6px;text-decoration:none;position:relative;box-shadow:0 3px 0 rgba(26,11,58,.55),0 0 10px var(--inkc),0 0 26px rgba(200,255,46,.75),0 0 48px rgba(200,255,46,.45);animation:odg 2.4s ease-in-out infinite}
+@keyframes odg{50%{box-shadow:0 3px 0 rgba(26,11,58,.55),0 0 14px var(--inkc),0 0 36px rgba(200,255,46,.95),0 0 64px rgba(200,255,46,.6)}}
+.od::after{content:"";position:absolute;left:0;right:0;top:50%;height:1.5px;background:rgba(26,11,58,.28)}
+.od u{display:flex;flex-direction:column;text-decoration:none;line-height:1.15;transform:translateY(calc(var(--d)*-1.15em));animation:roll 1.2s cubic-bezier(.2,.9,.2,1) both}
+@keyframes roll{from{transform:translateY(0)}}
+.cs-odo h1 em.cn{padding:0!important}
+.cs-neon h1 em.cn{color:#fff;border:2.5px solid #ff4fd8;border-radius:14px;padding:0 12px!important;transform:rotate(-2deg)!important;text-shadow:0 0 6px #ff4fd8,0 0 18px #ff4fd8;box-shadow:0 0 12px #ff4fd8,inset 0 0 12px rgba(255,79,216,.7);animation:flick 3.4s infinite}
+@keyframes flick{0%,18%,22%,62%,66%,100%{opacity:1}20%,64%{opacity:.45}}
+.cs-marker h1 em.cn{color:#2a1450;padding:0 8px!important}
+.cs-marker h1 em.cn::before{content:"";position:absolute;inset:7px -6px -1px;z-index:-1;background:#ffe45c;clip-path:polygon(0 14%,7% 0,100% 8%,96% 100%,5% 90%);transform:skew(-8deg) rotate(-1.5deg);transform-origin:left;animation:wipe .6s .1s cubic-bezier(.3,.8,.3,1) both}
+@keyframes wipe{from{transform:skew(-8deg) rotate(-1.5deg) scaleX(0)}}
+.cs-stamp h1 em.cn{color:#ff5a5a;border:3px solid #ff5a5a;border-radius:8px;padding:0 10px!important;transform:rotate(-7deg)!important;box-shadow:inset 0 0 0 2px rgba(255,90,90,.35);letter-spacing:.04em;animation:stamp .5s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes stamp{from{opacity:0;transform:rotate(-14deg) scale(2.4)}}
+/* ---- extra home views ---- */
+.node.pin::before{content:"";position:absolute;left:50%;bottom:-7px;width:12px;height:12px;background:inherit;transform:translateX(-50%) rotate(45deg);border-radius:0 0 3px 0;z-index:-1}
+.node.pol{width:58px;height:70px;border-radius:4px;border-width:3px 3px 15px;font-size:28px;transform:translate(-50%,-50%) rotate(var(--r,0deg))}
+.node.pol::before{content:"";position:absolute;left:50%;top:-10px;width:26px;height:11px;transform:translateX(-50%) rotate(-3deg);background:rgba(255,235,160,.85);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.node.pol:hover,.node.pol.sel{transform:translate(-50%,-50%) rotate(0deg) scale(1.2)}
+.node.pol.sel::after{border-radius:6px;inset:-6px}
+.node.hx{width:64px;height:70px;border:0;border-radius:0;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);box-shadow:inset 0 0 0 3px rgba(255,255,255,.85);font-size:28px}
+.node.hx:hover,.node.hx.sel{box-shadow:inset 0 0 0 6px #fff;transform:translate(-50%,-50%) scale(1.15)}
+.node.hx::after{display:none}
+.node.fr{outline:2px dashed rgba(255,255,255,.85);outline-offset:3px}
+.node.dr{animation:popn .5s backwards,fl 6s ease-in-out infinite}
+@keyframes fl{50%{translate:5px -7px}}
+.vsv text{font:700 9px Inter;fill:var(--ink);opacity:.7;letter-spacing:.08em}
+@keyframes dashm{to{stroke-dashoffset:-40}}
+.vsv .ob{animation:dashm 6s linear infinite}
+/* ---- background styles (temporary dropdown) ---- */
+.sty{background:#ffd166;color:#2a1450;padding:9px 14px;border-radius:14px;font:800 13px Inter,sans-serif;display:flex;gap:8px;align-items:center;box-shadow:0 0 0 3px rgba(255,209,102,.35)}
+.sty select{background:#fff;color:#111;font:800 15px Inter,sans-serif;border:0;border-radius:10px;padding:7px 10px}
+#bgx{position:absolute;inset:0;pointer-events:none;overflow:hidden;display:none}
+.phone.home:not(.bg-sky) #bgx{display:block}
+#bgx svg{position:absolute;left:0;top:0}
+.phone.home:is(.bg-pastel,.bg-aurora,.bg-blobs,.bg-gpastel,.bg-gaurora,.bg-gpaper,.bg-gduo) :is(.skyL,.skystars,.orb){opacity:0!important}
+.phone:is(.bg-pastel,.bg-blobs,.bg-gpastel,.bg-gpaper,.bg-gduo)[data-t]{--ink:#2b2140;--sub:rgba(43,33,64,.68);--glass:rgba(255,255,255,.6);--glassb:rgba(255,255,255,.9);--acc:#2b2140;--accink:#fff;--sheet:#fffafc;--sheetink:#2b2140;--card:rgba(43,33,64,.06);--line:rgba(43,33,64,.1)}
+.phone:is(.bg-aurora,.bg-gaurora)[data-t]{--ink:#fff;--sub:rgba(255,255,255,.72);--glass:rgba(255,255,255,.1);--glassb:rgba(255,255,255,.2);--acc:var(--p1);--accink:#0a0b1c;--sheet:#0b0d22;--sheetink:#eef0ff;--card:rgba(255,255,255,.07);--line:rgba(255,255,255,.1)}
+.bg-pastel #bgx,.bg-gpastel #bgx{background:radial-gradient(circle at 14% 10%,color-mix(in srgb,var(--p1) 55%,#fff) 0,transparent 44%),radial-gradient(circle at 90% 22%,color-mix(in srgb,var(--p2) 48%,#fff) 0,transparent 46%),radial-gradient(circle at 20% 68%,color-mix(in srgb,var(--p3) 40%,#fff) 0,transparent 50%),radial-gradient(circle at 88% 90%,color-mix(in srgb,var(--p4) 50%,#fff) 0,transparent 48%),#fff9fc}
+.bg-aurora #bgx,.bg-gaurora #bgx{background:#070914}
+.bg-gpaper #bgx{background:radial-gradient(ellipse at 30% 20%,#fff6e8 0,transparent 60%),radial-gradient(ellipse at 80% 85%,color-mix(in srgb,var(--p2) 22%,#f1e4d2) 0,transparent 60%),#f1e6d6}
+.bg-gduo #bgx{background:#f4ead9}
+.phone:is(.bg-gpastel,.bg-gaurora,.bg-gpaper,.bg-gduo) #bgx::after{content:'';position:absolute;inset:0;mix-blend-mode:overlay;opacity:.55;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feColorMatrix values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 1'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
+.bg-gaurora #bgx::after{opacity:.4}.bg-gpaper #bgx::after{opacity:.7;mix-blend-mode:multiply}
+.ab{position:absolute;border-radius:50%;filter:blur(55px);mix-blend-mode:screen;opacity:.8;animation:drift 16s ease-in-out infinite alternate}
+.ab.a1{width:340px;height:340px;left:-90px;top:-50px;background:var(--p1)}
+.ab.a2{width:360px;height:360px;right:-120px;top:230px;background:var(--p2);animation-duration:20s}
+.ab.a3{width:320px;height:320px;left:-40px;top:520px;background:var(--p3);animation-duration:18s}
+.ab.a4{width:220px;height:220px;left:130px;top:360px;background:var(--p4);opacity:.55;animation-duration:22s}
+@keyframes drift{to{transform:translate(40px,-50px) scale(1.15)}}
+.bg-contour #bgx{color:var(--ink)}
+.bg-grain #bgx{mix-blend-mode:overlay;background:radial-gradient(ellipse at 50% 38%,transparent 45%,rgba(0,0,0,.4) 100%),linear-gradient(135deg,rgba(255,190,130,.35),transparent 42%),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
+.bg-blobs #bgx{background:color-mix(in srgb,var(--p4) 35%,#fff7ee)}
+
+.allp{position:absolute;inset:0;z-index:25;background:var(--sheet);color:var(--sheetink);display:flex;flex-direction:column;animation:rise .4s cubic-bezier(.2,.8,.2,1)}
+.allh{display:flex;justify-content:space-between;align-items:center;padding:56px 20px 10px}
+.allh b{display:block;font:800 26px "Bricolage Grotesque",Inter,sans-serif;letter-spacing:-.02em}
+.allc{display:flex;gap:8px;overflow-x:auto;padding:2px 20px 12px;scrollbar-width:none;flex:none}.allc::-webkit-scrollbar{display:none}.allc .chip{flex:none}
+.allg{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px 18px}
+.allb{flex:1;overflow:auto;padding:4px 0 40px;scrollbar-width:none}.allb::-webkit-scrollbar{display:none}
+.poster .tagc{font-size:8.5px;letter-spacing:0}
+.hsh{display:flex;justify-content:space-between;align-items:baseline;margin:6px 20px 10px;font:800 18px "Bricolage Grotesque",Inter,sans-serif}
+.hsh small{font:500 12px Inter;opacity:.55}
+.hscroll{display:flex;gap:10px;overflow-x:auto;padding:2px 20px 14px;scroll-snap-type:x mandatory;scroll-padding-left:20px;scrollbar-width:none}.hscroll::-webkit-scrollbar{display:none}
+.hscroll .poster{width:164px;height:210px;scroll-snap-align:start}
+.hscroll .chip{scroll-snap-align:start}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@keyframes scanl{from{top:60px}to{top:270px}}
+</style>
+</head>
+<body>
+<div class="cap"><b>KL Local Session · Hi-fi</b><label>Jump to <select id="jump"></select></label></div>
+<div id="wrap"><div class="phone home" id="ph" data-t="now">
+  <div class="skyL" data-s="now"></div><div class="skyL" data-s="late"></div><div class="skyL" data-s="sat"></div><div class="skyL" data-s="sun"></div><div class="skyL" data-s="later"></div>
+  <div class="skystars"></div><div class="orb"></div><div id="bgx"></div>
+  <div id="screen"></div><div id="tabs"></div><div id="modal"></div>
+  <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id);let SC=1;
+const art=e=>`linear-gradient(145deg,${e.c[0]},${e.c[1]})`;
+const E=(t,g,c1,c2,d,p,m,w,s,host,spots,area)=>({t,g,c:[c1,c2],d,p,m,w,s,host,spots,area,live:s===0});
+const DATA={
+ now:{eye:'WED · 7:42 PM',tail:'things are happening near you',title:'Starting soon',ev:[
+  E('Pokémon Trade Night','🎴','#ff5f6d','#ffc371',0.8,'Free',['free','meet'],'Happening · until 10 PM',0,'KLCC Pokémon Club',0,'KLCC'),
+  E('Open Mic Night','🎤','#7f00ff','#e100ff',1.2,'RM10',['meet'],'Starts 8:20 PM',38*60,'The Loft Café',9,'Bangsar'),
+  E('Midvalley Night Market','🛍','#f7971e','#d9a400',4.5,'Free',['free','meet'],'Happening · until 11 PM',0,'Midvalley',0,'Mid Valley'),
+  E('Salsa Social','💃','#f857a6','#ff5858',2.1,'RM15',['move','meet'],'Starts 9:00 PM',78*60,'Salsa KL',14,'Bangsar'),
+  E('Late Pottery Drop-in','🏺','#c97b63','#e8a77a',3.4,'RM45',['make'],'Starts 9:15 PM',93*60,'Clay & Co',2,'Sri Hartamas'),
+  E('Sunset Yoga Deck','🧘','#11998e','#38ef7d',1.9,'RM25',['move'],'Starts 8:04 PM',22*60,'Mei Studio',5,'Bangsar')]},
+ late:{eye:'WED · AFTER 10 PM',tail:'night-owl plans',title:'After hours',ev:[
+  E('Supper Run Club','🏃','#0f9b8e','#1de9b6',1.0,'Free',['free','move','meet'],'Tonight 11:00 PM',null,'KL Run Crew',0,'Bangsar'),
+  E('Midnight Board Games','🎲','#5f2c82','#49a09d',2.4,'RM12',['meet'],'Tonight 10:30 PM',null,'Game Haus',6,'PJ'),
+  E('Silent Disco','🎧','#8e2de2','#4a00e0',3.9,'RM35',['move','meet'],'Tonight 11:30 PM',null,'Quiet Riot',20,'KL')]},
+ sat:{eye:'SAT · 17 OCT',tail:'ways to spend your Saturday',title:'Saturday picks',ev:[
+  E('Sunrise Hike Bukit Kiara','⛰','#2c7744','#98d98e',3.1,'Free',['free','move','meet'],'Sat 6:30 AM',null,'Kiara Hikers',0,'Bukit Kiara'),
+  E('Pokémon Community Meetup','🎴','#ff5f6d','#ffc371',0.8,'Free',['free','meet'],'Sat 11:00 AM',null,'KLCC Pokémon Club',0,'KLCC'),
+  E('Bangsar Flea Market','🛍','#ff8a00','#e52e71',1.5,'Free',['free','meet'],'Sat 10:00 AM',null,'Bangsar Makers',0,'Bangsar'),
+  E('Batik Painting Workshop','🎨','#ee0979','#ff6a00',2.2,'RM60',['make'],'Sat 2:00 PM',null,'Batik House',8,'Bangsar'),
+  E('Ceramics Open Studio','🏺','#b08968','#e6ccb2',3.4,'RM40',['make'],'Sat 3:30 PM',null,'Clay & Co',5,'Sri Hartamas')]},
+ sun:{eye:'SUN · 18 OCT',tail:'slow Sunday plans',title:'Slow Sunday',ev:[
+  E('Beginner Mat Pilates','🧘','#11998e','#38ef7d',1.2,'RM30',['move'],'Sun 9:00 AM',null,'Mei Studio',4,'Bangsar'),
+  E('Sketch & Brunch','✏️','#f093fb','#f5576c',0.9,'RM38',['make','meet'],'Sun 10:30 AM',null,'Ink & Eggs',6,'Bangsar'),
+  E('Pottery Wheel Basics','🏺','#c97b63','#e8a77a',3.4,'RM45',['make'],'Sun 2:00 PM',null,'Clay & Co',2,'Sri Hartamas'),
+  E('Sunday Cycling Club','🚴','#4facfe','#00c6a7',2.8,'Free',['free','move','meet'],'Sun 7:00 AM',null,'KL Cyclists',0,'KL')]}
+};
+DATA.later={eye:'NEXT 2 WEEKS',tail:'plans coming up',title:'Coming up',ev:[
+  E('Board Game Night','🎲','#5f2c82','#49a09d',7,'RM15',['meet'],'Fri 23 Oct · 8 PM',null,'Game Haus',6,'PJ'),
+  E('Sunset Stretch','🧘','#11998e','#38ef7d',1.2,'RM25',['move'],'Sat 24 Oct · 6 PM',null,'Mei Studio',8,'Bangsar'),
+  E('Kolam Art Workshop','🎨','#ee0979','#ff6a00',2.6,'RM20',['make'],'Sun 25 Oct · 11 AM',null,'Rangoli Lab',10,'Brickfields'),
+  E('Photo Walk: Old KL','📸','#2c3e50','#4ca1af',5.2,'Free',['free','move','meet'],'Sat 31 Oct · 7:30 AM',null,'KL Lens Club',0,'Chinatown'),
+  E('Vinyl Swap Meet','💿','#42275a','#734b6d',3.3,'Free',['free','meet'],'Sun 1 Nov · 12 PM',null,'Spin Collective',0,'Bangsar'),
+  E('Intro to Muay Thai','🥊','#cb2d3e','#ef473a',2.0,'RM35',['move'],'Sat 7 Nov · 10 AM',null,'Garuda Gym',6,'KL')]};
+DATA.later.ev.forEach((e,i)=>e.dt=[[23,'OCT'],[24,'OCT'],[25,'OCT'],[31,'OCT'],[1,'NOV'],[7,'NOV']][i]);
+const KEYS=['now','night','weekend','all'];
+const PIL=DATA.sun.ev[0];
+const st={t:'now',mood:'any',all:false,acat:'all',zoom:null,sel:0,saved:new Set(),screen:'home',hist:[],modal:null,signed:false,people:1,method:0,rating:4,bk:0,ev:PIL,area:'Bangsar',vw:'map',cs:'odo',why:'join',cap:12,hev:0,scanned:0,after:null};
+DATA.now.ev.forEach(e=>e.sec=e.s);
+const cd=s=>s>=3600?`${Math.floor(s/3600)}h ${Math.floor(s%3600/60)}m`:`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+const dt=e=>{const p=e.w.split(' · ');return /^Happening/.test(e.w)||p.length<2?[e.w.replace('Starts ','').replace('Tonight ','Tonight, '),'1 hour']:p};
+const CAN={'Batik Painting Workshop':'48 hours','Pottery Wheel Basics':'7 days','Intro to Muay Thai':'none'};
+const canTxt=e=>{const c=CAN[e.t]||'24 hours';return c==='none'?'ⓘ No refunds once booked':`✓ Free cancellation up to ${c} before`};
+const price=e=>e.p==='Free'?0:+e.p.replace('RM','');
+const all=()=>DATA[st.t].ev.map((e,i)=>({...e,i}));
+const cur=()=>all().filter(e=>st.mood==='any'||e.m.includes(st.mood));
+const ev=e=>{st.ev=e;go(e.p==='Free'?'info':'detail')};
+const qr=()=>{let s='';for(let y=0;y<13;y++)for(let x=0;x<13;x++){const c=(x<4&&y<4)||(x>8&&y<4)||(x<4&&y>8);const r=((x*7+y*13+x*y)%5<2);if(c?((x%3!==1||y%3!==1)&&!(x===1&&y===1)):r)s+=`<rect x="${x*8}" y="${y*8}" width="8" height="8"/>`}return `<svg viewBox="0 0 104 104" width="132" height="132" fill="currentColor">${s}</svg>`};
+const IC={
+ explore:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>',
+ saved:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/></svg>',
+ tix:'<svg viewBox="0 0 24 24"><path d="M4 8a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg>',
+ me:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1-4 4-5.5 7-5.5s6 1.5 7 5.5"/></svg>',
+ dash:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>',
+ cal:'<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>',
+ chat:'<svg viewBox="0 0 24 24"><path d="M5 6h14a2 2 0 012 2v7a2 2 0 01-2 2h-7l-4 3.5V17H5a2 2 0 01-2-2V8a2 2 0 012-2z"/></svg>',
+ cash:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.7 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5v1.5M12 16v1.5"/></svg>'};
+const ATT=[['home','Explore',IC.explore],['saved','Saved',IC.saved],['bookings','Bookings',IC.tix],['chats','Chat',IC.chat],['profile','Profile',IC.me]];
+const HOST=[['hdash','Home',IC.dash],['hevents','Events',IC.cal],['hpay','Payouts',IC.cash],['hchats','Chat',IC.chat],['hprofile','Profile',IC.me]];
+const back=(cls='')=>`<button class="rb ${cls}" data-back>‹</button>`;
+const nav=(t,r='')=>`<div class="nav">${back()}<b>${t}</b>${r}</div>`;
+const REG=[];
+const ptag=e=>/^Tonight /.test(e.w)?'🌙 '+e.w.slice(8):e.w.split(' · ')[0].toUpperCase();
+const poster=(e,w,h,k=0)=>`<div class="poster ${w==='132px'?'sm':''}" style="background:${art(e)};width:${w};height:${h};animation-delay:${k*60}ms" data-reg="${REG.push(e)-1}"><span class="big">${e.g}</span><div class="tp"><span class="tagc">${e.live?'<i class="live"></i> HAPPENING':e.sec!=null?`⏱ in <span data-cd="${e.i}">${cd(e.sec)}</span>`:ptag(e)}</span></div><span class="price">${e.p}</span><div class="bt"><b>${e.t}</b><span>📍 ${e.d} km</span></div><button class="heart ${st.saved.has(e.t)?'on':''}" data-h="${e.t}">♥</button></div>`;
+const hero=(e,extra='')=>`<div class="heroart" style="background:${art(e)}"><span class="big">${e.g}</span>${back('gl')}<button class="rb gl" style="right:20px" data-fav>${st.saved.has(e.t)?'♥':'♡'}</button></div>`;
+
+/* ---------------- styles lab: data + layouts ---------------- */
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hsh(x){let h=0;for(const c of x)h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)}
+const AREAS={'Bangsar':[-118,1.4],'KLCC':[-42,1.0],'Mid Valley':[-148,4.5],'Sri Hartamas':[-78,3.4],'PJ':[-172,6.8],'Bukit Bintang':[-12,2.2],'Brickfields':[-160,2.6],'Chinatown':[-24,5.2],'Bukit Kiara':[-98,3.1],'KL':[-62,2.5],'Mont Kiara':[-66,4.2]};
+const TPL=[['Pokémon Trade Night','🎴','#ff5f6d','#ffc371',['free','meet'],['Free']],['Night Market Crawl','🍢','#f7971e','#d9a400',['free','meet'],['Free']],['Run Club','🏃','#0f9b8e','#1de9b6',['free','move','meet'],['Free']],['Photo Walk','📸','#2c3e50','#4ca1af',['free','move','meet'],['Free']],['Open Mic','🎤','#7f00ff','#e100ff',['meet'],['RM10','RM15']],['Salsa Social','💃','#f857a6','#ff5858',['move','meet'],['RM15','RM20']],['Pottery Class','🏺','#c97b63','#e8a77a',['make'],['RM45','RM60']],['Batik Painting','🎨','#ee0979','#ff6a00',['make'],['RM40','RM60']],['Candle Making','🕯','#ffb347','#ffcc33',['make'],['RM35','RM50']],['Latte Art Basics','☕','#8d6e63','#d7a86e',['make'],['RM55']],['Mat Pilates','🧘','#11998e','#38ef7d',['move'],['RM25','RM30']],['Boxing Basics','🥊','#cb2d3e','#ef473a',['move'],['RM35']],['Climbing Intro','🧗','#355c7d','#6c5b7b',['move'],['RM40']],['Board Game Night','🎲','#5f2c82','#49a09d',['meet'],['RM12','RM15']],['Language Exchange','🗣','#4facfe','#00c6a7',['free','meet'],['Free']],['Book Swap','📚','#614385','#516395',['free','meet'],['Free']],['Sketch & Brunch','✏️','#f093fb','#f5576c',['make','meet'],['RM38']],['Vinyl Listening Party','💿','#42275a','#734b6d',['meet'],['RM20']],['Silent Disco','🎧','#8e2de2','#4a00e0',['move','meet'],['RM35']],['Community Garden Day','🌱','#56ab2f','#a8e063',['free','make','meet'],['Free']],['Stand-up Comedy Night','🎭','#ff512f','#dd2476',['meet'],['RM25']],['Store Opening Giveaway','🎁','#f7971e','#ffd200',['free'],['Free']],['Mall Pop-up Show','✨','#fc5c7d','#6a82fb',['free'],['Free']]];
+const HOSTS=['Clay & Co','Mei Studio','KL Run Crew','Game Haus','Batik House','Ink & Eggs','Spin Collective','Garuda Gym','The Loft Café','KL Lens Club','Bangsar Makers','Rangoli Lab'];
+function fmtT(h){h=((h%24)+24)%24;const hh=Math.floor(h),mm=Math.round((h-hh)*60);return (hh%12||12)+(mm?':'+String(mm).padStart(2,'0'):'')+' '+(hh>=12?'PM':'AM')}
+function gen(n,seed,win,fmt){const r=rng(seed),nm=Object.keys(AREAS),out=[];for(let i=0;i<n;i++){const t=TPL[Math.floor(r()*TPL.length)],a=nm[Math.floor(r()*nm.length)],d=Math.max(.3,Math.round((AREAS[a][1]+(r()-.5)*1.4)*10)/10),q=Math.round((win[0]+r()*(win[1]-win[0]))*2)/2,p=t[5][Math.floor(r()*t[5].length)];const e=E(t[0],t[1],t[2],t[3],d,p,t[4],'',null,HOSTS[Math.floor(r()*HOSTS.length)],p==='Free'?0:2+Math.floor(r()*14),a);fmt(e,q);out.push(e)}return out}
+DATA.now.ev.push(...gen(18,11,[18.5,23],(e,q)=>{e.tk=q;if(q<=19.7){e.live=true;e.s=0;e.w='Happening · until '+fmtT(q+2.5);e.tk=19.7}else{e.s=Math.round((q-19.7)*3600);e.w='Starts '+fmtT(q)}}));
+DATA.late.ev.push(...gen(7,22,[22,26.5],(e,q)=>{e.tk=q;e.w='Tonight '+fmtT(q)}));
+DATA.sat.ev.push(...gen(14,33,[6,21],(e,q)=>{e.tk=72+q;e.w='Sat '+fmtT(q)}));
+DATA.sun.ev.push(...gen(10,44,[6,21],(e,q)=>{e.tk=96+q;e.w='Sun '+fmtT(q)}));
+DATA.later.ev.push(...gen(14,55,[9,21],(e,q)=>{const d=9+Math.floor((q-9)*1.25),h=10+(Math.floor(q*3)%10),m=d<=17?[14+d,'OCT']:[d-17,'NOV'];e.tk=d*24+h;e.dt=m;e.w=`${['Wed','Thu','Fri','Sat','Sun','Mon','Tue'][d%7]} ${m[0]} ${m[1][0]+m[1].slice(1).toLowerCase()} · ${fmtT(h)}`}));
+function parseTk(e,key){const w=e.w;let day={now:0,late:0,sat:3,sun:4}[key],h=19.7;const m=w.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/);if(m&&!/^Happening/.test(w))h=(+m[1]%12)+(m[3]==='PM'?12:0)+(m[2]?+m[2]/60:0);if(key==='later'){const d=w.match(/(\d{1,2}) (Oct|Nov)/);day=d?(d[2]==='Oct'?+d[1]-14:+d[1]+17):9}if(key==='late'&&h<12)h+=24;return day*24+h}
+['now','late','sat','sun','later'].forEach(k=>DATA[k].ev.forEach(e=>{if(e.sec===undefined)e.sec=e.s;if(e.tk===undefined)e.tk=parseTk(e,k)}));
+/* regroup into Now / Night / Weekend / Soon */
+{const tonight=[...DATA.now.ev,...DATA.late.ev],isNow=e=>e.live||(e.sec!=null&&e.sec<=7200);
+ DATA.now={...DATA.now,ev:tonight.filter(isNow)};
+ DATA.night={eye:'WED · TONIGHT',tail:'ways to spend your night',title:'Tonight',ev:tonight.filter(e=>!isNow(e)).sort((a,b)=>a.tk-b.tk)};
+ DATA.weekend={eye:'SAT 17 – SUN 18 OCT',tail:'things to do this weekend',title:'This weekend',ev:[...DATA.sat.ev,...DATA.sun.ev].sort((a,b)=>a.tk-b.tk)};
+ DATA.all={eye:'ALL UPCOMING',tail:'things to do in KL',title:'Everything',ev:[...DATA.now.ev,...DATA.night.ev,...DATA.weekend.ev,...DATA.later.ev].sort((a,b)=>a.tk-b.tk)}}
+const CX=175;
+const RC={cy:204,ky:1.5,bk:1.6,rs:1.2,ymin:-150,ymax:50,cap:9,rTop:240,h:320};
+const rr=d=>(18+Math.min(d,7)/7*76)*RC.rs;
+const XS=1.5;
+const pol=(r,a)=>[r*Math.cos(a*Math.PI/180)*XS,r*Math.sin(a*Math.PI/180)*RC.ky];
+const bear=a=>(AREAS[a]||[-90])[0]*RC.bk;
+const score=e=>(e.live?3:0)+(e.sec&&e.sec<1800?2:0)+(e.p==='Free'?1:0)-e.d*.35+(hsh(e.t)%10)/20;
+function spread(ns,min=50){for(let it=0;it<40;it++){for(let i=0;i<ns.length;i++)for(let j=i+1;j<ns.length;j++){let dx=ns[j].x-ns[i].x,dy=ns[j].y-ns[i].y,d=Math.hypot(dx,dy);if(d<min){if(d<.01){dx=1;dy=0;d=1}const k=(min-d)/2/d;ns[i].x-=dx*k;ns[i].y-=dy*k;ns[j].x+=dx*k;ns[j].y+=dy*k}}ns.forEach(n=>{n.y=Math.max(RC.ymin,Math.min(RC.ymax,n.y));n.x=Math.max(-142,Math.min(142,n.x))})}return ns}
+function layoutRadar(items){const R=[...items].sort((a,b)=>score(b)-score(a)),dots=R.slice(0,RC.cap),rest=R.slice(RC.cap),g={};rest.forEach(e=>(g[e.area]=g[e.area]||[]).push(e));const cl=Object.entries(g).sort((a,b)=>b[1].length-a[1].length).slice(0,3),ns=[];
+  dots.forEach(e=>{const[x,y]=pol(rr(e.d),bear(e.area)+(hsh(e.t)%30-15));ns.push({e,x,y,k:'dot'})});
+  cl.forEach(([a,list])=>{const[x,y]=pol(rr(list.reduce((s,e)=>s+e.d,0)/list.length),bear(a));ns.push({a,list,x,y,k:'cl'})});
+  return{ns:spread(ns),hidden:rest.length-cl.reduce((s,c)=>s+c[1].length,0)}}
+function layoutZoom(items){const s=[...items].sort((a,b)=>a.d-b.d).slice(0,9),d0=s.length?s[0].d:0,d1=s.length?s[s.length-1].d:1;return{ns:spread(s.map((e,i)=>{const[x,y]=pol(22+(e.d-d0)/(d1-d0+.01)*66,-170+((i*137.5)%160));return{e,x,y,k:'dot'}})),hidden:items.length-s.length}}
+function nodesHTML(ns){return ns.map((n,k)=>{const x=CX+n.x,y=RC.cy+n.y;if(n.k==='cl')return `<div class="node cl" data-zoom="${n.a}" style="left:${x}px;top:${y}px;animation-delay:${k*50}ms">+${n.list.length}<small>${n.a}</small></div>`;const e=n.e;return `<div class="node ${n.cls||''} ${e.i===st.sel?'sel':''} ${e.sec&&e.sec<1800?'soon':''}" data-n="${e.i}" style="left:${x}px;top:${y}px;background:${art(e)};animation-delay:${k*50}ms${n.st?';'+n.st:''}${n.r!=null?';--r:'+n.r+'deg':''}${n.sz?`;width:${n.sz}px;height:${n.sz}px;font-size:${Math.round(n.sz*.52)}px`:''}">${e.g}${n.lb?`<span class="nl">${n.lb}</span>`:''}</div>`}).join('')}
+const radarWrap=(inner,ns,extra='',you=true)=>{const sh=new Set(ns.filter(n=>n.k==='dot').map(n=>n.e.i));if(!sh.has(st.sel))st.sel=sh.size?[...sh][0]:-1;return `<div class="radar" style="top:${RC.rTop}px;height:${RC.h}px;--cy:${RC.cy}px;--ky:${RC.ky}">${extra}${inner}${you?'<div class="you"></div>':''}${nodesHTML(ns)}</div>`};
+const CS=[['splat','🦑 Ink splat (Splatoon)'],['burst','💥 Comic burst'],['ticket','🎫 Ticket stub'],['odo','🔢 Odometer roll'],['neon','🌃 Neon sign'],['marker','🖍 Highlighter'],['stamp','📮 Rubber stamp'],['pill','💊 Pill (old)']];
+function splatSVG(){const r=rng(21),N=22,P=[];for(let i=0;i<N;i++){const a=i/N*Math.PI*2,rad=i%2?20+r()*7:30+r()*17;P.push([60+Math.cos(a)*rad*1.45,47+Math.sin(a)*rad*.95])}
+ const pth=o=>{let d='';P.forEach((p,i)=>{const q=P[(i+1)%N],m=[(p[0]+q[0])/2+o,(p[1]+q[1])/2+o];d+=i?`Q${p[0]+o} ${p[1]+o} ${m[0]} ${m[1]} `:`M${m[0]} ${m[1]} `});return d+'Z'};
+ let dr='';for(let i=0;i<6;i++){const a=r()*6.28,rd=50+r()*14;dr+=`<circle cx="${60+Math.cos(a)*rd*1.5}" cy="${47+Math.sin(a)*rd*.95}" r="${2+r()*4}"/>`}
+ return `<svg viewBox="0 0 120 94"><g fill="#1a0b3a" opacity=".35" transform="translate(3 4)"><path d="${pth(0)}"/></g><g fill="var(--inkc)"><path d="${pth(0)}"/>${dr}<path d="M52 72 q3 18 6 22 q4-6 3-22z"/></g></svg>`}
+function burstSVG(){const N=16,P=[];for(let i=0;i<N*2;i++){const a=i/(N*2)*Math.PI*2,rd=i%2?26:42;P.push((60+Math.cos(a)*rd*1.28).toFixed(1)+','+(46+Math.sin(a)*rd*1.04).toFixed(1))}
+ return `<svg viewBox="0 0 120 92"><polygon points="${P.join(' ')}" fill="#1a1a1a" transform="translate(4 5)"/><polygon points="${P.join(' ')}" fill="#ffd23f" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/></svg>`}
+const CB={splat:splatSVG,burst:burstSVG};
+const cnum=(n,sty)=>{const d=String(n);if(sty==='odo')return `<b>${[...d].map((c,i)=>`<s class="od" style="--d:${c}"><u style="animation-delay:${i*130}ms">${[...'0123456789'].map(x=>`<span>${x}</span>`).join('')}</u></s>`).join('')}</b>`;return `<i class="cb">${CB[sty]?CB[sty]():''}</i><b>${d}</b>`};
+const PT=(rx,ry,a)=>[rx*Math.cos(a),-ry*Math.sin(a)];
+const pc=e=>(CATS.find(c=>e.m.includes(c[0]))||['meet'])[0];
+function topDots(items){return [...items].sort((a,b)=>score(b)-score(a)).slice(0,RC.cap)}
+function layoutAlt(v,items){
+  const dots=topDots(items),hidden=items.length-dots.length,W=350,H=RC.h,ox=CX,oy=RC.cy;let ns,inner='';
+  if(v==='path'){
+    const o=[...dots].sort((a,b)=>a.tk-b.tk),n=o.length,rx=140,ry=205,hy=62;
+    ns=o.map((e,i)=>{const a=(172-(n>1?i/(n-1):.5)*164)*Math.PI/180,[x,y]=PT(rx,ry,a);return{e,k:'dot',x,y:y+hy,lb:e.live?'NOW':ptag(e).replace('🌙 ','').slice(0,9)}});
+    inner=`<svg class="vsv" width="${W}" height="${H}"><defs><linearGradient id="hg" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="M${ox-rx-4} ${oy+hy} A${rx+4} ${ry} 0 0 1 ${ox+rx+4} ${oy+hy}" fill="none" stroke="var(--ink)" stroke-opacity=".6" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round"/><rect x="10" y="${oy+hy-1}" width="${W-20}" height="2" fill="url(#hg)"/></svg><span class="hz e" style="left:44px;top:${oy+hy+30}px">SOONER</span><span class="hz e" style="left:${W-44}px;top:${oy+hy+30}px">LATER</span><span class="hz glass" style="left:${ox}px;top:${oy+hy+8}px">📍 You · ${st.area}</span>`}
+  else if(v==='star'){
+    const s0=dots.map((e,i)=>({e,k:'dot',x:((hsh(e.t)%271)-135)*.9,y:-130+((hsh(e.t+'y')%190)),sz:Math.round(54-Math.min(e.d,6)*2)}));
+    ns=spread(s0,64);let ln='';const used=new Set();
+    ns.forEach((a,i)=>{const nb=ns.map((b,j)=>({j,d:Math.hypot(a.x-b.x,a.y-b.y)})).filter(o=>o.j!==i).sort((p,q)=>p.d-q.d).slice(0,2);nb.forEach(o=>{const k=[Math.min(i,o.j),Math.max(i,o.j)].join('-');if(used.has(k))return;used.add(k);const b=ns[o.j];ln+=`<line class="ln" x1="${ox+a.x}" y1="${oy+a.y}" x2="${ox+b.x}" y2="${oy+b.y}"/>`})});
+    let tw='';for(let i=0;i<26;i++){const h=hsh('s'+i);tw+=`<circle class="tw" cx="${h%340+5}" cy="${(h>>4)%250+10}" r="${(h%3)*.4+.7}" style="animation-delay:${(h%30)/10}s"/>`}
+    inner=`<svg class="vsv" width="${W}" height="${H}">${tw}${ln}</svg>`}
+  else if(v==='spiral'){
+    const o=[...dots].sort((a,b)=>a.tk-b.tk),cy=-48;let d='';for(let t=0;t<=o.length*1.05+.3;t+=.08){const r=14+t*14.5,a=t*1.2;d+=(t?'L':'M')+(ox+Math.cos(a)*r*1.15).toFixed(1)+' '+(oy+cy+Math.sin(a)*r*.8).toFixed(1)+' '}
+    ns=spread(o.map((e,i)=>{const r=20+i*14.5,a=i*1.2;return{e,k:'dot',sz:Math.round(50-Math.min(e.d,6)*2.5),x:Math.cos(a)*r*1.12,y:cy+Math.sin(a)*r*.82,st:e.live?'box-shadow:0 0 0 4px rgba(255,255,255,.4),0 0 22px rgba(255,255,255,.8)':''}}),50);
+    inner=`<svg class="vsv" width="${W}" height="${H}"><path class="ob" d="${d}" fill="none" stroke="var(--ink)" stroke-opacity=".4" stroke-width="1.8" stroke-dasharray="2 6" stroke-linecap="round"/><circle cx="${ox}" cy="${oy+cy}" r="5" fill="var(--ink)"/><text x="${ox+10}" y="${oy+cy+3}">SOON</text></svg>`}
+  else if(v==='hive'){
+    const CC={make:['#ff8a5c',-76,-98],move:['#34d3a0',76,-98],meet:['#7aa2ff',-76,-18],free:['#ffd166',76,-18]},off=[[0,0],[54,0],[-54,0],[27,46],[-27,46],[27,-46],[-27,-46]],cnt={};ns=[];
+    [...dots].sort((a,b)=>score(b)-score(a)).forEach(e=>{const c=pc(e),k=cnt[c]=(cnt[c]||0);cnt[c]++;const o=off[k%7];ns.push({e,k:'dot',cls:e.live?'':'',sz:Math.round(46-Math.min(e.d,6)*1.5),x:CC[c][1]+o[0]*.82,y:CC[c][2]+o[1]*.8})});
+    ns=spread(ns,50);
+    inner=`<svg class="vsv" width="${W}" height="${H}">${Object.entries(CC).map(([c,v2])=>`<circle cx="${ox+v2[1]}" cy="${oy+v2[2]}" r="${cnt[c]?72:40}" fill="${v2[0]}" fill-opacity=".14"/><text x="${ox+v2[1]}" y="${oy+v2[2]-(cnt[c]?60:30)}" text-anchor="middle">${CATS.find(x=>x[0]===c)[1]} ${c.toUpperCase()}</text>`).join('')}</svg>`}
+  else if(v==='stream'){
+    const o=[...dots].sort((a,b)=>a.tk-b.tk),n=o.length,dm=Math.max(...o.map(e=>e.d),1);let top='',bot='';
+    for(let x=-170;x<=170;x+=8){const y=-55+34*Math.sin(x/52);top+=(x>-170?'L':'M')+(ox+x)+' '+(oy+y-38)+' ';bot=(ox+x)+' '+(oy+y+38)+' L'+bot}
+    ns=spread(o.map((e,i)=>({e,k:'dot',cls:e.p==='Free'?'fr':'',x:-128+(n>1?i/(n-1):.5)*256,y:-118+e.d/dm*100+(i%2?10:-4)})),52);
+    inner=`<svg class="vsv" width="${W}" height="${H}"><defs><linearGradient id="sg" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset="1" stop-color="#fff" stop-opacity=".06"/></linearGradient></defs><path d="${top}L${bot}Z" fill="url(#sg)"/><text x="12" y="${oy+78}">⟵ SOONER</text><text x="${W-12}" y="${oy+78}" text-anchor="end">LATER ⟶</text><text x="${W/2}" y="${oy+78}" text-anchor="middle">▲ NEAR · ▼ FAR   ┈ FREE</text></svg>`}
+  else if(v==='area'){
+    const g={};dots.forEach(e=>(g[e.area]=g[e.area]||[]).push(e));const C={};Object.entries(g).forEach(([a,l])=>{const[x,y]=pol(rr(l.reduce((s2,e)=>s2+e.d,0)/l.length)*.9,bear(a));C[a]=[x,y]});
+    ns=[];Object.entries(g).forEach(([a,l])=>l.forEach((e,i)=>{const t=i/l.length*6.28;ns.push({e,k:'dot',a,x:C[a][0]+Math.cos(t)*(l.length>1?30:0),y:C[a][1]+Math.sin(t)*(l.length>1?24:0),lb:i===0?a.split(' ').pop().slice(0,9):''})}));
+    ns=spread(ns,54);let ln='';Object.keys(g).forEach(a=>{const m=ns.filter(n=>n.a===a).sort((p,q)=>p.x-q.x);m.forEach((n,i)=>{if(i)ln+=`<line x1="${ox+m[i-1].x}" y1="${oy+m[i-1].y}" x2="${ox+n.x}" y2="${oy+n.y}" stroke="var(--ink)" stroke-opacity=".4" stroke-width="1.5" stroke-dasharray="3 4"/>`})});
+    inner=`<svg class="vsv" width="${W}" height="${H}">${ln}</svg>`}
+  else if(v==='bloom'){
+    const A={make:-150,move:-30,meet:150,free:30},CCL={make:'#ff8a5c',move:'#34d3a0',meet:'#7aa2ff',free:'#ffd166'},cy=-48,o=[...dots].sort((a,b)=>a.tk-b.tk),cnt={};
+    ns=o.map((e,i)=>{const c=pc(e),k=cnt[c]=(cnt[c]||0);cnt[c]++;const a=(A[c]+(k%2?16:-16)*(k?1:0))*Math.PI/180,r=30+i*11.5;return{e,k:'dot',sz:Math.round(46-Math.min(e.d,6)*1.6),x:Math.cos(a)*r*1.15,y:cy+Math.sin(a)*r*.78}});
+    ns=spread(ns,50);
+    inner=`<svg class="vsv" width="${W}" height="${H}">${Object.entries(A).map(([c,a])=>`<g transform="translate(${ox} ${oy+cy}) scale(1.15 .78) rotate(${a})"><ellipse cx="70" cy="0" rx="72" ry="40" fill="${CCL[c]}" fill-opacity=".2" stroke="${CCL[c]}" stroke-opacity=".55"/></g>`).join('')}<circle cx="${ox}" cy="${oy+cy}" r="9" fill="var(--ink)"/><text x="${ox-86}" y="${oy-120}">MAKE</text><text x="${ox+60}" y="${oy-120}">MOVE</text><text x="${ox-86}" y="${oy+30}">MEET</text><text x="${ox+60}" y="${oy+30}">FREE</text></svg>`}
+  else if(v==='gridtime'){
+    const o=[...dots].sort((a,b)=>a.tk-b.tk),ac={};o.forEach(e=>ac[e.area]=(ac[e.area]||0)+1);const ar=Object.entries(ac).sort((a,b)=>b[1]-a[1]).map(x=>x[0]).slice(0,2),R=e=>{const i=ar.indexOf(e.area);return i<0?2:i},rn=[...ar,'More'],Y=[-112,-52,8],X=[-105,0,105];
+    ns=spread(o.map((e,i)=>({e,k:'dot',cls:e.live?'':'',sz:48,x:X[Math.min(2,Math.floor(i/o.length*3))]+(i%2?8:-8),y:Y[R(e)]+(i%3-1)*5})),50);
+    inner=`<svg class="vsv" width="${W}" height="${H}">${Y.map((y,r)=>X.map((x,c)=>`<rect x="${ox+x-50}" y="${oy+y-26}" width="100" height="52" rx="14" fill="#fff" fill-opacity="${.07+(c===0?.05:0)}" ${r===2?'stroke="#fff" stroke-opacity=".25" stroke-dasharray="3 4"':''}/>`).join('')+`<text x="${ox-150}" y="${oy+y+3}">${(rn[r]||'').split(' ').pop().slice(0,5).toUpperCase()}</text>`).join('')}<text x="${ox-105}" y="${oy+48}" text-anchor="middle">SOON</text><text x="${ox}" y="${oy+48}" text-anchor="middle">NEXT</text><text x="${ox+105}" y="${oy+48}" text-anchor="middle">LATER</text></svg>`}
+  else if(v==='drift'){
+    const o=[...dots].sort((a,b)=>score(b)-score(a)),cy=-48;
+    ns=spread(o.map((e,i)=>{const sc=1-i/Math.max(1,o.length-1),a=i*2.4,r=i*15;return{e,k:'dot',cls:'dr',sz:Math.round(36+sc*30),x:Math.cos(a)*r*1.45,y:cy+Math.sin(a)*r*.85,st:`opacity:${(.55+sc*.45).toFixed(2)};box-shadow:0 0 ${Math.round(8+sc*30)}px rgba(255,255,255,${(.25+sc*.5).toFixed(2)})`}}),44);
+    inner=`<svg class="vsv" width="${W}" height="${H}"><defs><radialGradient id="n1"><stop offset="0" stop-color="#ff7ad9" stop-opacity=".45"/><stop offset="1" stop-color="#ff7ad9" stop-opacity="0"/></radialGradient><radialGradient id="n2"><stop offset="0" stop-color="#7aa2ff" stop-opacity=".45"/><stop offset="1" stop-color="#7aa2ff" stop-opacity="0"/></radialGradient></defs><circle cx="${ox-60}" cy="${oy-90}" r="110" fill="url(#n1)"/><circle cx="${ox+70}" cy="${oy-20}" r="100" fill="url(#n2)"/></svg>`}
+  else if(v==='orbit'){
+    const cy=-46,RR=[[58,38],[104,68],[140,98]],G=[[],[],[]];[...dots].sort((a,b)=>a.tk-b.tk).forEach(e=>G[e.live||(e.sec!=null&&e.sec<=7200)?0:e.sec!=null?1:2].push(e));
+    ns=[];G.forEach((l,r)=>l.forEach((e,i)=>{const a=(i/l.length)*6.28+r*1.2-1.2;ns.push({e,k:'dot',sz:Math.round(46-Math.min(e.d,6)*1.6),x:Math.cos(a)*RR[r][0],y:cy+Math.sin(a)*RR[r][1]})}));
+    ns=spread(ns,48);
+    inner=`<svg class="vsv" width="${W}" height="${H}">${RR.map((q,i)=>`<ellipse class="ob" cx="${ox}" cy="${oy+cy}" rx="${q[0]}" ry="${q[1]}" fill="none" stroke="var(--ink)" stroke-opacity=".35" stroke-width="1.4" stroke-dasharray="4 6"/><text x="${ox+[0,-q[0]+0,0][i]}" y="${oy+cy-q[1]-4}" text-anchor="middle">${['NOW','TONIGHT','LATER'][i]}</text>`).join('')}<circle cx="${ox}" cy="${oy+cy}" r="7" fill="var(--ink)"/></svg>`}
+  else if(v==='map'){
+    const s0=dots.map((e,i)=>{const r1=rng(hsh(e.t)+7),x=(r1()*2-1)*135,y=-135+r1()*170;return{e,k:'dot',cls:'pin',x,y}});
+    ns=s0.map(q=>({...q}));for(let it=0;it<160;it++){for(let i=0;i<ns.length;i++)for(let j=i+1;j<ns.length;j++){let dx=ns[j].x-ns[i].x,dy=ns[j].y-ns[i].y,d=Math.hypot(dx,dy)||1;if(d<74){const k=(74-d)/2/d;ns[i].x-=dx*k;ns[i].y-=dy*k;ns[j].x+=dx*k;ns[j].y+=dy*k}}ns.forEach(q=>{q.x=Math.max(-148,Math.min(148,q.x));q.y=Math.max(-158,Math.min(62,q.y))})}
+    {const xs=ns.map(q=>q.x),ys=ns.map(q=>q.y),cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;const w=Math.max(...xs)-Math.min(...xs)||1,h=Math.max(...ys)-Math.min(...ys)||1,sx=Math.min(1.9,215/w),sy=Math.min(1.9,190/h);ns.forEach(q=>{q.x=(q.x-cx)*sx;q.y=(q.y-cy)*sy-48});
+      for(let it=0;it<80;it++){for(let i=0;i<ns.length;i++)for(let j=i+1;j<ns.length;j++){let dx=ns[j].x-ns[i].x,dy=ns[j].y-ns[i].y,d=Math.hypot(dx,dy)||1;if(d<72){const k=(72-d)/2/d;ns[i].x-=dx*k;ns[i].y-=dy*k;ns[j].x+=dx*k;ns[j].y+=dy*k}}ns.forEach(q=>{q.x=Math.max(-148,Math.min(148,q.x));q.y=Math.max(-158,Math.min(62,q.y))})}
+      const ex=ns.map(q=>q.x),ey=ns.map(q=>q.y),mx=(Math.min(...ex)+Math.max(...ex))/2,my=(Math.min(...ey)+Math.max(...ey))/2;ns.forEach(q=>{q.x-=mx;q.y-=my+48})}
+    inner=`<svg class="vsv" width="${W}" height="${H}"><g fill="none" stroke-linecap="round" stroke="var(--ink)"><path d="M-10 70 C80 110 140 40 230 90 S340 120 370 80" stroke="#7fd0ff" stroke-opacity=".45" stroke-width="16"/><ellipse cx="70" cy="190" rx="52" ry="30" fill="#8de3a8" fill-opacity=".28" stroke="none"/><ellipse cx="290" cy="60" rx="40" ry="22" fill="#8de3a8" fill-opacity=".25" stroke="none"/><g stroke-opacity=".3" stroke="#fff"><path d="M0 150 L350 120" stroke-width="9"/><path d="M60 0 L120 320" stroke-width="7"/><path d="M230 0 C210 100 260 200 220 320" stroke-width="9"/><path d="M0 250 C100 230 220 260 350 215" stroke-width="6"/><path d="M0 30 L350 60" stroke-width="4"/><path d="M300 0 L330 320" stroke-width="4"/><path d="M0 300 L350 300" stroke-width="3"/></g><g stroke-opacity=".12" stroke-width="1"><path d="M0 100 H350 M0 200 H350 M120 0 V320 M290 0 V320"/></g></g></svg>`}
+  else if(v==='pol'){
+    const o=[...dots].sort((a,b)=>score(b)-score(a)),sl=[[-100,-120],[0,-130],[100,-118],[-104,-48],[2,-56],[102,-44],[-98,22],[4,16],[100,26]];
+    ns=o.map((e,i)=>({e,k:'dot',cls:'pol',x:sl[i][0]+(hsh(e.t)%11-5),y:sl[i][1]+(hsh(e.t+'q')%9-4),r:(hsh(e.t+'r')%17)-8}));inner=''}
+  else if(v==='wave'){
+    const o=[...dots].sort((a,b)=>a.tk-b.tk),n=o.length,wy=x=>-52+46*Math.sin(x/38);let d='';for(let x=-170;x<=170;x+=6)d+=(x>-170?'L':'M')+(ox+x)+' '+(oy+wy(x))+' ';
+    ns=o.map((e,i)=>{const x=-128+(n>1?i/(n-1):.5)*256;return{e,k:'dot',x,y:wy(x)+(i%2?36:-36)}});
+    inner=`<svg class="vsv" width="${W}" height="${H}"><path d="${d}" fill="none" stroke="var(--ink)" stroke-opacity=".14" stroke-width="22" stroke-linecap="round"/><path d="${d}" fill="none" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.8" stroke-dasharray="1 7" stroke-linecap="round"/></svg><span class="hz e" style="left:40px;top:${oy+70}px">SOONER</span><span class="hz e" style="left:${W-40}px;top:${oy+70}px">LATER</span>`}
+  else if(v==='hex'){
+    const o=[...dots].sort((a,b)=>a.d-b.d),P=[];[[3,-112],[4,-58],[2,-4]].forEach(([c,y])=>{for(let k=0;k<c;k++)P.push({x:(k-(c-1)/2)*68,y})});
+    P.sort((a,b)=>Math.hypot(a.x,a.y+58)-Math.hypot(b.x,b.y+58));
+    ns=o.map((e,i)=>({e,k:'dot',cls:'hx',x:P[i].x,y:P[i].y}));inner=''}
+  else{
+    const s0=[...dots].sort((a,b)=>a.d-b.d),n=s0.length;
+    ns=s0.map((e,i)=>({e,k:'dot',sz:Math.round(80-(n>1?i/(n-1):0)*36),x:Math.cos(i*2.4)*(18+i*13)*1.6,y:Math.sin(i*2.4)*(18+i*13)*.8-40}));
+    for(let it=0;it<120;it++){for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){let dx=ns[j].x-ns[i].x,dy=ns[j].y-ns[i].y,d=Math.hypot(dx,dy)||1,m=(ns[i].sz+ns[j].sz)/2+7;if(d<m){const k=(m-d)/2/d;ns[i].x-=dx*k;ns[i].y-=dy*k;ns[j].x+=dx*k;ns[j].y+=dy*k}}
+      ns.forEach(q=>{q.x=Math.max(-150+q.sz/2,Math.min(150-q.sz/2,q.x*.995));q.y=Math.max(-150+q.sz/2,Math.min(55-q.sz/2,(q.y+40)*.995-40))})}
+    inner=''}
+  return{ns,hidden,inner}}
+const ringsHTML='<div class="rg c"></div><div class="rg b"></div><div class="rg a"></div><div class="pulse"></div><div class="pulse p2"></div>';
+
+let SCX=[];
+function syncScroll(){const c=document.querySelector('.scx');if(!c)return;const k=SCX.findIndex(e=>e.i===st.sel);if(k>0)c.scrollTo({left:k*(+c.dataset.w||208),behavior:'smooth'})}
+
+
+/* ---------------- screens ---------------- */
+const shortT=e=>e.live?'Now':st.t==='weekend'?e.w:e.w.replace(/^(Starts|Tonight)\s*/,'');
+const CATS=[['make','🎨','Make'],['move','🏃','Move'],['meet','🫶','Meet'],['free','🆓','Free']];
+function allHTML(){const f=DATA.all.ev.map((e,i)=>({...e,i})),n=f.length,by=k=>f.filter(e=>e.m.includes(k)).sort((a,b)=>a.tk-b.tk||a.d-b.d);
+  const chips=[['all','✨','All',n],...CATS.map(([k,g,t])=>[k,g,t,by(k).length])].filter(c=>c[3]).map(([k,g,t,c])=>`<span class="chip ${st.acat===k?'on':''}" data-acat="${k}">${g} ${t} <small style="opacity:.65">${c}</small></span>`).join('');
+  const grid=L=>`<div class="allg">${L.map((e,i)=>poster(e,'100%','200px',i)).join('')}</div>`;
+  const body=st.acat==='all'?CATS.map(([k,g,t])=>{const L=by(k);return L.length?`<div class="hsh"><span>${g} ${t}</span><small>${L.length}</small></div>${grid(L)}`:''}).join(''):grid(by(st.acat));
+  return `<div class="allp"><div class="allh"><div><div class="kick">Everything in KL</div><b>All ${n} events</b></div><button class="rb" data-allclose>✕</button></div><div class="allc">${chips}</div><div class="allb">${body}</div></div>`}
+const S={};
+S.home={tab:'att',home:true,html(){
+  const D=DATA[st.t],f=cur(),n=f.length;
+  const live=f.filter(e=>e.live).length,free=f.filter(e=>e.p==='Free').length;
+  const alt=!st.zoom&&st.vw!=='radar',L=st.zoom?layoutZoom(f.filter(e=>e.area===st.zoom)):alt?layoutAlt(st.vw,f):layoutRadar(f),hidden=L.hidden;
+  const lab=st.zoom?'':'<span class="tick" style="left:'+(CX+57)+'px;top:'+(RC.cy+8)+'px">2 km</span><span class="tick" style="left:'+(CX+105)+'px;top:'+(RC.cy+8)+'px">4 km</span><span class="tick" style="left:'+(CX+150)+'px;top:'+(RC.cy+8)+'px">6 km</span>';
+  const zone=alt?radarWrap(L.inner,L.ns,'',false):radarWrap(ringsHTML+lab,L.ns,st.zoom?`<div class="zchip glass" data-unzoom>‹ ${st.zoom} · ${f.filter(e=>e.area===st.zoom).length} events</div>`:'');
+  const sub=[live?`${live} happening now`:'',free?`${free} free`:'',n?`closest ${Math.min(...f.map(e=>e.d)).toFixed(1)} km`:''].filter(Boolean).join(' · ')+(hidden>0?` · best ${n-hidden} shown`:'');
+  const hh=`<div class="hhead"><div class="pill glass" data-modal="area">📍 ${st.area} <span style="opacity:.6">▾</span></div><div style="display:flex;gap:8px;align-items:center"><div class="rb glass" style="font-size:15px;position:relative" data-go="notifs">🔔<u class="bdg" style="top:-4px;right:-4px">3</u></div><div class="av" style="width:40px;height:40px;background:var(--acc);color:var(--accink)">A</div></div></div>`;
+  const heroH=`<div class="hero cs-${st.cs}"><div class="eyebrow">${D.eye}</div><h1><em class="cn">${cnum(n,st.cs)}</em> ${n===1?'thing is happening near you':D.tail}</h1><div class="sub">${sub||'Nothing right now'}</div></div>`;
+  const dial=`<div class="dial glass"><i class="thumb" style="transform:translateX(${KEYS.indexOf(st.t)*100}%)"></i>${['Now','Night','Weekend','All'].map((l,i)=>`<button data-i="${i}" class="${KEYS[i]===st.t?'on':''}">${l}</button>`).join('')}</div>`;
+  SCX=L.ns.filter(x=>x.k==='dot').map(x=>x.e).sort((a,b)=>a.d-b.d);
+  const cards=`<div class="scx dockx" data-w="208">${SCX.map(e=>`<div class="dc glass${e.i===st.sel?' mid':''}" data-reg="${REG.push(e)-1}"><div class="da" style="background:${art(e)}">${e.g}</div><div class="di"><b>${e.t}</b><span>${e.live?'<em style="font-style:normal;color:#ff6b7a">●</em> Happening now':shortT(e)}</span><i>${e.p} · ${e.d} km</i></div></div>`).join('')}</div>`;
+  return hh+heroH+zone+cards+dial+(st.all?allHTML():'')}};
+
+S.detail={html(){const e=st.ev;return `<div class="scroll nopad">${hero(e)}<div class="sbody">
+<div class="kick">${e.m.includes('make')?'Workshop':e.m.includes('move')?'Fitness':'Social'} · ${e.spots} spots left</div><h2>${e.t}</h2>
+<div class="card row" data-go="hostpub" style="cursor:pointer;margin:12px 0 0"><div class="av">${e.host[0]}</div><div class="sp"><b>${e.host}</b><div class="mut">★ 4.8 · 36 reviews</div></div><button class="btn sec sm" data-chat>💬 Message</button><span>›</span></div>
+<div class="facts"><div><i>🗓</i><b>${dt(e)[0]}</b><small>${dt(e)[1]}</small></div><div><i>📍</i><b>${e.area}</b><small>${e.d} km away</small></div><div><i>🎟</i><b>${e.p}</b><small>per person</small></div></div>
+<p style="margin:0 0 4px;opacity:.8">A relaxed, beginner-friendly session. Everything you need is provided, just bring yourself and wear something comfy.</p>
+<div class="soft">${canTxt(e)}</div></div></div>
+<div class="cta"><button class="rb" data-fav style="background:var(--card)">${st.saved.has(e.t)?'♥':'♡'}</button><button class="btn pri" data-join>Join · ${e.p}</button></div>`}};
+
+S.info={html(){const e=st.ev;return `<div class="scroll nopad">${hero(e)}<div class="sbody">
+<div class="kick">Free · Join to save your spot</div><h2>${e.t}</h2>
+<div class="facts"><div><i>🗓</i><b>${e.w.replace('Happening · ','')}</b><small>${dt(e)[1]}</small></div><div><i>📍</i><b>${e.area}</b><small>${e.d} km away</small></div><div><i>🆓</i><b>Free</b><small>entry</small></div></div>
+<p style="margin:0 0 4px;opacity:.8">A free community event, hosted by ${e.host}. Join to get your ticket and the host's updates.</p>
+<div class="card row" style="cursor:pointer;margin:12px 0"><span>📍</span><div class="sp"><b>Get directions</b><div class="mut">${e.area} · ${e.d} km away</div></div><span>›</span></div>
+<div class="soft">Source: ${e.host} on Instagram · <u>View original post ↗</u></div></div></div>
+<div class="cta"><button class="rb" data-fav style="background:var(--card)">${st.saved.has(e.t)?'♥':'♡'}</button><button class="btn pri" data-join>Join · Free</button></div>`}};
+
+S.checkout={html(){const e=st.ev,tot=price(e)*st.people;return `<div class="scroll">${nav('Checkout')}
+<div class="card row" style="background:var(--card)"><div class="mini" style="background:${art(e)}">${e.g}</div><div class="sp"><b>${e.t}</b><div class="mut">${e.w} · ${e.area}</div></div></div>
+${tot>0?'<div class="center" style="margin:6px 0 14px"><span class="st warn">⏱ Spot held for 14:32</span></div>':'<div style="height:12px"></div>'}
+<div class="card row"><div class="sp"><b>People</b><div class="mut">Up to 2 per booking</div></div><button class="rb" data-act="pm">−</button><b style="width:20px;text-align:center">${st.people}</b><button class="rb" data-act="pp">+</button></div>
+<div class="card row"><div class="sp"><div class="mut">Contact</div><b>Aina Rahman</b><div class="mut">+60 12-345 6789</div></div><span class="mut">Edit</span></div>
+<div class="row" style="justify-content:space-between;margin:20px 4px 6px"><span class="mut">Total</span><b style="font:800 30px 'Bricolage Grotesque'">${tot>0?'RM'+tot.toFixed(2):'Free'}</b></div>
+<div class="mut" style="margin:0 4px">${canTxt(e).replace(/^[✓ⓘ] /,'')}. ${tot>0?'Paying':'Joining'} means you accept the host's policy.</div></div>
+<div class="cta"><button class="btn pri" data-go="${tot>0?'gw':'confirmed'}">${tot>0?'Pay RM'+tot.toFixed(2):'Confirm my spot'}</button></div>`}};
+
+S.gw={gw:true,html(){const e=st.ev,tot=price(e)*st.people;const M=[['Online banking (FPX)','Maybank2u · CIMB Clicks · Public Bank'],['Credit / debit card','Visa · Mastercard'],['E-wallet','Touch ’n Go · GrabPay · Boost · ShopeePay'],['DuitNow QR','Scan with any banking app']];
+return `<div class="gw"><div class="gh"><span>🔒 Secure payment</span><span style="opacity:.5">[gateway]</span></div><div style="padding:20px"><div style="color:#6b7280;font-size:13px">Paying KL Local Session</div><div style="font:800 34px 'Bricolage Grotesque';margin:2px 0 2px">RM${tot.toFixed(2)}</div><div style="color:#6b7280;font-size:13px;margin-bottom:18px">Ref KLS-4821</div>
+${M.map((m,i)=>`<div class="meth ${st.method===i?'on':''}" data-method="${i}"><span class="rad"></span><div><b>${m[0]}</b><div style="color:#6b7280;font-size:12px">${m[1]}</div></div></div>`).join('')}
+<div style="color:#6b7280;font-size:12px;margin-top:10px">Methods shown are whatever the gateway offers. Session expires in 09:41.</div></div>
+<div class="gbtn"><button data-go="processing">Pay RM${tot.toFixed(2)}</button></div></div>`}};
+
+S.processing={html(){return `<div class="scroll" style="padding-top:200px"><div class="spin"></div><h3 class="center" style="margin-top:30px">Confirming your payment</h3><p class="center mut" style="margin:6px 24px">Please don't close the app or pay again. This takes a few seconds.</p>
+<div class="center" style="margin-top:20px"><span class="st">KLS-4821 · Processing</span></div>
+<div class="card" style="margin-top:50px"><div class="mut" style="margin-bottom:8px">Prototype: simulate the gateway result</div><div class="row"><button class="btn sec sm" data-go="confirmed">✓ Success</button><button class="btn sec sm" data-go="failed">✕ Failed</button><button class="btn sec sm" data-go="bookings">… Delayed</button></div></div></div>`}};
+
+S.failed={html(){return `<div class="scroll" style="padding-top:180px"><div class="pop" style="background:#ff5a67">!</div><h3 class="center" style="margin-top:24px">Payment didn't go through</h3><p class="center mut" style="margin:8px 24px">Your spot is held for another 06:12. If any money left your account, it's refunded automatically.</p></div>
+<div class="cta" style="flex-direction:column"><button class="btn pri" data-go="gw">Try again</button><button class="btn link" data-go="home">Give up</button></div>`}};
+
+S.confirmed={html(){const e=st.ev;return `<div class="scroll"><div style="padding-top:60px" class="center"><div class="pop">✓</div><h2 style="margin-top:16px">You're in!</h2><div class="mut">A receipt was sent to your email.</div></div>
+<div class="ticket"><div class="th" style="background:${art(e)}"><span class="big">${e.g}</span><div style="font:700 11px Inter;letter-spacing:.1em;opacity:.85">YOUR TICKET</div><div style="font:800 20px 'Bricolage Grotesque';margin:4px 0;max-width:210px">${e.t}</div><div style="font-size:13px">${e.w} · ${e.area}</div></div>
+<div class="tb"><div style="display:inline-block;color:var(--sheetink)">${qr()}</div><div style="font:800 20px 'Bricolage Grotesque';margin-top:4px">KLS-4821</div><div class="mut">Show this to the host on arrival</div></div></div>
+<div class="grid2"><button class="btn sec sm" style="width:100%">📍 Directions</button><button class="btn sec sm" style="width:100%">🗓 Add to calendar</button></div>
+<div class="center" style="margin-top:6px"><button class="btn link" data-modal="cancel" style="margin:0 auto;width:auto">Cancel booking</button></div></div>
+<div class="cta"><button class="btn pri" data-go="home">Done</button></div>`}};
+
+S.bookings={tab:'att',html(){const B=[[DATA.sun.ev[0],'Sun 18 Oct · 9:00 AM','Confirmed','ok','confirmed'],[DATA.sun.ev[2],'Sun 18 Oct · 2:00 PM','Processing','warn','processing']];
+const P=[[DATA.now.ev[3],'Fri 9 Oct','Attended','ok','review'],[DATA.sat.ev[3],'Sat 3 Oct','Cancelled','','']];
+return `<div class="scroll">${nav('Bookings').replace(back(),'')}<div class="seg"><button class="${st.bk===0?'on':''}" data-seg="0">Upcoming</button><button class="${st.bk===1?'on':''}" data-seg="1">Past</button></div>
+${(st.bk===0?B:P).map(([e,d,s,c,g])=>`<div class="card row" ${g?`data-go="${g}"`:''} style="cursor:pointer"><div class="mini" style="background:${art(e)}">${e.g}</div><div class="sp"><b>${e.t}</b><div class="mut">${d}</div></div><span class="st ${c}">${s}</span></div>`).join('')}
+${st.bk===1?'<div class="mut center" style="margin-top:6px">Tap an attended event to write a review</div>':''}</div>`}};
+
+S.saved={tab:'att',html(){const A=[DATA.sat.ev[1],DATA.sun.ev[2],DATA.now.ev[0],DATA.sat.ev[3]].map((e,i)=>({...e,i}));return `<div class="scroll">${nav('Saved').replace(back(),'')}<div class="grid2">${A.map((e,k)=>poster(e,'100%','200px',k)).join('')}</div></div>`}};
+
+S.review={html(){const e=DATA.now.ev[3];return `<div class="scroll">${nav('Review')}<div class="card row"><div class="mini" style="background:${art(e)}">${e.g}</div><div class="sp"><b>${e.t}</b><div class="mut">Fri 9 Oct · ${e.host}</div></div></div>
+<div class="stars" style="margin:20px 0">${[1,2,3,4,5].map(i=>`<span class="${i<=st.rating?'on':''}" data-star="${i}">★</span>`).join('')}</div>
+<div class="chips" style="justify-content:center;margin-bottom:16px"><span class="chip on">Friendly host</span><span class="chip">Good value</span><span class="chip on">Beginner-friendly</span><span class="chip">Clean venue</span></div>
+<div class="fld"><label>Your review</label><textarea rows="3" placeholder="What was it like?"></textarea></div><div class="mut center">✓ Verified attendee</div></div>
+<div class="cta"><button class="btn pri" data-go="bookings">Submit review</button></div>`}};
+
+S.hostpub={html(){const e=PIL;return `<div class="scroll nopad"><div class="heroart" style="height:200px;background:${art(e)}">${back('gl')}</div><div class="sbody" style="text-align:center"><div class="av" style="width:84px;height:84px;font-size:34px;margin:-70px auto 10px;border:4px solid var(--sheet)">M</div><h2 style="margin:0">Mei Studio</h2><div class="mut">Bangsar · hosting since 2026</div>
+<div class="facts"><div><b style="font-size:20px">4.8</b><small>rating</small></div><div><b style="font-size:20px">36</b><small>reviews</small></div><div><b style="font-size:20px">120</b><small>guests</small></div></div>
+<div style="text-align:left"><div class="hsh" style="margin:0 0 10px"><span>Coming up</span></div><div class="hscroll" style="padding:0 0 14px;margin:0 -20px;padding-left:20px">${[{...PIL,i:0},{...DATA.sat.ev[3],i:3}].map((x,k)=>poster(x,'150px','190px',k)).join('')}</div>
+<div class="hsh" style="margin:6px 0 10px"><span>Reviews</span></div><div class="card"><b>Sarah</b> <span style="color:#ffb020">★★★★★</span><div class="mut">Friendly host, great for beginners.</div></div></div></div></div>`}};
+
+S.notifs={html(){const N=[['✅','Booking confirmed','Beginner Mat Pilates · Sun 18 Oct, 9:00 AM','2 min ago',1],['💬','Mei Studio replied','Yes, mats are provided 🙂 Just wear something comfy.','1 h ago',1],['⏳','Payment is still processing','Pottery Wheel Basics. We will tell you when it clears.','Yesterday',1],['↩️','Event cancelled, refunded','Salsa Social was deleted by the host. RM25 is on its way back (3–7 working days).','Mon',0]];
+return `<div class="scroll">${nav('Notifications')}${N.map(([i,t,d,w,u])=>`<div class="card row" style="margin-bottom:8px;align-items:flex-start"><span style="font-size:22px">${i}</span><div class="sp"><b>${t}</b><div class="mut">${d}</div><div class="mut" style="font-size:11px;margin-top:4px">${w}</div></div>${u?'<span style="width:10px;height:10px;border-radius:50%;background:#ff4f6d;margin-top:6px"></span>':''}</div>`).join('')}
+<div class="mut" style="margin:18px 4px 8px;text-transform:uppercase;font:600 11px Inter;letter-spacing:.08em">Show me</div>
+${[['Booking and payment updates','Always on',1,1],['New chat messages','',1,0],['Event changes and cancellations','Always on',1,1],['Review requests','',1,0]].map(([t,n,on,lock])=>`<div class="card swwrap ${on?'on':''}" style="margin-bottom:8px"><div class="row" ${lock?'':'data-switch'} style="cursor:pointer"><div class="sp"><b>${t}</b>${n?`<div class="mut">${n}</div>`:''}</div><span class="sw"></span></div></div>`).join('')}
+<div class="mut" style="margin:8px 4px">Notifications show inside Jom only. We don't send push notifications yet.</div></div>`}};
+S.profile={tab:'att',html(){return `<div class="scroll">${nav('Profile').replace(back(),'')}<div class="center" style="margin-bottom:20px"><div class="av" style="width:84px;height:84px;font-size:34px;margin:0 auto 10px">A</div><b style="font:800 22px 'Bricolage Grotesque'">Aina Rahman</b><div class="mut">+60 12-345 6789</div></div>
+${['My reviews','Notifications','Help & support','Terms & privacy'].map(x=>`<div class="card row" ${x==='Notifications'?'data-go="notifs"':''} style="margin-bottom:8px;cursor:pointer"><span class="sp">${x}</span><span class="mut">›</span></div>`).join('')}
+<div class="card row" data-go="hdash" style="margin-top:14px;cursor:pointer;background:var(--acc);color:var(--accink)"><div class="sp"><b>Switch to Host mode</b><div style="font-size:12px;opacity:.8">Run your own events</div></div><b>→</b></div></div>`}};
+
+/* host */
+S.hdash={tab:'host',html(){const e=PIL;return `<div class="scroll"><div style="padding:56px 0 18px;display:flex;justify-content:space-between;align-items:center"><div><div class="mut">Good evening</div><h2 style="margin:0">Mei Studio</h2></div><span class="st" style="background:var(--acc);color:var(--accink)">HOST</span></div>
+<div class="card" data-go="hpay" style="cursor:pointer;background:linear-gradient(145deg,#4a1f7a,#d4467c);color:#fff;padding:20px"><div style="opacity:.8;font-size:13px">Upcoming payout</div><div style="font:800 38px 'Bricolage Grotesque'">RM318.60</div><div style="opacity:.85;font-size:13px">Wed 21 Oct → Maybank ••4821</div></div>
+<div class="card"><div class="row" data-hev="0" style="cursor:pointer"><div class="mini" style="background:${art(e)}">${e.g}</div><div class="sp"><div class="kick">Next event</div><b>${e.t}</b><div class="mut">Sun 18 Oct · 9:00 AM</div></div></div><div class="bar"><i style="width:100%"></i></div><div class="mut">12 of 12 paid · full</div>
+<div class="grid2" style="margin-top:12px"><button class="btn sec sm" style="width:100%" data-go="hbook">Bookings</button><button class="btn pri sm" style="width:100%" data-go="hscan">📷 Scan</button></div></div>
+<div class="grid2"><div class="card center" style="margin:0"><b style="font:800 24px 'Bricolage Grotesque'">14</b><div class="mut">bookings this week</div></div><div class="card center" style="margin:0"><b style="font:800 24px 'Bricolage Grotesque'">4.8 ★</b><div class="mut">average rating</div></div></div></div>
+<div class="cta" style="bottom:84px;padding-bottom:12px"><button class="btn pri" data-go="hcreate">+ New event</button></div>`}};
+
+S.hevents={tab:'host',html(){const L=[[DATA.sun.ev[0],'Sun 18 Oct','12 / 12 paid','ok'],[DATA.sat.ev[3],'Sat 24 Oct','2 / 12 paid','']];return `<div class="scroll">${nav('Events').replace(back(),'')}<div class="seg"><button>Draft</button><button class="on">Published</button><button>Ended</button></div>
+${L.map(([e,d,p,c],i)=>`<div class="card" data-hev="${i}" style="cursor:pointer"><div class="row"><div class="mini" style="background:${art(e)}">${e.g}</div><div class="sp"><b>${e.t}</b><div class="mut">${d}</div></div><span class="st ${c}">${p}</span><span class="mut">›</span></div></div>`).join('')}</div>
+<div class="cta" style="bottom:84px;padding-bottom:12px"><button class="btn pri" data-go="hcreate">+ New event</button></div>`}};
+
+const LOCK='<span style="opacity:.6;margin-left:6px">🔒</span>';
+const hform=ed=>{const L=ed?LOCK:'';const ro=ed?'readonly':'';return `<div class="scroll">${nav(ed?'Edit event':'New event')}
+<div style="height:${ed?110:150}px;border-radius:24px;background:linear-gradient(145deg,#7b5cff,#ff6fa5);display:grid;place-items:center;color:#fff;margin-bottom:12px"><div class="center"><div style="font-size:34px">${ed?'🧘':'＋'}</div><b>${ed?'Poster':'Add a poster'}</b></div></div>
+${ed?`<div class="soft" style="margin-bottom:12px">12 guests have joined. You can change the title, description and spots. Date, place, price and refund window are locked so nobody is surprised after paying.</div>`:''}
+<div class="fld"><label>Title</label><input value="Beginner Mat Pilates"></div>
+<div class="fld"><label>Description</label><textarea rows="3">A gentle 60-minute mat class for complete beginners. Mats are provided. Wear something comfy.</textarea></div>
+<div class="chips" style="margin-bottom:10px"><span class="chip" ${ed?'':'data-chk'}>🎨 Make</span><span class="chip on" ${ed?'':'data-chk'}>🏃 Move</span><span class="chip" ${ed?'':'data-chk'}>🫶 Meet</span><span class="chip" ${ed?'':'data-chk'}>☕ Other</span>${L}</div>
+<div class="fld"><label>When ${L}</label><input ${ro} value="Sun 18 Oct · 9:00 – 10:00 AM"></div><div class="fld"><label>Where ${L}</label><input ${ro} value="Bangsar, Jalan Telawi 3"></div>
+<div class="card swwrap on"><div class="row" ${ed?'':'data-switch'} style="cursor:pointer"><div class="sp"><b>Accept bookings ${L}</b><div class="mut">Guests pay online to join</div></div><span class="sw"></span></div>
+<div class="cond"><div class="grid2" style="margin-top:14px"><div class="fld" style="margin:0"><label>Price ${L}</label><input ${ro} value="RM30"></div><div class="fld" style="margin:0"><label>Spots</label>${ed?`<div class="row"><button class="rb" data-cap="-1">−</button><b style="flex:1;text-align:center;font-size:18px">${st.cap}</b><button class="rb" data-cap="1">+</button></div>`:'<input value="12">'}</div></div>
+${ed?'<div class="mut" style="margin:6px 4px 0">12 already joined, so spots can\'t go below 12.</div>':''}
+<div class="mut" style="margin:14px 0 6px">Guests can cancel for a refund up to ${L}</div><div class="chips"><span class="chip ${ed?'':'on'}" ${ed?'':'data-pick'}>24 h before</span><span class="chip ${ed?'on':''}" ${ed?'':'data-pick'}>48 h before</span><span class="chip" ${ed?'':'data-pick'}>7 days before</span><span class="chip" ${ed?'':'data-pick'}>No refunds</span></div><div class="mut" style="margin-top:10px">Payouts to Maybank ••4821 ✓ · <span data-go="hacct" style="text-decoration:underline;cursor:pointer">change</span></div></div></div>
+<div class="mut" style="margin:12px 4px 0">After the event, mark it completed yourself, or it completes automatically 24 hours after it ends. Completing unlocks reviews and your payout.</div></div>
+<div class="cta">${ed?'<button class="btn sec" data-back>Cancel</button><button class="btn pri" data-go="hevent">Save changes</button>':'<button class="btn sec" data-go="hevents">Save draft</button><button class="btn pri" data-go="hevents">Publish</button>'}</div>`};
+S.hcreate={html(){return hform(false)}};
+S.hedit={html(){return hform(true)}};
+
+const HE=[{e:DATA.sun.ev[0],d:'Sun 18 Oct · 9:00 – 10:00 AM',paid:12,cap:12,chk:5,price:30,pol:'48 hours',st:'Published',done:false},{e:DATA.sat.ev[3],d:'Sat 24 Oct · 3:00 – 5:00 PM',paid:2,cap:12,chk:0,price:30,pol:'48 hours',st:'Published',done:false}];
+S.hevent={html(){const h=HE[st.hev||0],e=h.e,gross=h.paid*h.price,full=h.paid>=h.cap;return `<div class="scroll nopad"><div class="heroart" style="background:${art(e)};height:190px"><span class="big">${e.g}</span>${back('gl')}</div><div class="sbody">
+<div class="row" style="justify-content:space-between"><div class="kick" style="margin:0">${h.st}</div><span class="st ${full?'ok':''}">${h.paid} / ${h.cap} paid</span></div>
+<h2 style="margin:6px 0 2px">${e.t}</h2><div class="mut">${h.d}<br>${e.area} · Jalan Telawi 3</div>
+<div class="bar" style="margin-top:14px"><i style="width:${Math.round(h.paid/h.cap*100)}%"></i></div><div class="mut">${full?'Full':h.cap-h.paid+' spots left'}</div>
+<div class="facts"><div><i>🎟</i><b>${h.paid}</b><small>joined</small></div><div><i>✅</i><b>${h.chk}</b><small>checked in</small></div><div><i>💰</i><b>RM${gross}</b><small>gross</small></div></div>
+<div class="grid2" style="margin:0 0 12px"><button class="btn pri sm" style="width:100%" data-go="hscan">📷 Scan tickets</button><button class="btn sec sm" style="width:100%" data-go="hbook">Guest list</button></div>
+<div class="card"><div class="row" style="justify-content:space-between"><b>Event details</b><span class="mut" data-go="hedit" style="color:var(--acc);cursor:pointer;font-weight:700">Edit</span></div>
+<p style="margin:8px 0 10px;opacity:.85">A gentle 60-minute mat class for complete beginners. Mats are provided. Wear something comfy.</p>
+<div class="row" style="justify-content:space-between;padding:6px 0"><span class="mut">Price</span><b>RM${h.price} per person</b></div>
+<div class="row" style="justify-content:space-between;padding:6px 0"><span class="mut">Refunds</span><b>Up to ${h.pol} before</b></div>
+<div class="row" style="justify-content:space-between;padding:6px 0"><span class="mut">Payout</span><b>RM${(gross*0.885).toFixed(2)} · 3 days after</b></div></div>
+<div class="card row" data-go="hchats" style="cursor:pointer"><span>💬</span><div class="sp"><b>Messages</b><div class="mut">2 unread from guests</div></div><span>›</span></div>
+<div class="soft">Once the event ends, tap <b>Mark as completed</b>. If you don't, it completes automatically 24 hours after the end time.</div>
+<button class="btn lnk-d" data-modal="delete" style="margin-top:6px">Delete this event</button><div style="height:90px"></div></div></div>
+<div class="cta"><button class="btn pri" data-modal="complete">Mark as completed</button></div>`}};
+
+S.hscan={html(){const n=5+(st.scanned||0),g=['Aina Rahman','Daniel Tan','Sarah Lim'][(st.scanned||0)%3],ok=st.scanned>0;return `<div class="scroll" style="background:#05050a;color:#fff;padding-top:0"><div class="nav" style="padding-top:56px">${back('gl')}<b>Scan tickets</b><span class="st ok">${n} / 12</span></div>
+<div style="position:relative;height:330px;margin:10px 0 16px;border-radius:28px;background:radial-gradient(circle at 50% 40%,#2b2b3a,#0b0b12);overflow:hidden">
+<div style="position:absolute;inset:48px;border-radius:20px;border:2px dashed rgba(255,255,255,.12)"></div>
+${['top:36px;left:36px;border-width:4px 0 0 4px','top:36px;right:36px;border-width:4px 4px 0 0','bottom:36px;left:36px;border-width:0 0 4px 4px','bottom:36px;right:36px;border-width:0 4px 4px 0'].map(c=>`<i style="position:absolute;${c};width:34px;height:34px;border-style:solid;border-color:var(--acc);border-radius:8px"></i>`).join('')}
+<div style="position:absolute;left:44px;right:44px;height:2px;background:var(--acc);box-shadow:0 0 14px var(--acc);animation:scanl 2.2s ease-in-out infinite alternate"></div>
+<div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:13px;opacity:.7">Point the camera at the guest's ticket QR</div></div>
+${ok?`<div class="card row" style="background:#123d2a;color:#fff"><span style="font-size:26px">✅</span><div class="sp"><b>${g}</b><div class="mut" style="color:#bfe9d0">1 person · KLS-48${g.length}1 · Checked in just now</div></div></div>`:`<div class="card row" style="background:rgba(255,255,255,.08);color:#fff"><span style="font-size:22px">🔍</span><div class="sp"><b>Waiting for a ticket</b><div class="mut" style="color:#aaa">Valid tickets check the guest in automatically.</div></div></div>`}
+<button class="btn sec" data-scan style="margin-bottom:8px">Simulate a scan (prototype)</button><button class="btn lnk-d" data-go="hcheck" style="color:#fff">Enter code manually / see list</button></div>`}};
+
+S.hbook={html(){const P=[['Aina Rahman','FPX'],['Daniel Tan','TnG eWallet'],['Sarah Lim','Card'],['Wei Ling','FPX'],['Priya S.','Card']];return `<div class="scroll">${nav('Bookings')}<h3 style="margin-bottom:2px">Beginner Mat Pilates</h3><div class="mut" style="margin-bottom:14px">Sun 18 Oct · 12 paid · RM360 gross</div>
+${P.map(([n,m])=>`<div class="card row" style="padding:12px 16px;margin-bottom:8px"><div class="av" style="width:40px;height:40px">${n[0]}</div><div class="sp"><b>${n}</b><div class="mut">${m}</div></div><span class="st ok">Paid</span></div>`).join('')}<div class="mut center">+ 7 more</div><button class="btn lnk-d" data-modal="delete" style="margin-top:18px">Delete this event</button></div>`}};
+
+S.hcheck={html(){const P=[['Aina Rahman',1],['Daniel Tan',0],['Wei Ling',1],['Priya S.',0],['Sarah Lim',1]];return `<div class="scroll">${nav('Check-in')}<div class="ring" style="background:conic-gradient(var(--acc) 0 62%,var(--line) 62% 100%)"><div>5 / 8<small>checked in</small></div></div>
+${P.map(([n,c])=>`<div class="card row" style="padding:12px 16px;margin-bottom:8px"><div class="sp"><b>${n}</b><div class="mut">KLS-48${n.length}${c}</div></div><span class="chk ${c?'on':''}" data-chk>✓</span></div>`).join('')}</div>
+<div class="cta"><button class="btn sec" data-go="hscan">📷 Scan</button><button class="btn pri" data-modal="complete">Mark as completed</button></div>`}};
+
+S.hpay={tab:'host',html(){return `<div class="scroll">${nav('Payouts').replace(back(),'')}<div class="grid2" style="margin-bottom:12px"><div class="card" style="margin:0"><div class="mut">Upcoming</div><b style="font:800 24px 'Bricolage Grotesque'">RM318.60</b></div><div class="card" style="margin:0"><div class="mut">Paid out</div><b style="font:800 24px 'Bricolage Grotesque'">RM8,120</b></div></div>
+<div class="card"><b>Beginner Mat Pilates</b><div class="mut" style="margin-bottom:10px">Sun 18 Oct · pays Wed 21 Oct</div>
+<div class="row" style="justify-content:space-between"><span class="mut">Gross (12 × RM30)</span><span>RM360.00</span></div><div class="row" style="justify-content:space-between"><span class="mut">Gateway fees</span><span>−RM5.40</span></div><div class="row" style="justify-content:space-between"><span class="mut">Platform fee (10%)</span><span>−RM36.00</span></div>
+<div style="border-top:1px solid var(--line);margin:10px 0"></div><div class="row" style="justify-content:space-between"><b>You receive</b><b>RM318.60</b></div></div>
+<div class="mut" style="margin:0 4px 14px">Illustrative numbers. Real fees depend on the gateway agreement.</div>
+<div class="card row"><div class="sp"><b>Payout account</b><div class="mut">Maybank ••4821 · verified</div></div><button class="btn sec sm" data-go="hacct">Edit</button></div></div>`}};
+
+S.hacct={html(){return `<div class="scroll">${nav('Payout account')}<div class="soft" style="margin-top:0">We pay your earnings here 3 working days after each event.</div>
+<div class="fld"><label>Account holder</label><input value="Mei Studio Sdn Bhd"></div><div class="fld"><label>Bank</label><input value="Maybank"></div><div class="fld"><label>Account number</label><input value="•••• •••• 4821"></div>
+<div class="card row"><div class="sp"><b>Business registration</b><div class="mut">SSM · verified</div></div><span class="st ok">✓</span></div></div>
+<div class="cta"><button class="btn pri" data-back>Save</button></div>`}};
+
+
+const MSGS=[['me','Hi! Is this okay for a complete beginner?','9:12 AM'],['them','Hi Aina! Totally. Everything is beginner-friendly.','9:20 AM'],['me','Do I need to bring my own mat?','9:21 AM'],['them','Yes, mats are provided 🙂 Just wear something comfy.','9:24 AM']];
+const chatRow=(g,art_,t,sub,when,unread,go_)=>`<div class="cli" data-go="${go_}"><div class="mini" style="background:${art_}">${g}</div><div class="sp"><b>${t}</b><div class="mut">${sub}</div></div><div><div class="when">${when}</div>${unread?'<i class="dotu"></i>':''}</div></div>`;
+const thread=(host)=>{const e=PIL,who=host?'Aina Rahman':e.host;return `<div class="scroll">${nav(who,'<span class="mut" style="margin-left:auto">'+(host?'Attendee':'Host')+'</span>')}
+<div class="card row" style="background:var(--card);margin-bottom:10px"><div class="mini" style="background:${art(e)}">${e.g}</div><div class="sp"><b>${e.t}</b><div class="mut">Sun 18 Oct · 9:00 AM · Bangsar</div></div></div>
+<div class="soft" style="margin-bottom:14px;font-size:12px">Keep the chat in Jom. Phone numbers and social handles can't be shared here.</div>
+${MSGS.map(([w,t,tm])=>{const mine=host?w==='them':w==='me';return `<div class="bub ${mine?'me':'them'}">${t}</div><div class="btime ${mine?'me':''}">${tm}</div>`}).join('')}</div>
+<div class="cta"><div class="msgbar" style="flex:1"><div class="fld"><input placeholder="Message ${host?'Aina':e.host}…"></div><button class="rb" style="background:var(--acc);color:var(--accink);width:48px;height:48px">↑</button></div></div>`};
+S.chats={tab:'att',html(){return `<div class="scroll">${nav('Chat').replace(back(),'')}<div class="mut" style="margin:-4px 4px 14px">Ask a host before you book.</div>
+${chatRow(PIL.g,art(PIL),'Mei Studio','Yes, mats are provided 🙂 Just wear…','9:24 AM',1,'chat')}
+${chatRow(DATA.sun.ev[2].g,art(DATA.sun.ev[2]),'Clay & Co','Starts 2 PM sharp, see you there!','Yesterday',0,'chat')}
+${chatRow(DATA.now.ev[3].g,art(DATA.now.ev[3]),'Salsa KL','Thanks for coming last week!','Fri',0,'chat')}</div>`}};
+S.chat={html(){return thread(false)}};
+S.hchats={tab:'host',html(){return `<div class="scroll">${nav('Chat').replace(back(),'')}<div class="mut" style="margin:-4px 4px 14px">Messages from guests about your events.</div>
+${chatRow('A',"linear-gradient(145deg,#ff9a62,#d4467c)",'Aina Rahman','Do I need to bring my own mat? · Beginner Mat Pilates','9:21 AM',1,'hchat')}
+${chatRow('D',"linear-gradient(145deg,#4facfe,#00c6a7)",'Daniel Tan','Is there parking nearby? · Beginner Mat Pilates','8:05 AM',1,'hchat')}
+${chatRow('S',"linear-gradient(145deg,#f093fb,#f5576c)",'Sarah Lim','See you on Sunday! · Batik Painting Workshop','Yesterday',0,'hchat')}</div>`}};
+S.hchat={html(){return thread(true)}};
+S.hprofile={tab:'host',html(){return `<div class="scroll">${nav('Profile').replace(back(),'')}<div class="center" style="margin-bottom:20px"><div class="av" style="width:84px;height:84px;font-size:34px;margin:0 auto 10px">M</div><b style="font:800 22px 'Bricolage Grotesque'">Mei Studio</b><div class="mut">★ 4.8 · 36 reviews</div></div>
+${[['Payout account','hacct'],['View public profile','hostpub'],['Edit host info','']].map(([x,g])=>`<div class="card row" ${g?`data-go="${g}"`:''} style="margin-bottom:8px;cursor:pointer"><span class="sp">${x}</span><span class="mut">›</span></div>`).join('')}
+<div class="card row" data-go="home" style="margin-top:14px;cursor:pointer;background:var(--acc);color:var(--accink)"><div class="sp"><b>Switch to Attendee mode</b></div><b>→</b></div></div>`}};
+
+/* modals */
+const M={
+ signin:()=>{const W={join:['Sign in to join','Free or paid, we need to know who is coming. Browsing stays open.'],save:['Sign in to save','Saved events live in your account, so they follow you across phones.'],chat:['Sign in to chat','Chat is between you and the host, so we need to know who you are.']}[st.why]||['Sign in','Browsing stays open.'];return `<div class="gr"></div><h3>${W[0]}</h3><p class="mut" style="margin:4px 0 16px">${W[1]}</p><button class="btn pri" data-signin style="margin-bottom:10px">Continue with Google</button><button class="btn sec" data-signin>Continue with phone number</button>`},
+ complete:()=>`<div class="gr"></div><h3>Mark as completed?</h3><p class="mut" style="margin:4px 0 16px">Guests can leave reviews and your payout is scheduled for 3 working days later. 7 guests didn't check in. If you do nothing, the event completes by itself 24 hours after it ends.</p><button class="btn pri" data-go="hevents" data-close style="margin-bottom:10px">Yes, mark completed</button><button class="btn sec" data-close>Not yet</button>`,
+ delete:()=>`<div class="gr"></div><h3>Delete this event?</h3><p class="mut" style="margin:4px 0 16px">12 guests have paid RM360 in total. All of them are refunded in full and told the event was cancelled. This can't be undone.</p><button class="btn dng" data-go="hevents" data-close style="margin-bottom:10px">Yes, delete and refund</button><button class="btn sec" data-close>Keep event</button>`, cancel:()=>`<div class="gr"></div><h3>Cancel this booking?</h3><p class="mut" style="margin:4px 0 16px">You're within the free cancellation window. RM30 goes back to your original payment method in 3–7 working days.</p><button class="btn pri" data-go="bookings" data-close style="margin-bottom:10px">Yes, cancel</button><button class="btn sec" data-close>Keep booking</button>`,
+ area:()=>`<div class="gr"></div><h3>Where to?</h3><div class="chips" style="margin:14px 0">${['Bangsar','KLCC','PJ','Sri Hartamas','Mid Valley','Bukit Bintang'].map(a=>`<span class="chip ${st.area===a?'on':''}" data-area="${a}">${a}</span>`).join('')}</div><div class="mut" style="margin-bottom:6px">Within</div><div class="chips" style="margin-bottom:18px"><span class="chip">2 km</span><span class="chip on">5 km</span><span class="chip">10 km</span></div><button class="btn pri" data-close>Show events</button>`
+};
+
+/* ---------------- engine ---------------- */
+const NAMES={home:'Discover',detail:'Event (bookable)',info:'Event (free)',checkout:'Checkout',gw:'Gateway page',processing:'Confirming payment',failed:'Payment failed',confirmed:'Ticket',bookings:'Bookings',saved:'Saved',review:'Review',hostpub:'Host profile (public)',chats:'Chat',chat:'Chat thread',hchats:'Host · Chat',hchat:'Host · Chat thread',profile:'Profile',hdash:'Host · Home',hevents:'Host · Events',hcreate:'Host · New event',notifs:'Notifications',hevent:'Host · Event details',hedit:'Host · Edit event',hscan:'Host · Scan tickets',hbook:'Host · Guest list',hcheck:'Host · Check-in',hpay:'Host · Payouts',hacct:'Host · Payout account',hprofile:'Host · Profile'};
+$('jump').innerHTML=`<optgroup label="Attendee">${['home','detail','info','checkout','gw','processing','failed','confirmed','bookings','saved','chats','chat','notifs','review','hostpub','profile'].map(k=>`<option value="${k}">${NAMES[k]}</option>`).join('')}</optgroup><optgroup label="Host">${['hdash','hevents','hevent','hcreate','hedit','hscan','hbook','hcheck','hpay','hchats','hchat','hacct','hprofile'].map(k=>`<option value="${k}">${NAMES[k]}</option>`).join('')}</optgroup>`;
+function render(){
+  REG.length=0;
+  const s=S[st.screen];
+  $('ph').dataset.t={now:'now',night:'late',weekend:'sat'}[st.t]||st.t;$('ph').classList.toggle('home',!!s.home);
+  $('screen').innerHTML=s.html();if(s.home)syncScroll();
+  const T=s.tab==='att'?ATT:s.tab==='host'?HOST:null;
+  $('tabs').innerHTML=T?`<div class="tabs">${T.map(([g,l,i])=>`<div class="${g===st.screen?'on':''}" data-go="${g}">${i}${l}${g==='chats'?'<u class="bdg">1</u>':g==='hchats'?'<u class="bdg">2</u>':''}</div>`).join('')}</div>`:'';
+  $('modal').innerHTML=st.modal?`<div class="scrim" data-scrim><div class="msheet">${M[st.modal]()}</div></div>`:'';
+  $('jump').value=st.screen;
+}
+function go(id){if(id!==st.screen){st.hist.push(st.screen);st.screen=id}st.modal=null;render()}
+function toggleSet(k){st.saved.has(k)?st.saved.delete(k):st.saved.add(k)}
+function needAuth(why,after){if(st.signed)return after();st.why=why;st.after=after;st.modal='signin';render()}
+function heart(q,k){toggleSet(k);const on=st.saved.has(k);q.classList.toggle('on',on);if(q.matches('.rb'))q.textContent=on?'♥':'♡'}
+document.addEventListener('click',x=>{
+  const t=x.target;let q;
+  if(!t.closest('.phone'))return;
+  if(q=t.closest('[data-signin]')){st.signed=true;st.modal=null;const a=st.after;st.after=null;if(a){a();return render()}return go('checkout')}
+  if(q=t.closest('[data-join]'))return needAuth('join',()=>go('checkout'));
+  if(q=t.closest('[data-chat]'))return needAuth('chat',()=>go('chat'));
+  if(q=t.closest('[data-hev]')){st.hev=+q.dataset.hev;return go('hevent')}
+  if(q=t.closest('[data-cap]')){st.cap=Math.max(12,Math.min(40,st.cap+ +q.dataset.cap));return render()}
+  if(q=t.closest('[data-scan]')){st.scanned++;return render()}
+  if(q=t.closest('[data-pick]')){q.parentElement.querySelectorAll('[data-pick]').forEach(c=>c.classList.remove('on'));q.classList.add('on');return}
+  if(q=t.closest('[data-area]')){st.area=q.dataset.area;return render()}
+  if(q=t.closest('[data-modal]')){st.modal=q.dataset.modal;return render()}
+  if(q=t.closest('[data-close]')){const g=q.dataset.go;st.modal=null;if(g)return go(g);return render()}
+  if(t.closest('[data-scrim]')&&!t.closest('.msheet')){st.modal=null;return render()}
+  if(q=t.closest('[data-back]')){st.modal=null;if(st.hist.length)st.screen=st.hist.pop();return render()}
+  if(q=t.closest('[data-zoom]')){st.zoom=q.dataset.zoom;st.sel=-1;return render()}
+  if(q=t.closest('[data-unzoom]')){st.zoom=null;st.sel=-1;return render()}
+  if(q=t.closest('[data-acat]')){st.acat=q.dataset.acat;return render()}
+  if(q=t.closest('[data-allclose]')){st.all=false;return render()}
+  if(q=t.closest('[data-i]')){const k=KEYS[+q.dataset.i];if(k==='all'){st.all=true;st.acat='all';return render()}st.t=k;st.sel=0;return render()}
+  if(q=t.closest('[data-h]')){const k=q.dataset.h;return needAuth('save',()=>heart(q,k))}
+  if(q=t.closest('[data-fav]')){const k=st.ev.t;return needAuth('save',()=>heart(q,k))}
+  if((q=t.closest('.dc'))&&!q.classList.contains('mid')){const c=q.parentElement;c.scrollTo({left:[...c.children].indexOf(q)*(+c.dataset.w||208),behavior:'smooth'});return}
+  if(q=t.closest('[data-reg]')){ev(REG[+q.dataset.reg]);return}
+  if(q=t.closest('[data-n]')){const id=+q.dataset.n,k=SCX.findIndex(e=>e.i===id),c=document.querySelector('.scx');if(k<0||!c)return;st.sel=id;document.querySelectorAll('.node[data-n]').forEach(nd=>nd.classList.toggle('sel',+nd.dataset.n===id));c.querySelectorAll('.dc').forEach((d,i)=>d.classList.toggle('mid',i===k));dockLock=true;clearTimeout(dockLockT);dockLockT=setTimeout(()=>dockLock=false,800);c.scrollTo({left:k*(+c.dataset.w||208),behavior:'smooth'});return}
+  if(q=t.closest('[data-ev]')){const e=all()[+q.dataset.ev];if(e)ev(e);return}
+  if(q=t.closest('[data-act]')){st.people=Math.max(1,Math.min(2,st.people+(q.dataset.act==='pp'?1:-1)));return render()}
+  if(q=t.closest('[data-method]')){st.method=+q.dataset.method;return render()}
+  if(q=t.closest('[data-seg]')){st.bk=+q.dataset.seg;return render()}
+  if(q=t.closest('[data-star]')){st.rating=+q.dataset.star;return render()}
+  if(q=t.closest('[data-switch]')){q.closest('.swwrap').classList.toggle('on');return}
+  if(q=t.closest('[data-chk]')){q.classList.toggle('on');return}
+  if(q=t.closest('[data-go]')){return go(q.dataset.go)}
+});
+let scTm=null,dockLock=false,dockLockT=null;
+document.addEventListener('scroll',x=>{const c=x.target;if(!c||!c.classList||!c.classList.contains('scx'))return;if(dockLock)return;const k=Math.max(0,Math.min(SCX.length-1,Math.round(c.scrollLeft/(+c.dataset.w||208)))),e=SCX[k];if(!e)return;c.querySelectorAll('.dc').forEach((d,i)=>d.classList.toggle('mid',i===k));if(e.i===st.sel)return;st.sel=e.i;document.querySelectorAll('.node[data-n]').forEach(nd=>nd.classList.toggle('sel',+nd.dataset.n===st.sel))},true);
+$('jump').addEventListener('change',e=>{st.hist=[];st.modal=null;st.screen=e.target.value;st.ev=st.screen==='info'?DATA.sat.ev[1]:PIL;render()});
+setInterval(()=>{[...DATA.now.ev,...DATA.night.ev].forEach(e=>{if(e.sec>0)e.sec--});if(!st.all)return;DATA.all.ev.forEach((e,i)=>{if(e.sec>0)document.querySelectorAll(`[data-cd="${i}"]`).forEach(el=>el.textContent=cd(e.sec))})},1000);
+
+/* ---------------- background styles ---------------- */
+const BGS=[['sky','Sky gradient (current)'],['pastel','Pastel mesh'],['aurora','Aurora glow'],['contour','Contour map'],['skyline','KL skyline'],['grain','Film grain'],['gpastel','Grain + Pastel'],['gaurora','Grain + Aurora'],['gpaper','Grain + Paper'],['gduo','Grain + Riso duotone'],['blobs','Flat blobs'],['doodle','Emoji doodle']];
+const BGH={
+ gaurora:()=>BGH.aurora(),
+ gduo:()=>`<svg viewBox="0 0 390 844" width="390" height="844" style="mix-blend-mode:multiply"><circle cx="320" cy="150" r="170" fill="#ff7a6b" opacity=".75"/><circle cx="60" cy="560" r="190" fill="#5a7bff" opacity=".6"/><circle cx="260" cy="430" r="110" fill="#ffd166" opacity=".8"/></svg>`,
+ aurora:()=>'<i class="ab a1"></i><i class="ab a2"></i><i class="ab a3"></i><i class="ab a4"></i>',
+ contour:()=>{const cx=175,cy=455;let d='';for(let k=0;k<17;k++){const R=22+k*23,pt=[];for(let a=0;a<=360;a+=6){const t=a*Math.PI/180,w=1+.13*Math.sin(t*3+k*.7)+.08*Math.sin(t*5-k*.4)+.05*Math.sin(t*2+k);pt.push((cx+Math.cos(t)*R*w*1.3).toFixed(1)+' '+(cy+Math.sin(t)*R*w).toFixed(1))}d+=`<path d="M${pt.join('L')}Z"/>`}return `<svg viewBox="0 0 390 844" width="390" height="844"><g fill="none" stroke="currentColor" stroke-width="1" opacity=".2">${d}</g></svg>`},
+ skyline:()=>{const r=rng(5),B=760;let far='',mid='',near='',win='',x=-10;
+  while(x<400){const w=14+r()*22,h=70+r()*90;far+=`<rect x="${x|0}" y="${B-h|0}" width="${w|0}" height="${h|0}"/>`;x+=w+2}
+  x=-8;while(x<400){const w=16+r()*26,h=40+r()*80;if((x>35&&x<92)||(x>200&&x<275)){x+=w+3;continue}mid+=`<rect x="${x|0}" y="${B-h|0}" width="${w|0}" height="${h|0}"/>`;x+=w+3}
+  x=-6;while(x<400){const w=18+r()*30,h=24+r()*52;near+=`<rect x="${x|0}" y="${B-h|0}" width="${w|0}" height="${h|0}"/>`;for(let k=0;k<4;k++)if(r()<.6)win+=`<rect x="${(x+3+r()*(w-8))|0}" y="${(B-h+4+r()*(h-10))|0}" width="2.5" height="3.5"/>`;x+=w+4}
+  const pet=x0=>`<polygon points="${x0},${B} ${x0},650 ${x0+3},620 ${x0+3},595 ${x0+6},570 ${x0+6},548 ${x0+11},515 ${x0+16},548 ${x0+16},570 ${x0+19},595 ${x0+19},620 ${x0+22},650 ${x0+22},${B}"/><rect x="${x0+10}" y="478" width="2" height="38"/>`;
+  const tw=pet(214)+pet(244)+'<rect x="236" y="652" width="8" height="3"/><polygon points="59,760 67,760 65,602 61,602"/><ellipse cx="63" cy="591" rx="12" ry="7"/><ellipse cx="63" cy="575" rx="7" ry="4"/><rect x="62.2" y="500" width="1.6" height="75"/>';
+  return `<svg viewBox="0 0 390 844" width="390" height="844" style="color:color-mix(in srgb,var(--p3) 55%,#0a0a1f)"><g fill="currentColor"><g opacity=".2">${far}</g><g opacity=".36">${mid}</g><g opacity=".6">${tw}</g><g opacity=".78">${near}<rect x="0" y="${B}" width="390" height="90"/></g></g><g fill="#ffe9a8" opacity=".55">${win}</g></svg>`},
+ blobs:()=>`<svg viewBox="0 0 390 844" width="390" height="844"><defs><pattern id="dt" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.2" fill="rgba(43,33,64,.14)"/></pattern></defs><rect width="390" height="844" fill="url(#dt)"/><circle cx="350" cy="70" r="115" style="fill:var(--p2)" opacity=".85"/><circle cx="8" cy="430" r="150" style="fill:var(--p1)" opacity=".8"/><path d="M190 620q100-70 200 10v214H190z" style="fill:var(--p4)" opacity=".9"/><circle cx="305" cy="335" r="44" fill="none" style="stroke:var(--p3)" stroke-width="10"/><rect x="44" y="190" width="66" height="66" rx="18" style="fill:var(--p3)" opacity=".7" transform="rotate(18 77 223)"/><path d="M34 650q15-24 30 0t30 0t30 0" fill="none" stroke="#2b2140" stroke-width="5" stroke-linecap="round" opacity=".55"/></svg>`,
+ doodle:()=>{const E=[['🎨',14,38,-14],['🏃',88,26,10],['🎴',50,84,-6],['🧘',118,96,16],['🎲',18,132,12],['☕',92,140,-10]];return `<svg viewBox="0 0 390 844" width="390" height="844"><defs><pattern id="dd" width="150" height="150" patternUnits="userSpaceOnUse" patternTransform="rotate(-8)">${E.map(([g,x,y,r])=>`<text x="${x}" y="${y}" font-size="26" transform="rotate(${r} ${x} ${y})">${g}</text>`).join('')}</pattern></defs><rect width="390" height="844" fill="url(#dd)" opacity=".2"/></svg>`}
+};
+function setBg(v){st.bg=v;const ph=$('ph');BGS.forEach(m=>ph.classList.toggle('bg-'+m[0],m[0]===v));$('bgx').innerHTML=BGH[v]?BGH[v]():''}
+const VWS=[['path','☀️ Sun path (arc by time)'],['spiral','🌀 Time spiral'],['orbit','🪐 Orbit rings (by time)'],['bloom','🌸 Bloom (petal per category)'],['hive','🐝 Hive (category honeycomb)'],['stream','🌊 Time stream ribbon'],['gridtime','📅 Grid (time × area)'],['area','🗺 Area constellation'],['drift','☁️ Drift nebula (by score)'],['star','✨ Constellation'],['bub','🫧 Bubbles (bigger = closer)'],['map','📍 Street map pins'],['pol','📌 Polaroid pinboard'],['wave','〰️ River wave'],['hex','⬡ Honeycomb'],['radar','📡 Radar (old)']];
+
+function fit(){const s=Math.min(1,(innerHeight-130)/844,(innerWidth-20)/390),w=$('wrap');w.style.width=390*s+'px';w.style.height=844*s+'px';$('ph').style.transform=`scale(${s})`;SC=s}
+addEventListener('resize',fit);fit();render();setBg('grain');
+</script>
+</body>
+</html>

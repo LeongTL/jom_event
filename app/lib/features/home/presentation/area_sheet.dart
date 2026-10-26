@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/location.dart';
-import '../../../core/theme/tokens.dart';
+import '../../../core/theme/calm.dart';
+import '../../../shared/widgets/jom_button.dart';
 
 /// "Where to?": pick an area and a radius, then Show events. Nothing is fetched until the button is tapped.
 class AreaSheet extends ConsumerStatefulWidget {
@@ -16,35 +17,39 @@ class _AreaSheetState extends ConsumerState<AreaSheet> {
   late String _area = ref.read(areaSelectionProvider).area;
   late int _km = ref.read(areaSelectionProvider).km;
 
+  Widget _chip(String label, bool on, VoidCallback tap, {Key? key}) => GestureDetector(
+        key: key,
+        onTap: tap,
+        child: Container(
+          height: 34,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(color: on ? Calm.accSoft : Calm.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: on ? Calm.acc : Calm.line)),
+          child: Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: on ? Calm.acc : Calm.ink)),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
-    final k = context.jom;
     return Padding(
-      padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + MediaQuery.of(context).viewPadding.bottom),
+      padding: EdgeInsets.fromLTRB(20, 12, 20, 32 + MediaQuery.of(context).viewPadding.bottom),
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: k.line, borderRadius: BorderRadius.circular(2)))),
+        Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Calm.line, borderRadius: BorderRadius.circular(2)))),
         const SizedBox(height: 16),
-        const Text('Where to?', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+        const Text('Where to?', style: TextStyle(fontFamily: Calm.serif, fontSize: 20, fontWeight: FontWeight.w600)),
         const SizedBox(height: 14),
-        Wrap(spacing: 8, runSpacing: 8, children: [
-          for (final a in kAreas.keys) ChoiceChip(label: Text(a), selected: _area == a, onSelected: (_) => setState(() => _area = a)),
-        ]),
+        Wrap(spacing: 8, runSpacing: 8, children: [for (final a in kAreas.keys) _chip(a, _area == a, () => setState(() => _area = a), key: Key('area-$a'))]),
         const SizedBox(height: 18),
-        Text('Within', style: TextStyle(color: k.sheetInk.withValues(alpha: .6))),
-        const SizedBox(height: 6),
-        Wrap(spacing: 8, children: [
-          for (final km in const [2, 5, 10]) ChoiceChip(label: Text('$km km'), selected: _km == km, onSelected: (_) => setState(() => _km = km)),
-        ]),
-        const SizedBox(height: 20),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: () {
-              ref.read(areaSelectionProvider.notifier).choose(_area, _km);
-              Navigator.of(context).pop();
-            },
-            child: const Text('Show events'),
-          ),
+        const Text('Within', style: TextStyle(color: Calm.mut, fontSize: 13)),
+        const SizedBox(height: 8),
+        Wrap(spacing: 8, children: [for (final km in const [2, 5, 10]) _chip('$km km', _km == km, () => setState(() => _km = km), key: Key('km-$km'))]),
+        const SizedBox(height: 22),
+        JomButton(
+          label: 'Show events',
+          onPressed: () {
+            ref.read(areaSelectionProvider.notifier).choose(_area, _km);
+            Navigator.of(context).pop();
+          },
         ),
       ]),
     );

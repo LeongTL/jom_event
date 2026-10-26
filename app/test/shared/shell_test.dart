@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jom/core/theme/calm.dart';
-import 'package:jom/core/theme/tokens.dart';
 import 'package:jom/shared/widgets/shell.dart';
 
 Widget host(Widget bar) => MaterialApp(
-      theme: jomThemeData(JomTheme.now),
+      theme: calmTheme(),
       home: Scaffold(body: Align(alignment: Alignment.bottomCenter, child: bar)),
     );
 

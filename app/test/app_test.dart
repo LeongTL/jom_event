@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:jom/app.dart';
 import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
-import 'package:jom/core/theme/tokens.dart';
+import 'package:jom/core/theme/calm.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:jom/features/booking/data/booking_repository.dart';
 import 'package:jom/features/chat/data/chat_repository.dart';
@@ -15,8 +15,6 @@ import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/notifications/data/notification_repository.dart';
 import 'package:jom/features/notifications/domain/bell_provider.dart';
-import 'package:jom/features/home/domain/home_feed.dart';
-import 'package:jom/features/home/presentation/odometer.dart';
 import 'package:jom/shared/models/event_summary.dart';
 import 'package:jom/shared/widgets/shell.dart';
 
@@ -31,13 +29,11 @@ final yoga = EventSummary.fromJson({
   'starts_at': '2026-10-15T14:22:00+00:00', 'ends_at': '2026-10-15T15:37:00+00:00', 'price_sen': 2500,
   'area': 'Bangsar', 'distance_km': 0.93, 'is_live': false, 'spots_left': 16, 'score': 1.67,
 });
-const stats = HeroStats(total: 1, live: 0, free: 0, closestKm: .93);
-Future<HomeFeed> sampleFeed(HomeQuery q) async => HomeFeed(tab: q.tab, top9: [yoga], stats: stats);
 
 Future<GoRouter> pumpApp(
   WidgetTester t, {
   String location = '/explore',
-  Future<HomeFeed> Function(HomeQuery)? feed,
+  Future<List<EventSummary>> Function()? near,
   List<Override> extra = const [],
   bool settle = true, // the Processing screen spins forever, so a route that shows it cannot settle
 }) async {
@@ -50,7 +46,8 @@ Future<GoRouter> pumpApp(
       chatRepositoryProvider.overrideWithValue(FakeChat(infos: {'t1': const ThreadInfo(id: 't1', iAmHost: false, otherName: 'Mei Studio')})),
       bookingRepositoryProvider.overrideWithValue(FakeBookings()..byId['b1'] = bk('b1', status: 'processing')),
       notificationRepositoryProvider.overrideWithValue(FakeNotifications()),
-      homeFeedProvider.overrideWith((ref, q) => (feed ?? sampleFeed)(q)),
+      weekendProvider.overrideWith((ref, a) async => <EventSummary>[]),
+      nearYouProvider.overrideWith((ref, q) => (near ?? () async => [yoga])()),
       deviceLocationProvider.overrideWithValue(() async => null),
       bellCountProvider.overrideWith((ref) => Stream.value(0)),
       ...extra,
@@ -112,13 +109,13 @@ void main() {
       '/host/h1', '/notifications', '/host-mode/home', '/host-mode/events', '/host-mode/events/e1',
       '/host-mode/events/e1/edit', '/host-mode/events/e1/scan', '/host-mode/events/e1/checkin',
       '/host-mode/events/e1/guests', '/host-mode/new', '/host-mode/payouts', '/host-mode/payout-account',
-      '/host-mode/chats', '/host-mode/profile', '/all',
+      '/host-mode/chats', '/host-mode/profile', '/explore/all',
     ];
     for (final p in paths) {
       final router = await pumpApp(t, location: p, settle: p != '/booking/b1/processing');
       expect(where(router), p, reason: p);
       final screen = {
-        '/explore': 'home-screen', '/saved': 'saved-screen', '/all': 'view-all', '/event/e1': 'event-screen',
+        '/explore': 'home-screen', '/saved': 'saved-screen', '/explore/all': 'view-all', '/event/e1': 'event-screen',
         '/tickets': 'tickets-screen', '/chats': 'chat-list-screen', '/chats/t1': 'thread-screen', '/host-mode/chats': 'chat-list-screen', '/event/e1/checkout': 'checkout-screen', '/booking/b1/gateway': 'gateway-screen',
         '/booking/b1/processing': 'processing-screen', '/booking/b1/failed': 'failed-screen', '/booking/b1/ticket': 'ticket-screen', '/notifications': 'notifications-screen',
       }[p] ?? 'screen-title';
@@ -127,7 +124,7 @@ void main() {
   });
 
   testWidgets('screens that are not tabs hide the tab bar', (t) async {
-    for (final p in ['/event/e1', '/event/e1/checkout', '/chats/t1', '/booking/b1/ticket', '/notifications', '/all', '/host-mode/new', '/host-mode/events/e1/scan']) {
+    for (final p in ['/event/e1', '/event/e1/checkout', '/chats/t1', '/booking/b1/ticket', '/notifications', '/explore/all', '/host-mode/new', '/host-mode/events/e1/scan']) {
       await pumpApp(t, location: p);
       expect(find.byKey(const Key('tab-bar')), findsNothing, reason: p);
     }
@@ -174,20 +171,19 @@ void main() {
   testWidgets('the app is painted with the Now theme to start with', (t) async {
     await pumpApp(t);
     final app = t.widget<MaterialApp>(find.byType(MaterialApp));
-    expect(app.theme?.extension<JomTokens>(), JomTokens.of(JomTheme.now));
+    expect(app.theme?.extension<JomTokens>(), isNotNull);
     expect(app.title, 'Jom');
   });
 
   group('Home reads the backend through the app', () {
-    testWidgets('it shows the live feed: the count, the event and its price', (t) async {
+    testWidgets('it shows the nearby events with their price', (t) async {
       await pumpApp(t);
       expect(find.text('Sunset Yoga Deck'), findsOneWidget);
       expect(find.textContaining('RM 25'), findsOneWidget);
-      expect(t.widget<Odometer>(find.byKey(const Key('odometer'))).value, 1);
     });
 
     testWidgets('it says so when the backend cannot be reached', (t) async {
-      await pumpApp(t, feed: (q) async => throw Exception('offline'));
+      await pumpApp(t, near: () async => throw Exception('offline'));
       expect(find.textContaining('Could not load events'), findsOneWidget);
     });
 
@@ -197,7 +193,8 @@ void main() {
         overrides: [
           routerProvider.overrideWithValue(router),
           authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: fakeSession(name: 'Mei'))),
-          homeFeedProvider.overrideWith((ref, q) => Future<HomeFeed>.delayed(const Duration(seconds: 5), () => sampleFeed(q))),
+          weekendProvider.overrideWith((ref, a) async => <EventSummary>[]),
+          nearYouProvider.overrideWith((ref, q) => Future<List<EventSummary>>.delayed(const Duration(seconds: 5), () => [yoga])),
           deviceLocationProvider.overrideWithValue(() async => null),
           bellCountProvider.overrideWith((ref) => Stream.value(0)),
         ],
