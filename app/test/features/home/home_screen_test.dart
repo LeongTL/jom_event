@@ -4,6 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jom/app.dart';
 import 'package:jom/core/clock.dart';
+import 'package:jom/core/config/app_config.dart';
+import 'package:jom/core/supabase_client.dart';
+import 'package:jom/features/home/data/map_repository.dart';
+import 'package:jom/features/home/presentation/map_screen.dart';
 import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
@@ -20,6 +24,7 @@ import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_bookings.dart';
 import '../../helpers/fake_chat.dart';
 import '../../helpers/fake_events.dart';
+import '../../helpers/fake_map.dart';
 
 final queries = <HomeQuery>[];
 final weekendAreas = <HomeArea>[];
@@ -43,6 +48,9 @@ Future<GoRouter> pumpHome(
   await t.pumpWidget(ProviderScope(
     overrides: [
       routerProvider.overrideWithValue(router),
+      appConfigProvider.overrideWithValue(const AppConfig(flavor: 'dev', supabaseUrl: 'http://x', supabaseAnonKey: 'k')),
+      mapTileProvider.overrideWithValue(BlankTiles()),
+      mapRepositoryProvider.overrideWithValue(FakeMap(const [])),
       authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: signedIn ? fakeSession(name: 'Mei') : null)),
       eventRepositoryProvider.overrideWithValue(FakeEvents(all: [...near, ...weekend])),
       bookingRepositoryProvider.overrideWithValue(FakeBookings(upcoming: tickets)),
@@ -167,7 +175,7 @@ void main() {
       expect(find.text('2 events within 5 km'), findsOneWidget);
       await t.tap(find.byKey(const Key('map-card')));
       await t.pumpAndSettle();
-      expect(t.widget<Text>(find.byKey(const Key('screen-title'))).data, 'Map');
+      expect(find.byType(MapScreen), findsOneWidget);
     });
 
     testWidgets('view_all_links_pass_the_category', (t) async {

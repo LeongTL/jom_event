@@ -18,6 +18,7 @@ import '../../features/event/presentation/event_screen.dart';
 import '../../features/event/presentation/saved_screen.dart';
 import '../../features/event/presentation/view_all_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/home/presentation/map_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../shared/widgets/screen_parts.dart';
 import '../../shared/widgets/shell.dart';
@@ -60,7 +61,7 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
         ),
         GoRoute(path: '/chats/:threadId', builder: (context, state) => ChatThreadScreen(threadId: state.pathParameters['threadId']!)),
         GoRoute(path: '/explore/all', builder: (context, state) => ViewAllScreen(category: state.uri.queryParameters['category'])),
-        _screen('/explore/map', 'Map'),
+        GoRoute(path: '/explore/map', builder: (context, state) => const MapScreen()),
         GoRoute(path: '/event/:id', builder: (context, state) => EventScreen(id: state.pathParameters['id']!)),
         GoRoute(path: '/event/:id/checkout', builder: (context, state) => CheckoutScreen(eventId: state.pathParameters['id']!)),
         GoRoute(path: '/booking/:id/gateway', builder: (context, state) => GatewayScreen(bookingId: state.pathParameters['id']!, session: state.extra as PaymentSession?)),
