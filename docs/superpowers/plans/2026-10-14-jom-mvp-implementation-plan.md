@@ -474,15 +474,17 @@ Not in the original 25. The prototype was redesigned to feel calmer and more tru
 - Create: `app/lib/features/home/presentation/map_screen.dart`, `price_pin.dart`, `map_event_card.dart`, `map_chips.dart`, `app/lib/features/home/data/map_repository.dart`, tests.
 - Modify: `app/pubspec.yaml` (`flutter_map`, `latlong2`), `app/lib/core/config/app_config.dart`, `.env.example`, `app/android/app/src/main/AndroidManifest.xml` (add `INTERNET`; only the debug and profile manifests have it today), `map_preview_card.dart` (live preview), `docs/release/staging.md`.
 
+- Ruling (Oct 26): the Home map card stays the prototype's painted illustration (no network call or tile config on Home); only the full map is live. `MapRepository.pins` takes a `MapQuery` record and the 0.01 degree rounding sits in `mapPinsParams`. `mapTileProvider` is overridable so tests never touch the network. The filter button opens the area sheet and re-searches from the chosen area. Not run: a release Android bundle on a device (no Android device here); iOS simulator checked with real OSM tiles against the seeded local DB.
+
 **Interfaces:**
 - Produces `AppConfig.mapTileUrl` (`dev` and `staging` default to `https://tile.openstreetmap.org/{z}/{x}/{y}.png`; `prod` needs `MAP_TILE_URL` and throws `StateError` without it) and `mapUserAgentPackage` (the app's bundle id); `MapRepository.pins({required LatLng at, required int km, String category = 'all', bool tonight = false}) → Future<List<EventSummary>>` (calls `events.map_pins`); `String pinLabel(EventSummary e, Set<String> bookedEventIds)` (`✓ Booked`, `Free`, or `formatMoney`).
 - Screen: back button, area field and filter button; chips All, Make, Move, Meet, Free, Tonight; price-bubble pins, the selected one in accent, booked ones dark; blue dot for the user; "Search this area" pill; locate button; bottom card with the event, Directions and View event.
 
-- [ ] **Step 1: Write failing tests.** `prod_config_requires_map_tile_url_and_dev_staging_default_to_osm`; `pinLabel_booked_free_and_paid`; `selecting_a_pin_updates_the_bottom_card_and_highlights_the_pin`; `category_chips_refetch_and_Tonight_sets_the_tonight_flag`; `search_this_area_appears_only_after_the_map_moves_and_refetches_once_at_the_centre`; `locate_recentres_and_with_permission_denied_says_showing_the_selected_area`; `no_results_shows_an_empty_card_and_no_pins` (review focus 5); `directions_opens_a_maps_uri_with_the_event_lat_lng`; `attribution_openstreetmap_contributors_is_visible`; `view_event_opens_the_event_and_back_keeps_the_selection`; `user_position_sent_to_the_server_is_rounded_to_0_01_degrees`.
-- [ ] **Step 2: Run** `flutter test test/features/home test/core`. Expected: FAIL.
-- [ ] **Step 3: Implement** the files; pins are `Marker`s with `PricePin`; "Search this area" listens to `MapOptions.onPositionChanged` with `hasGesture` and a 500 m threshold.
-- [ ] **Step 4: Run** the tests, then build a **release** Android bundle and open the map on a device to prove the tiles load with the `INTERNET` permission, and run the iOS simulator. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "feat(map): full-screen map with price pins and tile config"`.
+- [x] **Step 1: Write failing tests.** `prod_config_requires_map_tile_url_and_dev_staging_default_to_osm`; `pinLabel_booked_free_and_paid`; `selecting_a_pin_updates_the_bottom_card_and_highlights_the_pin`; `category_chips_refetch_and_Tonight_sets_the_tonight_flag`; `search_this_area_appears_only_after_the_map_moves_and_refetches_once_at_the_centre`; `locate_recentres_and_with_permission_denied_says_showing_the_selected_area`; `no_results_shows_an_empty_card_and_no_pins` (review focus 5); `directions_opens_a_maps_uri_with_the_event_lat_lng`; `attribution_openstreetmap_contributors_is_visible`; `view_event_opens_the_event_and_back_keeps_the_selection`; `user_position_sent_to_the_server_is_rounded_to_0_01_degrees`.
+- [x] **Step 2: Run** `flutter test test/features/home test/core`. Expected: FAIL.
+- [x] **Step 3: Implement** the files; pins are `Marker`s with `PricePin`; "Search this area" listens to `MapOptions.onPositionChanged` with `hasGesture` and a 500 m threshold.
+- [x] **Step 4: Run** the tests, then build a **release** Android bundle and open the map on a device to prove the tiles load with the `INTERNET` permission, and run the iOS simulator. Expected: PASS.
+- [x] **Step 5: Commit** `git commit -am "feat(map): full-screen map with price pins and tile config"`.
 
 ### Task 19F: Event page, checkout and payment screens in the Calm look
 
