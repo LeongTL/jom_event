@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/grain.dart';
-import '../../core/theme/tokens.dart';
+import '../../core/theme/calm.dart';
 import '../../features/chat/data/chat_repository.dart';
 
 /// Threads with something unread, shown on the Chat tab of both bars.
@@ -17,12 +16,12 @@ class _TabSpec {
   final bool badge; // does this tab carry the unread badge?
 }
 
-// shortcut: Material icons stand in for the prototype's custom SVG icons; swap in the exact drawings with
-// flutter_svg if the difference matters.
+// shortcut: Material icons stand in for the prototype's line icons; swap in the exact drawings with flutter_svg if the
+// difference matters.
 const _attendee = [
   _TabSpec('Explore', Icons.explore_outlined),
   _TabSpec('Saved', Icons.favorite_border),
-  _TabSpec('Bookings', Icons.confirmation_number_outlined),
+  _TabSpec('Tickets', Icons.confirmation_number_outlined),
   _TabSpec('Chat', Icons.chat_bubble_outline, badge: true),
   _TabSpec('Profile', Icons.person_outline),
 ];
@@ -35,7 +34,7 @@ const _host = [
   _TabSpec('Profile', Icons.person_outline),
 ];
 
-/// The floating pill at the bottom of a tab screen.
+/// The white bar at the bottom of a tab screen: a hairline on top, the active tab in the accent colour.
 class _TabBar extends StatelessWidget {
   const _TabBar({required this.tabs, required this.currentIndex, required this.onTap, required this.badge});
 
@@ -46,30 +45,27 @@ class _TabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final k = context.jom;
     return DecoratedBox(
       key: const Key('tab-bar'),
-      decoration: BoxDecoration(
-        color: k.sheet,
-        borderRadius: BorderRadius.circular(31),
-        border: Border.all(color: k.line),
-        boxShadow: const [BoxShadow(color: Color(0x59000000), blurRadius: 34, offset: Offset(0, 14))],
-      ),
-      child: SizedBox(
-        height: 62,
-        child: Padding(
-          padding: const EdgeInsets.all(6),
-          child: Row(children: [
-            for (var i = 0; i < tabs.length; i++)
-              Expanded(
-                child: _TabItem(
-                  spec: tabs[i],
-                  selected: i == currentIndex,
-                  badge: tabs[i].badge ? badge : 0,
-                  onTap: () => onTap(i),
+      decoration: const BoxDecoration(color: Calm.surface, border: Border(top: BorderSide(color: Calm.line))),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 62,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+            child: Row(children: [
+              for (var i = 0; i < tabs.length; i++)
+                Expanded(
+                  child: _TabItem(
+                    spec: tabs[i],
+                    selected: i == currentIndex,
+                    badge: tabs[i].badge ? badge : 0,
+                    onTap: () => onTap(i),
+                  ),
                 ),
-              ),
-          ]),
+            ]),
+          ),
         ),
       ),
     );
@@ -86,38 +82,22 @@ class _TabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final k = context.jom;
-    final ink = selected ? k.accentInk : k.sheetInk;
+    final ink = selected ? Calm.acc : Calm.faint;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: AnimatedContainer(
+      child: Stack(
         key: Key('tab-${selected ? 'on' : 'off'}:${spec.label}'),
-        duration: const Duration(milliseconds: 300),
-        decoration: BoxDecoration(color: selected ? k.accent : Colors.transparent, borderRadius: BorderRadius.circular(25)),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Opacity(
-              opacity: selected ? 1 : .55,
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Icon(spec.icon, size: 22, color: ink),
-                const SizedBox(height: 2),
-                Text(spec.label, style: TextStyle(color: ink, fontSize: 10, fontWeight: FontWeight.w600)),
-              ]),
-            ),
-            if (badge > 0)
-              Positioned(
-                top: 5,
-                left: 0,
-                right: 0,
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Transform.translate(offset: const Offset(14, 0), child: _Badge(count: badge)),
-                ),
-              ),
-          ],
-        ),
+        alignment: Alignment.topCenter,
+        children: [
+          Column(mainAxisSize: MainAxisSize.min, children: [
+            const SizedBox(height: 4),
+            Icon(spec.icon, size: 22, color: ink),
+            const SizedBox(height: 3),
+            Text(spec.label, style: TextStyle(color: ink, fontSize: 10.5, fontWeight: FontWeight.w500)),
+          ]),
+          if (badge > 0) Positioned(top: 0, left: 0, right: 0, child: Align(alignment: Alignment.topCenter, child: Transform.translate(offset: const Offset(14, 0), child: _Badge(count: badge)))),
+        ],
       ),
     );
   }
@@ -134,17 +114,17 @@ class _Badge extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
       padding: const EdgeInsets.symmetric(horizontal: 4),
       // no `alignment` here: a Container with one fills all the width it is given, which made a bar across the tab
-      decoration: BoxDecoration(color: const Color(0xFFFF4D6D), borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(color: Calm.badge, borderRadius: BorderRadius.circular(8), border: Border.all(color: Calm.surface, width: 2)),
       child: Center(
         widthFactor: 1,
         heightFactor: 1,
-        child: Text(count > 9 ? '9+' : '$count', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, height: 1)),
+        child: Text(count > 9 ? '9+' : '$count', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600, height: 1)),
       ),
     );
   }
 }
 
-/// Explore, Saved, Bookings, Chat, Profile.
+/// Explore, Saved, Tickets, Chat, Profile.
 class AttendeeTabs extends StatelessWidget {
   const AttendeeTabs({super.key, required this.currentIndex, required this.onTap, this.chatBadge = 0});
   final int currentIndex;
@@ -167,7 +147,7 @@ class HostTabs extends StatelessWidget {
   Widget build(BuildContext context) => _TabBar(tabs: _host, currentIndex: currentIndex, onTap: onTap, badge: chatBadge);
 }
 
-/// The frame around the tab screens: the screen, film grain over it, and the floating tab bar.
+/// The frame around the tab screens: the screen above, the tab bar below.
 class JomShell extends ConsumerWidget {
   const JomShell({super.key, required this.navigationShell, required this.host});
 
@@ -182,17 +162,10 @@ class JomShell extends ConsumerWidget {
         ? HostTabs(currentIndex: navigationShell.currentIndex, onTap: select, chatBadge: badge)
         : AttendeeTabs(currentIndex: navigationShell.currentIndex, onTap: select, chatBadge: badge);
     return Scaffold(
-      body: GrainBackground(
-        child: Stack(children: [
-          Positioned.fill(child: navigationShell),
-          Positioned(
-            left: 24,
-            right: 24,
-            bottom: 22, // the prototype's .tabs: 22px from the bottom edge, over the home indicator
-            child: bar,
-          ),
-        ]),
-      ),
+      body: Column(children: [
+        Expanded(child: navigationShell),
+        bar,
+      ]),
     );
   }
 }

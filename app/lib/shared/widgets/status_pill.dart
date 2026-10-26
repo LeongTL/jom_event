@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/tokens.dart';
+import '../../core/theme/calm.dart';
 
 enum StatusTone { neutral, good, warn, bad }
 
-/// The small rounded status label ("Confirmed", "Processing"...) in the prototype's colours.
+/// The small rounded status label ("Confirmed", "Processing"...) in the Calm colours.
 class StatusPill extends StatelessWidget {
   const StatusPill({super.key, required this.label, this.tone = StatusTone.neutral});
 
@@ -31,18 +31,17 @@ class StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final k = context.jom;
     final (background, ink) = switch (tone) {
-      StatusTone.good => (const Color(0xFF1FBF75), const Color(0xFFFFFFFF)),
-      StatusTone.warn => (const Color(0xFFFFB020), const Color(0xFF2A1A00)),
-      StatusTone.bad => (const Color(0xFFFF5A67), const Color(0xFFFFFFFF)),
-      StatusTone.neutral => (k.card, k.sheetInk),
+      StatusTone.good => (Calm.okSoft, Calm.ok),
+      StatusTone.warn => (Calm.warnSoft, Calm.warn),
+      StatusTone.bad => (Calm.badSoft, Calm.bad),
+      StatusTone.neutral => (Calm.chip, Calm.mut),
     };
     return DecoratedBox(
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(99)),
+      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(8)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        child: Text(label, style: TextStyle(color: ink, fontSize: 11, fontWeight: FontWeight.w700)),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        child: Text(label, style: TextStyle(color: ink, fontSize: 11.5, fontWeight: FontWeight.w600)),
       ),
     );
   }

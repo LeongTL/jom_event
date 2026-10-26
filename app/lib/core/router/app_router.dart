@@ -53,7 +53,7 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
           branches: [
             _tab('/explore', 'Explore', screen: const HomeScreen()),
             _account('/saved', 'Saved', 'Sign in to see your saved events', content: const SavedScreen()),
-            _account('/bookings', 'Bookings', 'Sign in to see your bookings', content: const BookingsScreen()),
+            _account('/tickets', 'Tickets', 'Sign in to see your tickets', content: const BookingsScreen()),
             _account('/chats', 'Chat', 'Sign in to see your chats', content: const ChatListScreen()),
             _account('/profile', 'Profile', 'Sign in to see your profile', content: const ProfilePlaceholder()),
           ],

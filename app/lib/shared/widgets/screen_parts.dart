@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/tokens.dart';
+import '../../core/theme/calm.dart';
 
 /// The top bar of a full screen: a round back button and the title (prototype .nav).
 class BookingNav extends StatelessWidget {
@@ -12,7 +12,6 @@ class BookingNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final k = context.jom;
     return Padding(
       padding: EdgeInsets.fromLTRB(0, MediaQuery.paddingOf(context).top + 5, 0, 14),
       child: Row(children: [
@@ -20,12 +19,12 @@ class BookingNav extends StatelessWidget {
           GestureDetector(
             key: const Key('nav-back'),
             onTap: () => context.canPop() ? context.pop() : context.go('/explore'),
-            child: Container(width: 40, height: 40, alignment: Alignment.center, decoration: BoxDecoration(color: k.card, shape: BoxShape.circle), child: const Text('‹', style: TextStyle(fontSize: 20, height: 1))),
+            child: Container(width: 40, height: 40, alignment: Alignment.center, decoration: BoxDecoration(color: Calm.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: Calm.line)), child: const Icon(Icons.chevron_left, size: 22)),
           ),
           const SizedBox(width: 12),
         ],
-        Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -.2))),
-        if (trailing != null) Text(trailing!, style: TextStyle(fontSize: 13, color: k.sheetInk.withValues(alpha: .62))),
+        Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600))),
+        if (trailing != null) Text(trailing!, style: const TextStyle(fontSize: 13, color: Calm.mut)),
       ]),
     );
   }
@@ -60,14 +59,14 @@ class CardBox extends StatelessWidget {
         child: Container(
           width: double.infinity,
           margin: EdgeInsets.only(bottom: gap),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: context.jom.card, borderRadius: BorderRadius.circular(22)),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(color: Calm.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: Calm.line)),
           child: child,
         ),
       );
 }
 
-/// The bottom bar that holds the main button over a fade (prototype .cta).
+/// The bottom bar that holds the main button (prototype .cta): white with a hairline on top.
 class CtaBar extends StatelessWidget {
   const CtaBar({super.key, required this.children, this.column = false});
   final List<Widget> children;
@@ -75,14 +74,13 @@ class CtaBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final k = context.jom;
     return Positioned(
       left: 0,
       right: 0,
       bottom: 0,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 26, 20, 28),
-        decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [k.sheet.withValues(alpha: 0), k.sheet], stops: const [0, .38])),
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 30),
+        decoration: const BoxDecoration(color: Calm.surface, border: Border(top: BorderSide(color: Calm.line))),
         child: column ? Column(mainAxisSize: MainAxisSize.min, children: children) : Row(children: children),
       ),
     );

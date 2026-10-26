@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jom/core/theme/calm.dart';
 import 'package:jom/core/theme/tokens.dart';
 import 'package:jom/shared/widgets/status_pill.dart';
 
@@ -11,21 +12,21 @@ Color? pillColor(WidgetTester t) {
 }
 
 void main() {
-  testWidgets('a pill shows its label in the prototype colours', (t) async {
+  testWidgets('a pill shows its label in the Calm colours', (t) async {
     await t.pumpWidget(host(const StatusPill(label: 'Confirmed', tone: StatusTone.good)));
     expect(find.text('Confirmed'), findsOneWidget);
-    expect(pillColor(t), const Color(0xFF1FBF75));
+    expect(pillColor(t), Calm.okSoft);
 
     await t.pumpWidget(host(const StatusPill(label: 'Processing', tone: StatusTone.warn)));
-    expect(pillColor(t), const Color(0xFFFFB020));
+    expect(pillColor(t), Calm.warnSoft);
 
     await t.pumpWidget(host(const StatusPill(label: 'Cancelled', tone: StatusTone.bad)));
-    expect(pillColor(t), const Color(0xFFFF5A67));
+    expect(pillColor(t), Calm.badSoft);
   });
 
-  testWidgets('a neutral pill uses the theme card colour', (t) async {
+  testWidgets('a neutral pill is the soft grey chip', (t) async {
     await t.pumpWidget(host(const StatusPill(label: 'Held')));
-    expect(pillColor(t), JomTokens.of(JomTheme.now).card);
+    expect(pillColor(t), Calm.chip);
   });
 
   testWidgets('booking statuses get the labels and colours the Bookings screen uses', (t) async {

@@ -67,3 +67,37 @@ String cancelPolicyText(String policy) => switch (policy) {
       '7d' => 'Free cancellation up to 7 days before',
       _ => 'No refunds once booked',
     };
+
+/// "8:04 PM" in KL time, for any instant.
+String timeLabel(DateTime t) => _time(_kl(t));
+
+/// "Today", "Tomorrow" or "Sat 24 Oct", by the KL calendar.
+String dayLabel(DateTime t, DateTime now) {
+  final s = _kl(t), diff = _dayDiff(t, now);
+  return diff == 0 ? 'Today' : diff == 1 ? 'Tomorrow' : '${_days[s.weekday - 1]} ${s.day} ${_months[s.month - 1]}';
+}
+
+/// "1h 11m", "3h", "45m".
+String durationLabel(Duration d) {
+  final h = d.inHours, m = d.inMinutes % 60;
+  return h == 0 ? '${m}m' : m == 0 ? '${h}h' : '${h}h ${m}m';
+}
+
+/// "Happening now", "in 22 min", "in 3h 18m", "in 2h", "in 1 day", "in 3 days".
+String relativeStart(DateTime starts, DateTime ends, DateTime now) {
+  final left = starts.difference(now);
+  if (left <= Duration.zero) return now.isBefore(ends) ? 'Happening now' : 'Ended';
+  if (left < const Duration(minutes: 120)) return 'in ${left.inMinutes} min';
+  if (left < const Duration(hours: 24)) {
+    final m = left.inMinutes % 60;
+    return 'in ${left.inHours}h${m == 0 ? '' : ' ${m}m'}';
+  }
+  final days = left.inDays;
+  return 'in $days ${days == 1 ? 'day' : 'days'}';
+}
+
+/// "WED 21 OCT · 7:42 PM", the small line above a screen title.
+String eyebrow(DateTime now) {
+  final s = _kl(now);
+  return '${_days[s.weekday - 1]} ${s.day} ${_months[s.month - 1]} · ${_time(s)}'.toUpperCase();
+}

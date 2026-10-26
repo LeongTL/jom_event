@@ -52,7 +52,7 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen> {
             ),
           ],
           const SizedBox(height: 28),
-          TextButton(key: const Key('see-bookings'), onPressed: () => context.go('/bookings'), child: const Text('See my bookings')),
+          TextButton(key: const Key('see-bookings'), onPressed: () => context.go('/tickets'), child: const Text('See my bookings')),
         ]),
       ),
     );
