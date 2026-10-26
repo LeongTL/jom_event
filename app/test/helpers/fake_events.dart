@@ -12,7 +12,7 @@ EventSummary sum(String id, {String? title, DateTime? starts, bool live = false,
     'event_id': id, 'title': title ?? 'Event $id', 'glyph': '🎉', 'color_a': '#11998e', 'color_b': '#38ef7d',
     'starts_at': s.toIso8601String(), 'ends_at': s.add(const Duration(hours: 2)).toIso8601String(),
     'price_sen': price, 'area': 'Bangsar', 'distance_km': 1.2, 'is_live': live, 'spots_left': 7, 'score': 1.0,
-    'categories': cats,
+    'categories': cats, 'lat': 3.1290, 'lng': 101.6710, 'host_name': 'Mei Studio',
   });
 }
 
@@ -34,6 +34,11 @@ class FakeEvents implements EventRepository {
 
   @override
   Future<List<EventSummary>> listAll(String category, LatLng at, int km) async => all;
+  @override
+  Future<List<EventSummary>> cards(List<String> ids, LatLng at) async => [
+        for (final e in {for (final e in [...all, ...savedList, ...details.values.map((d) => d.summary)]) e.id: e}.values)
+          if (ids.contains(e.id)) e,
+      ];
   @override
   Future<EventDetail?> detail(String id, LatLng at) async => details[id];
   @override

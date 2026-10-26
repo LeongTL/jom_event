@@ -2,8 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/supabase_client.dart';
+import '../../../core/location.dart';
 import '../../auth/data/auth_repository.dart';
+import '../../event/data/event_repository.dart';
 import '../domain/booking.dart';
+import '../domain/ticket.dart';
 
 /// What the booking screens read and change. Tests replace it; [SupabaseBookingRepository] is the real one.
 abstract class BookingRepository {
@@ -75,8 +78,14 @@ final bookingRepositoryProvider = Provider<BookingRepository>((ref) => SupabaseB
 /// One booking, kept fresh while a screen watches it.
 final bookingProvider = StreamProvider.autoDispose.family<Booking, String>((ref, id) => ref.watch(bookingRepositoryProvider).watch(id));
 
-/// The Bookings tab's lists. Signed-out visitors never get here (the tab shows the sign-in prompt).
-final myBookingsProvider = FutureProvider.autoDispose.family<List<Booking>, String>((ref, scope) async {
+/// The Tickets tab's lists: each booking with its event card. Signed-out visitors never get here (the tab shows the
+/// sign-in prompt).
+final ticketsProvider = FutureProvider.autoDispose.family<List<Ticket>, TicketScope>((ref, scope) async {
   await ref.watch(sessionProvider.future);
-  return ref.watch(bookingRepositoryProvider).mine(scope);
+  final bookings = await ref.watch(bookingRepositoryProvider).mine(scope.name);
+  if (bookings.isEmpty) return const [];
+  final at = await ref.watch(homeCentreProvider.future);
+  final cards = await ref.watch(eventRepositoryProvider).cards({for (final b in bookings) b.eventId}.toList(), at);
+  final byId = {for (final c in cards) c.id: c};
+  return [for (final b in bookings) byId[b.eventId] == null ? Ticket.fromBooking(b) : Ticket(b, byId[b.eventId]!)];
 });

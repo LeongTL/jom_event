@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/domain/auth_gate.dart';
 import '../../features/auth/presentation/profile_placeholder.dart';
 import '../../features/auth/presentation/signed_out_tab.dart';
-import '../../features/booking/presentation/bookings_screen.dart';
+import '../../features/booking/presentation/tickets_screen.dart';
 import '../../features/chat/presentation/chat_list_screen.dart';
 import '../../features/chat/presentation/chat_thread_screen.dart';
 import '../../features/booking/presentation/checkout_screen.dart';
@@ -53,7 +53,7 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
           branches: [
             _tab('/explore', 'Explore', screen: const HomeScreen()),
             _account('/saved', 'Saved', 'Sign in to see your saved events', content: const SavedScreen()),
-            _account('/tickets', 'Tickets', 'Sign in to see your tickets', content: const BookingsScreen()),
+            _account('/tickets', 'Tickets', 'Sign in to see your tickets', content: const TicketsScreen()),
             _account('/chats', 'Chat', 'Sign in to see your chats', content: const ChatListScreen()),
             _account('/profile', 'Profile', 'Sign in to see your profile', content: const ProfilePlaceholder()),
           ],

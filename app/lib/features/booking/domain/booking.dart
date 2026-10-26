@@ -23,12 +23,14 @@ class Booking {
     this.colorB,
     this.area,
     this.startsAt,
+    this.paymentMethod,
   });
 
   final String id, eventId, status, ticketCode; // status: held processing confirmed attended payment_failed cancelled expired no_show
   final int people, amountSen;
   final DateTime? holdExpiresAt, cancelCutoffAt, startsAt;
   final String? contactName, contactPhone, title, glyph, area;
+  final String? paymentMethod; // fpx, card, ewallet, duitnow or free; only my_bookings fills it
   final Color? colorA, colorB;
 
   bool get isPaid => amountSen > 0;
@@ -52,6 +54,7 @@ class Booking {
       colorB: j['event_color_b'] == null ? null : parseHexColor(j['event_color_b'] as String, const Color(0xFFFF7AA8)),
       area: j['event_area'] as String?,
       startsAt: t('event_starts_at'),
+      paymentMethod: j['payment_method'] as String?,
     );
   }
 }

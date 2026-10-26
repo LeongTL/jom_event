@@ -101,3 +101,15 @@ String eyebrow(DateTime now) {
   final s = _kl(now);
   return '${_days[s.weekday - 1]} ${s.day} ${_months[s.month - 1]} · ${_time(s)}'.toUpperCase();
 }
+
+/// "Wed 21 Oct", in KL time.
+String dateLabel(DateTime t) {
+  final s = _kl(t);
+  return '${_days[s.weekday - 1]} ${s.day} ${_months[s.month - 1]}';
+}
+
+/// "21 Oct", in KL time.
+String shortDate(DateTime t) {
+  final s = _kl(t);
+  return '${s.day} ${_months[s.month - 1]}';
+}

@@ -93,7 +93,7 @@ void main() {
     await t.tap(find.text('Continue with Google'));
     await t.pumpAndSettle();
     expect(repo.googleCalls, 1);
-    expect(find.byKey(const Key('bookings-screen')), findsOneWidget);
+    expect(find.byKey(const Key('tickets-screen')), findsOneWidget);
   });
 
   testWidgets('a failed Google sign-in on a tab says so and keeps the prompt', (t) async {
