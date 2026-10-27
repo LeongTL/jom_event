@@ -3,11 +3,21 @@ import 'package:flutter/foundation.dart';
 /// One row of the inbox (chat.my_threads).
 @immutable
 class ThreadSummary {
-  const ThreadSummary({required this.id, required this.otherName, required this.lastBody, required this.lastAt, required this.unread, this.eventTitle});
+  const ThreadSummary({
+    required this.id,
+    required this.otherName,
+    required this.lastBody,
+    required this.lastAt,
+    required this.unread,
+    this.eventTitle,
+    this.eventId,
+    this.eventCategories = const [],
+  });
   final String id, otherName, lastBody;
   final DateTime lastAt;
   final bool unread;
-  final String? eventTitle;
+  final String? eventTitle, eventId;
+  final List<String> eventCategories; // picks the art tile of a guest's row
 
   factory ThreadSummary.fromJson(Map<String, dynamic> j) => ThreadSummary(
         id: j['thread_id'] as String,
@@ -16,6 +26,8 @@ class ThreadSummary {
         lastAt: DateTime.parse(j['last_at'] as String).toUtc(),
         unread: j['unread'] as bool,
         eventTitle: j['event_title'] as String?,
+        eventId: j['event_id'] as String?,
+        eventCategories: [for (final c in (j['event_categories'] as List?) ?? const []) c as String],
       );
 }
 

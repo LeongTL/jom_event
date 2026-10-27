@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/calm.dart';
+import '../../../shared/widgets/category_art.dart';
 import '../../../shared/widgets/screen_parts.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../event/data/event_repository.dart';
@@ -68,7 +70,6 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final k = context.jom;
     ref.listen(messagesProvider(widget.threadId), (prev, next) {
       final n = next.value?.length ?? 0;
       if (n > (prev?.value?.length ?? 0)) {
@@ -83,7 +84,7 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
     final messages = ref.watch(messagesProvider(widget.threadId)).value ?? const <Message>[];
     return Scaffold(
       key: const Key('thread-screen'),
-      backgroundColor: k.sheet,
+      backgroundColor: Calm.bg,
       body: info.when(
         loading: () => SafeArea(child: Skeleton.page()),
         error: (_, _) => const Center(child: Text('Could not load this chat. Check your connection.')),
@@ -99,8 +100,8 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
                   width: double.infinity,
                   margin: const EdgeInsets.only(bottom: 14),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(color: k.card, borderRadius: BorderRadius.circular(16)),
-                  child: const Text("Keep the chat in Jom. Phone numbers and social handles can't be shared here.", style: TextStyle(fontSize: 12)),
+                  decoration: BoxDecoration(color: Calm.soft, borderRadius: BorderRadius.circular(14)),
+                  child: const Text("Keep the chat in Jom. Phone numbers and social handles can't be shared here.", style: TextStyle(fontSize: 12, color: Calm.mut)),
                 ),
                 for (final m in messages) _Bubble(m, mine: m.senderId == me),
               ],
@@ -114,7 +115,7 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
                 if (_error != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8, left: 4),
-                    child: Text(_error!, key: const Key('send-error'), style: const TextStyle(color: Color(0xFFFF5A67), fontSize: 12, fontWeight: FontWeight.w600)),
+                    child: Text(_error!, key: const Key('send-error'), style: const TextStyle(color: Calm.bad, fontSize: 12, fontWeight: FontWeight.w600)),
                   ),
                 Row(children: [
                   Expanded(
@@ -128,13 +129,15 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
                       onChanged: (_) {
                         if (_error != null) setState(() => _error = null);
                       },
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: const TextStyle(fontSize: 16),
                       decoration: InputDecoration(
                         hintText: 'Message ${i.iAmHost ? i.otherName.split(' ').first : i.otherName}…',
                         filled: true,
-                        fillColor: k.card,
+                        fillColor: Calm.surface,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(26), borderSide: BorderSide.none),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: const BorderSide(color: Calm.line)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: const BorderSide(color: Calm.line)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: const BorderSide(color: Calm.acc)),
                       ),
                     ),
                   ),
@@ -142,7 +145,7 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
                   GestureDetector(
                     key: const Key('send-button'),
                     onTap: _send,
-                    child: Container(width: 48, height: 48, alignment: Alignment.center, decoration: BoxDecoration(color: k.accent, shape: BoxShape.circle), child: Text('↑', style: TextStyle(color: k.accentInk, fontSize: 20, fontWeight: FontWeight.w700, height: 1))),
+                    child: Container(width: 46, height: 46, alignment: Alignment.center, decoration: const BoxDecoration(color: Calm.acc, shape: BoxShape.circle), child: const Icon(Icons.arrow_upward, size: 22, color: Colors.white)),
                   ),
                 ]),
               ]),
@@ -160,20 +163,20 @@ class _EventCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final k = context.jom;
     final d = ref.watch(eventDetailProvider(eventId)).value;
     if (d == null) return const SizedBox.shrink();
     final e = d.summary;
     return KeyedSubtree(
       key: const Key('event-card'),
       child: CardBox(
+        onTap: () => context.push('/event/$eventId'),
         child: Row(children: [
-          MiniArt(glyph: e.glyph, a: e.colorA, b: e.colorB),
+          ClipRRect(borderRadius: BorderRadius.circular(12), child: SizedBox(width: 56, height: 56, child: EventArt(posterUrl: e.posterUrl, kind: artKindFor(e.id, e.categories)))),
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
-              Text('${fullWhen(e.startsAt)} · ${e.area ?? ''}', style: TextStyle(fontSize: 13, color: k.sheetInk.withValues(alpha: .62))),
+              Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text('${fullWhen(e.startsAt)} · ${e.area ?? ''}', style: const TextStyle(fontSize: 13, color: Calm.mut)),
             ]),
           ),
         ]),
@@ -189,7 +192,6 @@ class _Bubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final k = context.jom;
     return Column(crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start, children: [
       ConstrainedBox(
         constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * .78),
@@ -198,15 +200,16 @@ class _Bubble extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 4),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: mine ? k.accent : k.card,
+            color: mine ? Calm.acc : Calm.surface,
+            border: mine ? null : Border.all(color: Calm.line),
             borderRadius: BorderRadius.only(topLeft: const Radius.circular(18), topRight: const Radius.circular(18), bottomLeft: Radius.circular(mine ? 18 : 6), bottomRight: Radius.circular(mine ? 6 : 18)),
           ),
-          child: Text(m.body, style: TextStyle(fontSize: 14, height: 1.35, fontWeight: FontWeight.w500, color: mine ? k.accentInk : k.sheetInk)),
+          child: Text(m.body, style: TextStyle(fontSize: 14, height: 1.35, color: mine ? Colors.white : Calm.ink)),
         ),
       ),
       Padding(
         padding: const EdgeInsets.fromLTRB(6, 0, 6, 12),
-        child: Text(clockLabel(m.createdAt), key: Key('time-${m.id}'), style: TextStyle(fontSize: 10, color: k.sheetInk.withValues(alpha: .5))),
+        child: Text(clockLabel(m.createdAt), key: Key('time-${m.id}'), style: const TextStyle(fontSize: 10.5, color: Calm.faint)),
       ),
     ]);
   }

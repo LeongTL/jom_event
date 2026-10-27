@@ -19,6 +19,7 @@ class EventDetail {
     required this.sourceUrl,
     required this.isBookable,
     required this.isEnded,
+    required this.hostEventCount,
   });
 
   final EventSummary summary;
@@ -31,6 +32,7 @@ class EventDetail {
   final String cancelPolicy; // 24h | 48h | 7d | none
   final bool isBookable; // takes bookings and costs money: the paid page; otherwise the free page
   final bool isEnded;
+  final int hostEventCount; // published and ended events the host has run
 
   factory EventDetail.fromJson(Map<String, dynamic> j) => EventDetail(
         summary: EventSummary.fromJson({...j, 'score': 0}), // the page has no ranking score; the poster parser wants one
@@ -46,5 +48,6 @@ class EventDetail {
         sourceUrl: j['source_url'] as String?,
         isBookable: j['is_bookable'] as bool,
         isEnded: j['is_ended'] as bool,
+        hostEventCount: (j['host_event_count'] as num).toInt(),
       );
 }

@@ -41,22 +41,21 @@ class _SignedOutTabState extends ConsumerState<SignedOutTab> {
 
   @override
   Widget build(BuildContext context) {
-    final k = context.jom;
     return Scaffold(
+      backgroundColor: Calm.bg,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(28, 24, 28, 120),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Icon(Icons.lock_outline, size: 40, color: k.sheetInk.withValues(alpha: .6)),
+              const Icon(Icons.lock_outline, size: 40, color: Calm.mut),
               const SizedBox(height: 16),
-              Text(widget.heading, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+              Text(widget.heading, textAlign: TextAlign.center, style: const TextStyle(fontFamily: Calm.serif, fontSize: 24, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              Text('Browsing stays open. An account is only for joining, saving and chatting.',
-                  textAlign: TextAlign.center, style: TextStyle(color: k.sheetInk.withValues(alpha: .7))),
+              const Text('Browsing stays open. An account is only for joining, saving and chatting.', textAlign: TextAlign.center, style: TextStyle(color: Calm.mut)),
               const SizedBox(height: 24),
               JomButton(label: 'Continue with Google', onPressed: _google, busy: _busy),
-              if (_error != null) Padding(padding: const EdgeInsets.only(top: 10), child: Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFFFF5A67)))),
+              if (_error != null) Padding(padding: const EdgeInsets.only(top: 10), child: Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: Calm.bad))),
               const SizedBox(height: 10),
               JomButton(label: 'Continue with phone number', primary: false, onPressed: () => showSignInSheet(context, startWithPhone: true)),
             ]),

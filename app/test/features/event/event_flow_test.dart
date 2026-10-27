@@ -16,6 +16,7 @@ import 'package:jom/features/event/domain/event_detail.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/notifications/domain/bell_provider.dart';
 import 'package:jom/shared/models/event_summary.dart';
+import 'package:jom/shared/widgets/category_art.dart';
 
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_bookings.dart';
@@ -138,7 +139,7 @@ void main() {
       await t.tap(row('a'));
       await t.pumpAndSettle();
       expect(find.byKey(const Key('event-screen')), findsOneWidget);
-      expect(find.text('Join · RM 30'), findsOneWidget);
+      expect(find.text('Book a spot'), findsOneWidget);
     });
 
     testWidgets('a long title ends with an ellipsis instead of overflowing', (t) async {
@@ -223,7 +224,7 @@ void main() {
   });
 
   group('event pages', () {
-    testWidgets('heart_state_is_shared_between_poster_hero_and_bottom_bar', (t) async {
+    testWidgets('heart_state_is_shared_between_card_and_hero', (t) async {
       final repo = FakeEvents(all: [a], details: {'a': detailOf(a)});
       await pumpApp(t, location: '/explore', repo: repo);
       await t.tap(find.byKey(const Key('heart-off:a')).first);
@@ -232,59 +233,89 @@ void main() {
       await t.pumpAndSettle();
       expect(find.byKey(const Key('hero-heart')), findsOneWidget);
       expect(find.descendant(of: find.byKey(const Key('hero-heart')), matching: find.byKey(const Key('heart-on:a'))), findsOneWidget);
-      expect(find.descendant(of: find.byKey(const Key('bar-heart')), matching: find.byKey(const Key('heart-on:a'))), findsOneWidget);
-      await t.tap(find.byKey(const Key('bar-heart')));
+      await t.tap(find.byKey(const Key('heart-on:a')));
       await t.pumpAndSettle();
       expect(find.descendant(of: find.byKey(const Key('hero-heart')), matching: find.byKey(const Key('heart-off:a'))), findsOneWidget);
-      expect(find.descendant(of: find.byKey(const Key('bar-heart')), matching: find.byKey(const Key('heart-off:a'))), findsOneWidget);
       await t.tap(find.byKey(const Key('event-back')));
       await t.pumpAndSettle();
       expect(heartOff('a'), findsWidgets, reason: 'the card behind agrees');
       expect(heartOn('a'), findsNothing);
     });
 
-    testWidgets('paid page shows who, when, where, the rating and Join · RM 30', (t) async {
-      await pumpApp(t, location: '/event/a', repo: FakeEvents(details: {'a': detailOf(a)}));
+    testWidgets('detail_shows_when_where_going_and_spots_left', (t) async {
+      final going = sum('a', title: 'Batik Workshop', going: 5);
+      await pumpApp(t, location: '/event/a', repo: FakeEvents(details: {'a': detailOf(going)}));
       expect(find.byKey(const Key('event-screen')), findsOneWidget);
       expect(find.text('Batik Workshop'), findsOneWidget);
-      expect(find.text('Mei Studio'), findsOneWidget);
-      expect(find.text('★ 4.8 · 36 reviews'), findsOneWidget);
-      expect(find.text('Join · RM 30'), findsOneWidget);
-      expect(find.text('WORKSHOP · 7 SPOTS LEFT'), findsOneWidget);
-      expect(find.text('Bangsar'), findsOneWidget);
-      expect(find.text('1.2 km away'), findsOneWidget);
-      expect(find.text('Bring a mat.'), findsOneWidget);
       expect(find.text('Sat 9:00 AM'), findsOneWidget);
-      expect(find.text('2 hours'), findsOneWidget);
+      expect(find.text('Bangsar · 1.2 km'), findsOneWidget);
+      expect(find.text('5 going'), findsOneWidget);
+      expect(find.text('7 spots left'), findsOneWidget);
     });
 
-    testWidgets('paid_event_page_shows_cancel_policy_text_per_policy', (t) async {
+    testWidgets('one_layout_serves_free_and_paid_with_the_right_button_text', (t) async {
+      await pumpApp(t, location: '/event/a', repo: FakeEvents(details: {'a': detailOf(a)}));
+      expect(find.text('Book a spot'), findsOneWidget);
+      expect(find.text('Per person'), findsOneWidget);
+      expect(find.text('RM 30'), findsOneWidget);
+      await pumpApp(t, location: '/event/b', repo: FakeEvents(details: {'b': detailOf(b, bookable: false, policy: 'none')}));
+      expect(find.text('Join for free'), findsOneWidget);
+      expect(find.text('Entry'), findsOneWidget);
+      expect(find.text('Free'), findsOneWidget);
+      for (final key in ['join', 'host-row', 'going-card', 'policy-card']) {
+        expect(find.byKey(Key(key)), findsOneWidget, reason: '$key is on the free page too');
+      }
+    });
+
+    testWidgets('policy_card_text_per_policy', (t) async {
       for (final (policy, text) in [
-        ('24h', 'Free cancellation up to 24 hours before'),
-        ('48h', 'Free cancellation up to 48 hours before'),
-        ('7d', 'Free cancellation up to 7 days before'),
+        ('24h', 'Full refund up to 24 hours before it starts'),
+        ('48h', 'Full refund up to 48 hours before it starts'),
+        ('7d', 'Full refund up to 7 days before it starts'),
         ('none', 'No refunds once booked'),
       ]) {
         await pumpApp(t, location: '/event/a', repo: FakeEvents(details: {'a': detailOf(a, policy: policy)}));
-        expect(find.textContaining(text), findsOneWidget, reason: policy);
+        expect(find.descendant(of: find.byKey(const Key('policy-card')), matching: find.text(text)), findsOneWidget, reason: policy);
       }
+      await pumpApp(t, location: '/event/b', repo: FakeEvents(details: {'b': detailOf(b, bookable: false, policy: 'none')}));
+      expect(find.descendant(of: find.byKey(const Key('policy-card')), matching: find.text('Free event')), findsOneWidget);
+    });
+
+    testWidgets('going_card_shows_a_count_and_no_names_or_initials', (t) async {
+      await pumpApp(t, location: '/event/a', repo: FakeEvents(details: {'a': detailOf(sum('a', title: 'Batik Workshop', going: 5))}));
+      final card = find.byKey(const Key('going-card'));
+      expect(find.descendant(of: card, matching: find.text('5 going')), findsOneWidget);
+      expect(find.descendant(of: card, matching: find.byKey(const Key('people-stack'))), findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('M')), findsNothing, reason: 'no initials of the host or anyone');
+    });
+
+    testWidgets('host_card_shows_rating_reviews_events_hosted_and_message_button', (t) async {
+      await pumpApp(t, location: '/event/a', repo: FakeEvents(details: {'a': detailOf(a)}));
+      final card = find.byKey(const Key('host-row'));
+      expect(find.descendant(of: card, matching: find.text('Mei Studio')), findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('4.8 · 36 reviews · 38 events hosted')), findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('Message')), findsOneWidget);
+    });
+
+    testWidgets('hero_uses_the_poster_when_present_else_the_category_art', (t) async {
+      await pumpApp(t, location: '/event/a', repo: FakeEvents(details: {'a': detailOf(a)}));
+      expect(find.descendant(of: find.byKey(const Key('event-hero')), matching: find.byType(CategoryArt)), findsOneWidget);
+      await pumpApp(t, location: '/event/a', repo: FakeEvents(details: {'a': detailOf(sum('a', poster: 'https://x.test/p.jpg'))}));
+      expect(find.descendant(of: find.byKey(const Key('event-hero')), matching: find.byType(Image)), findsOneWidget);
     });
 
     testWidgets('a host with no reviews yet shows no rating line', (t) async {
       final d = detailOf(a);
       await pumpApp(t, location: '/event/a', repo: FakeEvents(details: {'a': EventDetail(
         summary: d.summary, hostId: 'h1', hostName: 'Mei Studio', ratingAvg: null, ratingCount: 0, description: null, venue: null,
-        lat: null, lng: null, cancelPolicy: '24h', sourceUrl: null, isBookable: true, isEnded: false)}));
+        lat: null, lng: null, cancelPolicy: '24h', sourceUrl: null, isBookable: true, isEnded: false, hostEventCount: 1)}));
       expect(find.textContaining('★'), findsNothing);
-      expect(find.text('New host'), findsOneWidget);
+      expect(find.text('New host · 1 event hosted'), findsOneWidget);
     });
 
     testWidgets('free_page_shows_source_card_and_opens_url', (t) async {
       final d = detailOf(b, bookable: false, policy: 'none', source: 'https://instagram.com/p/x');
       await pumpApp(t, location: '/event/b', repo: FakeEvents(details: {'b': d}));
-      expect(find.text('FREE · JOIN TO SAVE YOUR SPOT'), findsOneWidget);
-      expect(find.text('Join · Free'), findsOneWidget);
-      expect(find.textContaining('A free community event, hosted by Mei Studio'), findsOneWidget);
       expect(find.textContaining('Source:'), findsOneWidget);
       await t.tap(find.byKey(const Key('source-card')));
       await t.pumpAndSettle();
@@ -354,22 +385,28 @@ void main() {
   });
 
   group('Saved', () {
-    testWidgets('saved_tab_lists_hearted_events_and_greys_ended_with_Ended_tag', (t) async {
+    testWidgets('saved_uses_event_rows_and_the_empty_text_is_Nothing_saved_yet', (t) async {
       final upcoming = sum('a', title: 'Batik Workshop');
       final past = sum('p', title: 'Old Concert', starts: DateTime.utc(2029, 12, 1, 12));
       await pumpApp(t, location: '/saved', repo: FakeEvents(hearts: {'a', 'p'}, savedList: [past, upcoming]));
       expect(find.text('Batik Workshop'), findsOneWidget);
       expect(find.text('Old Concert'), findsOneWidget);
-      expect(find.descendant(of: poster('p'), matching: find.text('Ended')), findsOneWidget);
-      expect(find.descendant(of: poster('a'), matching: find.text('Ended')), findsNothing);
-      expect(t.widget<Opacity>(find.byKey(const Key('dim:p'))).opacity, lessThan(1));
-      expect(t.widget<Opacity>(find.byKey(const Key('dim:a'))).opacity, 1);
+      expect(row('a'), findsOneWidget);
+      expect(row('p'), findsOneWidget);
+      expect(find.descendant(of: row('p'), matching: find.text('Ended')), findsOneWidget);
+      expect(find.descendant(of: row('a'), matching: find.text('Ended')), findsNothing);
+      double dim(String id) => t.widget<Opacity>(find.descendant(of: row(id), matching: find.byType(Opacity))).opacity;
+      expect(dim('p'), lessThan(1));
+      expect(dim('a'), 1);
+      await t.tap(row('a'));
+      await t.pumpAndSettle();
+      expect(find.byKey(const Key('event-screen')), findsOneWidget, reason: 'a row opens its event');
     });
 
     testWidgets('an ended saved event can still be un-hearted', (t) async {
       final past = sum('p', starts: DateTime.utc(2029, 12, 1, 12));
       await pumpApp(t, location: '/saved', repo: FakeEvents(hearts: {'p'}, savedList: [past]));
-      await t.tap(find.byKey(const Key('heart-on:p')));
+      await t.tap(find.descendant(of: row('p'), matching: find.byKey(const Key('heart-on:p'))));
       await t.pumpAndSettle();
       expect(events.toggles, ['p']);
     });

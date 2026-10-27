@@ -35,7 +35,7 @@ class FailedScreen extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(44, 180, 44, 0), // the prototype's padding-top: 180
                   child: Column(children: [
-                    icon('!', const Color(0xFFFF5A67)),
+                    icon('!', Calm.bad),
                     const SizedBox(height: 24),
                     Text(live ? "Payment didn't go through" : 'Spot released', textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 8),

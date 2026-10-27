@@ -38,6 +38,7 @@ Future<void> pumpApp(
   List<Booking> upcoming = const [],
   List<Booking> past = const [],
   String policy = '48h',
+  int spotsLeft = 7,
   void Function(FakeBookings)? setup,
 }) async {
   // wider than a phone on purpose: the test font's letters are so wide that tab names would wrap
@@ -57,7 +58,7 @@ Future<void> pumpApp(
       routerProvider.overrideWithValue(router),
       authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: fakeSession(name: 'Mei'))),
       eventRepositoryProvider.overrideWithValue(FakeEvents(details: {
-        'e1': detailOf(paid, policy: policy),
+        'e1': detailOf(spotsLeft == 7 ? paid : sum('e1', title: 'Batik Workshop', price: 3000, spots: spotsLeft), policy: policy),
         'e2': detailOf(free, bookable: false, policy: 'none'),
         'e3': detailOf(today),
       })),
@@ -137,14 +138,49 @@ void main() {
       expect(find.text('Confirm my spot'), findsOneWidget);
     });
 
-    testWidgets('checkout shows the contact, the policy and who accepts it', (t) async {
+    testWidgets('checkout shows the contact and the booking limit', (t) async {
       await pumpApp(t, location: '/event/e1/checkout');
       expect(find.text('Mei'), findsOneWidget);
       expect(find.text('+60 12 345 6789'), findsOneWidget);
       expect(find.text('Up to 2 per booking'), findsOneWidget);
-      expect(find.textContaining('Free cancellation up to 48 hours before. Paying means you accept the host'), findsOneWidget);
+    });
+
+    testWidgets('checkout_total_is_price_times_people_with_no_service_fee_line', (t) async {
+      await pumpApp(t, location: '/event/e1/checkout');
+      expect(find.text('RM 30 × 1 spot'), findsOneWidget);
+      expect(find.text('Price details'), findsOneWidget);
+      expect(find.textContaining('No booking fees'), findsOneWidget);
+      await t.tap(key('people-plus'));
+      await t.pumpAndSettle();
+      expect(find.text('RM 30 × 2 spots'), findsOneWidget);
+      expect(textOf(t, 'total'), 'RM 60');
+      expect(find.textContaining(RegExp('service fee', caseSensitive: false)), findsNothing);
+    });
+
+    testWidgets('spots_stepper_stops_at_2_and_never_exceeds_spots_left', (t) async {
+      await pumpApp(t, location: '/event/e1/checkout', spotsLeft: 1);
+      await t.tap(key('people-plus'));
+      await t.pumpAndSettle();
+      expect(textOf(t, 'people-count'), '1', reason: 'only one spot is left');
+      await pumpApp(t, location: '/event/e1/checkout');
+      await t.tap(key('people-plus'));
+      await t.tap(key('people-plus'));
+      await t.pumpAndSettle();
+      expect(textOf(t, 'people-count'), '2');
+    });
+
+    testWidgets('checkout_policy_card_states_the_refund_amount_and_the_cutoff_time_in_kuala_lumpur', (t) async {
+      await pumpApp(t, location: '/event/e1/checkout'); // 48h policy, starts Sat 12 Jan 9:00 AM KL
+      final card = key('checkout-policy');
+      expect(find.descendant(of: card, matching: find.text('Full refund until Thu 10 Jan, 9:00 AM')), findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text("You'd get RM 30 back to your original payment method.")), findsOneWidget);
+      await t.tap(key('people-plus'));
+      await t.pumpAndSettle();
+      expect(find.descendant(of: card, matching: find.text("You'd get RM 60 back to your original payment method.")), findsOneWidget);
+      await pumpApp(t, location: '/event/e1/checkout', policy: 'none');
+      expect(find.descendant(of: key('checkout-policy'), matching: find.text('No refunds once booked')), findsOneWidget);
       await pumpApp(t, location: '/event/e2/checkout', priceSen: 0);
-      expect(find.textContaining('No refunds once booked. Joining means you accept the host'), findsOneWidget);
+      expect(find.descendant(of: key('checkout-policy'), matching: find.text('Free event')), findsOneWidget);
     });
 
     testWidgets('free_confirm_my_spot_creates_confirmed_booking_and_opens_ticket', (t) async {
@@ -187,6 +223,10 @@ void main() {
       bookings.setStatus('b1', 'confirmed');
       await t.pumpAndSettle();
       expect(key('ticket-screen'), findsOneWidget);
+      await t.tap(key('ticket-done'));
+      await t.pumpAndSettle();
+      expect(key('checkout-screen'), findsNothing, reason: 'Done leaves the booking, it does not step back into Review and pay');
+      expect(key('tickets-screen'), findsOneWidget);
     });
 
     testWidgets('gateway_lists_methods_and_pay_calls_client_once_on_double_tap', (t) async {
@@ -255,6 +295,29 @@ void main() {
       expect(key('home-screen'), findsOneWidget);
     });
 
+    testWidgets('processing_and_failed_copy_is_unchanged', (t) async {
+      await pumpApp(t, location: '/event/e1/checkout');
+      await t.tap(key('pay'));
+      await t.pumpAndSettle();
+      await t.tap(key('gateway-pay'));
+      await moment(t);
+      expect(find.text('Confirming your payment'), findsOneWidget);
+      expect(find.text("Please don't close the app or pay again. This takes a few seconds."), findsOneWidget);
+      bookings.setStatus('b1', 'payment_failed');
+      await t.pumpAndSettle();
+      expect(find.text("Payment didn't go through"), findsOneWidget);
+      expect(find.text('Try again'), findsOneWidget);
+      expect(find.text('Give up'), findsOneWidget);
+    });
+
+    testWidgets('gateway_page_is_neutral_white_and_not_themed', (t) async {
+      await pumpApp(t, location: '/event/e1/checkout');
+      await t.tap(key('pay'));
+      await t.pumpAndSettle();
+      expect(t.widget<Scaffold>(key('gateway-screen')).backgroundColor, const Color(0xFFF6F7F9));
+      expect(t.widget<FilledButton>(key('gateway-pay')).style!.backgroundColor!.resolve({}), const Color(0xFF2F6BFF), reason: 'the third party keeps its own blue, not the app accent');
+    });
+
     testWidgets('expired_hold_shows_spot_released_message', (t) async {
       await pumpApp(t, location: '/event/e1/checkout');
       await t.tap(key('pay'));
@@ -273,6 +336,16 @@ void main() {
       await t.pumpAndSettle();
       expect(find.text('Your spot was released because the time ran out.'), findsOneWidget);
       expect(key('gateway-screen'), findsNothing);
+    });
+
+    testWidgets('the gateway has a back button that returns to checkout', (t) async {
+      await pumpApp(t, location: '/event/e1/checkout');
+      await t.tap(key('pay'));
+      await t.pumpAndSettle();
+      await t.tap(key('gateway-back'));
+      await t.pumpAndSettle();
+      expect(key('gateway-screen'), findsNothing);
+      expect(key('checkout-screen'), findsOneWidget);
     });
 
     testWidgets('the gateway shows who is paying what', (t) async {

@@ -58,7 +58,7 @@ class JomTokens extends ThemeExtension<JomTokens> {
   JomTokens lerp(ThemeExtension<JomTokens>? other, double t) => this;
 }
 
-extension JomThemeContext on BuildContext {
+extension JomTokensContext on BuildContext {
   JomTokens get jom => Theme.of(this).extension<JomTokens>()!;
 }
 
