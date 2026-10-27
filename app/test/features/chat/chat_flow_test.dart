@@ -5,6 +5,8 @@ import 'package:jom/app.dart';
 import 'package:jom/core/clock.dart';
 import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
+import 'package:jom/core/theme/calm.dart';
+import 'package:jom/shared/widgets/category_art.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:jom/features/chat/data/chat_repository.dart';
 import 'package:jom/features/chat/domain/chat.dart';
@@ -18,7 +20,7 @@ import '../../helpers/fake_chat.dart';
 import '../../helpers/fake_events.dart';
 
 // 14:00 in Kuala Lumpur on Wednesday 9 January 2030 (the shared fake clock)
-final t1 = ThreadSummary(id: 't1', otherName: 'Mei Studio', lastBody: 'Yes, mats are provided', lastAt: DateTime.utc(2030, 1, 9, 1, 24), unread: true, eventTitle: 'Batik Workshop');
+final t1 = ThreadSummary(id: 't1', otherName: 'Mei Studio', lastBody: 'Yes, mats are provided', lastAt: DateTime.utc(2030, 1, 9, 1, 24), unread: true, eventTitle: 'Batik Workshop', eventId: 'e1', eventCategories: ['make']);
 final t2 = ThreadSummary(id: 't2', otherName: 'Clay & Co', lastBody: 'Starts 2 PM sharp', lastAt: DateTime.utc(2030, 1, 8, 6), unread: false);
 const info1 = ThreadInfo(id: 't1', iAmHost: false, otherName: 'Mei Studio', eventId: 'e1');
 const infoHost = ThreadInfo(id: 't1', iAmHost: true, otherName: 'Aina Rahman', eventId: 'e1');
@@ -63,6 +65,20 @@ void main() {
       expect(find.text('Yesterday'), findsOneWidget);
       expect(key('unread-dot-t1'), findsOneWidget);
       expect(key('unread-dot-t2'), findsNothing);
+    });
+
+    testWidgets('chat_list_has_a_large_Chat_heading_and_category_art_tiles_in_attendee_mode_and_initial_avatars_in_host_mode', (t) async {
+      await pumpApp(t, location: '/chats', repo: FakeChat(threads: [t1, t2]));
+      expect(t.widget<Text>(key('chat-heading')).data, 'Chat');
+      expect(t.widget<Text>(key('chat-heading')).style!.fontSize, greaterThanOrEqualTo(28));
+      expect(find.descendant(of: key('thread-t1'), matching: find.byType(CategoryArt)), findsOneWidget, reason: 'a guest sees the event art');
+      expect(find.descendant(of: key('thread-t2'), matching: find.byType(CategoryArt)), findsOneWidget, reason: 'even with no event the tile has art');
+      expect(key('initial-t1'), findsNothing);
+
+      await pumpApp(t, location: '/host-mode/chats', repo: FakeChat(threads: [t1], infos: {'t1': infoHost}));
+      expect(t.widget<Text>(key('chat-heading')).data, 'Chat');
+      expect(find.descendant(of: key('initial-t1'), matching: find.text('M')), findsOneWidget, reason: 'a host sees the guest\'s initial');
+      expect(find.descendant(of: key('thread-t1'), matching: find.byType(CategoryArt)), findsNothing);
     });
 
     testWidgets('an empty inbox says so', (t) async {
@@ -116,6 +132,16 @@ void main() {
       expect(t.widget<Text>(key('time-m2')).data, '9:30 AM');
       // mine on the right, theirs on the left
       expect(t.getTopLeft(key('bubble-m2')).dx, greaterThan(t.getTopLeft(key('bubble-m1')).dx));
+    });
+
+    testWidgets('my_bubbles_are_accent_and_theirs_are_white_with_times', (t) async {
+      await pumpApp(t, location: '/chats/t1', repo: FakeChat(infos: {'t1': info1}, messages: {...msgs}));
+      Color fill(String id) => (t.widget<Container>(key('bubble-$id')).decoration! as BoxDecoration).color!;
+      expect(fill('m2'), Calm.acc, reason: 'mine');
+      expect(fill('m1'), Colors.white, reason: 'theirs');
+      expect(t.widget<Text>(find.descendant(of: key('bubble-m2'), matching: find.byType(Text))).style!.color, Colors.white);
+      expect(key('time-m1'), findsOneWidget);
+      expect(key('time-m2'), findsOneWidget);
     });
 
     testWidgets('a thread with no event shows no event card', (t) async {

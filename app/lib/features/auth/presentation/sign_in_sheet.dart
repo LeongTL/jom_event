@@ -143,17 +143,16 @@ class _SignInSheetState extends ConsumerState<SignInSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final k = context.jom;
     return Container(
       padding: EdgeInsets.fromLTRB(20, 12, 20, 32 + MediaQuery.viewInsetsOf(context).bottom),
-      decoration: BoxDecoration(color: k.sheet, borderRadius: const BorderRadius.vertical(top: Radius.circular(30))),
+      decoration: const BoxDecoration(color: Calm.bg, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       child: SafeArea(
         top: false,
         child: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Center(child: Container(width: 40, height: 5, margin: const EdgeInsets.only(bottom: 16), decoration: BoxDecoration(color: k.line, borderRadius: BorderRadius.circular(3)))),
+            Center(child: Container(width: 40, height: 5, margin: const EdgeInsets.only(bottom: 16), decoration: BoxDecoration(color: Calm.line, borderRadius: BorderRadius.circular(3)))),
             switch (_step) {
-              _Step.choose => _choose(k),
+              _Step.choose => _choose(),
               _Step.phone => PhoneStep(controller: _phoneField, onSend: _sendCode, onBack: () => setState(() { _step = _Step.choose; _error = null; }), busy: _busy, error: _error),
               _Step.otp => OtpStep(phone: _phone, controller: _otpField, onVerify: _verify, onChangeNumber: () => setState(() { _step = _Step.phone; _error = null; _otpField.clear(); }), busy: _busy, error: _error),
               _Step.name => NameStep(controller: _nameField, onContinue: _saveName, busy: _busy, error: _error),
@@ -164,15 +163,15 @@ class _SignInSheetState extends ConsumerState<SignInSheet> {
     );
   }
 
-  Widget _choose(JomTokens k) {
+  Widget _choose() {
     final (title, note) = _copy[widget.reason] ?? ('Sign in', 'Browsing stays open.');
     return Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-      Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+      Text(title, style: const TextStyle(fontFamily: Calm.serif, fontSize: 24, fontWeight: FontWeight.w600)),
       const SizedBox(height: 4),
-      Text(note, style: TextStyle(color: k.sheetInk.withValues(alpha: .7))),
+      Text(note, style: const TextStyle(color: Calm.mut)),
       const SizedBox(height: 16),
       JomButton(label: 'Continue with Google', onPressed: _google, busy: _busy),
-      if (_error != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_error!, style: const TextStyle(color: Color(0xFFFF5A67)))),
+      if (_error != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_error!, style: const TextStyle(color: Calm.bad))),
       const SizedBox(height: 10),
       JomButton(label: 'Continue with phone number', primary: false, onPressed: () => setState(() { _step = _Step.phone; _error = null; })),
     ]);

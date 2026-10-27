@@ -1,15 +1,17 @@
+import 'package:flutter/material.dart' show IconData, Icons;
+
 import '../../chat/domain/chat_labels.dart';
 import 'notification.dart';
 
-String notifIcon(String type) => const {
-      'payment': '✅',
-      'booking': '🎟️',
-      'payout': '💸',
-      'event_cancelled': '↩️',
-      'chat_message': '💬',
-      'review_request': '⭐',
+IconData notifIcon(String type) => const {
+      'payment': Icons.check_circle_outline,
+      'booking': Icons.confirmation_number_outlined,
+      'payout': Icons.account_balance_wallet_outlined,
+      'event_cancelled': Icons.undo,
+      'chat_message': Icons.chat_bubble_outline,
+      'review_request': Icons.star_outline,
     }[type] ??
-    '🔔';
+    Icons.notifications_none;
 
 /// "Just now", "2 min ago" for the first hour, "1 h ago" for the rest of today (Kuala Lumpur time), then
 /// "Yesterday", "Mon", "12 Oct".

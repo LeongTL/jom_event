@@ -496,11 +496,11 @@ Not in the original 25. The prototype was redesigned to feel calmer and more tru
 - Produces: `EventDetail` gains `going`, `hostEventCount`, `hostRating`, `hostReviewCount`; consumes `events.cards`, `events.host_event_count`, `reviews.host_rating`.
 - Event page: art hero with back and heart, category and start tag, title, host line with tick, When and Where tiles, going card, policy card, description as a quote with the host's name, host card with rating, reviews, events hosted and Message; bottom bar with price and "Book a spot" (paid) or "Join for free". Checkout: event card, hold chip (paid only), spots stepper, contact, price details, policy card with the refund amount and cutoff time. The gateway page stays neutral white (it is the third party's page).
 
-- [ ] **Step 1: Write failing tests.** `one_layout_serves_free_and_paid_with_the_right_button_text`; `policy_card_text_per_policy` (24h, 48h and 7d give "Full refund up to … before it starts", none gives "No refunds once booked", free gives "Free event"); `detail_shows_when_where_going_and_spots_left`; `going_card_shows_a_count_and_no_names_or_initials`; `host_card_shows_rating_reviews_events_hosted_and_message_button`; `hero_uses_the_poster_when_present_else_the_category_art`; `checkout_total_is_price_times_people_with_no_service_fee_line`; `spots_stepper_stops_at_2_and_never_exceeds_spots_left`; `checkout_policy_card_states_the_refund_amount_and_the_cutoff_time_in_kuala_lumpur`; `gateway_page_is_neutral_white_and_not_themed`; `processing_and_failed_copy_is_unchanged`.
-- [ ] **Step 2: Run** `flutter test test/features/event test/features/booking`. Expected: FAIL.
-- [ ] **Step 3: Implement** the changes.
+- [x] **Step 1: Write failing tests.** `one_layout_serves_free_and_paid_with_the_right_button_text`; `policy_card_text_per_policy` (24h, 48h and 7d give "Full refund up to … before it starts", none gives "No refunds once booked", free gives "Free event"); `detail_shows_when_where_going_and_spots_left`; `going_card_shows_a_count_and_no_names_or_initials`; `host_card_shows_rating_reviews_events_hosted_and_message_button`; `hero_uses_the_poster_when_present_else_the_category_art`; `checkout_total_is_price_times_people_with_no_service_fee_line`; `spots_stepper_stops_at_2_and_never_exceeds_spots_left`; `checkout_policy_card_states_the_refund_amount_and_the_cutoff_time_in_kuala_lumpur`; `gateway_page_is_neutral_white_and_not_themed`; `processing_and_failed_copy_is_unchanged`.
+- [x] **Step 2: Run** `flutter test test/features/event test/features/booking`. Expected: FAIL.
+- [x] **Step 3: Implement** the changes.
 - [ ] **Step 4: Run** the tests, then walk a paid booking (success, failed, slow) on the simulator against staging; this also closes the open manual check in Task 17. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "feat(event): Calm event page and checkout, no service fee"`.
+- [x] **Step 5: Commit** `git commit -am "feat(event): Calm event page and checkout, no service fee"`.
 
 ### Task 19G: Saved, Chat, Notifications and sign-in in the Calm look
 
@@ -509,11 +509,11 @@ Not in the original 25. The prototype was redesigned to feel calmer and more tru
 
 **Interfaces:** none new; screens use `EventRow`, `Calm` colours and `calmTheme`. Restyle only, no logic changes.
 
-- [ ] **Step 1: Write failing tests.** `saved_uses_event_rows_and_the_empty_text_is_Nothing_saved_yet`; `chat_list_has_a_large_Chat_heading_and_category_art_tiles_in_attendee_mode_and_initial_avatars_in_host_mode`; `my_bubbles_are_accent_and_theirs_are_white_with_times`; `notifications_show_title_body_time_and_an_unread_dot_with_no_emoji`; `sign_in_sheet_keeps_the_three_headings_and_uses_accent_buttons`.
-- [ ] **Step 2: Run** `flutter test test/features`. Expected: FAIL.
-- [ ] **Step 3: Implement** the restyle.
-- [ ] **Step 4: Run** `flutter test && flutter analyze`, then `rg -n "Bricolage|Odometer|GrainBackground|JomTheme|c8ff2e" app/lib app/test` (expect no matches).
-- [ ] **Step 5: Commit** `git commit -am "feat(app): Calm look for Saved, Chat, Notifications and sign-in"`.
+- [x] **Step 1: Write failing tests.** `saved_uses_event_rows_and_the_empty_text_is_Nothing_saved_yet`; `chat_list_has_a_large_Chat_heading_and_category_art_tiles_in_attendee_mode_and_initial_avatars_in_host_mode`; `my_bubbles_are_accent_and_theirs_are_white_with_times`; `notifications_show_title_body_time_and_an_unread_dot_with_no_emoji`; `sign_in_sheet_keeps_the_three_headings_and_uses_accent_buttons`.
+- [x] **Step 2: Run** `flutter test test/features`. Expected: FAIL.
+- [x] **Step 3: Implement** the restyle.
+- [x] **Step 4: Run** `flutter test && flutter analyze`, then `rg -n "Bricolage|Odometer|GrainBackground|JomTheme|c8ff2e" app/lib app/test` (expect no matches).
+- [x] **Step 5: Commit** `git commit -am "feat(app): Calm look for Saved, Chat, Notifications and sign-in"`.
 
 ## Phase 2C: attendee app, remaining screens (revised for the Calm design)
 

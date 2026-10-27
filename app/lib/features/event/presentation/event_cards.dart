@@ -128,21 +128,22 @@ class EventCard extends ConsumerWidget {
 }
 
 /// A row in a list (Near you, View all, Saved): a small illustration, title, host, when and where, and the price.
+/// [ended] dims it and says "Ended" instead of when; [heart] adds the save heart (Saved, where it un-saves).
 class EventRow extends ConsumerWidget {
-  const EventRow({super.key, required this.event, this.dimmed = false});
+  const EventRow({super.key, required this.event, this.ended = false, this.heart = false});
   final EventSummary event;
-  final bool dimmed;
+  final bool ended, heart;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final e = event, now = ref.read(nowProvider)();
-    final when = [whenLabel(e.startsAt, now), if (e.distanceKm != null) '${e.distanceKm!.toStringAsFixed(1)} km'].join(' · ');
+    final when = ended ? 'Ended' : [whenLabel(e.startsAt, now), if (e.distanceKm != null) '${e.distanceKm!.toStringAsFixed(1)} km'].join(' · ');
     return GestureDetector(
       key: Key('event-row-${e.id}'),
       behavior: HitTestBehavior.opaque,
       onTap: () => context.push('/event/${e.id}'),
       child: Opacity(
-        opacity: dimmed ? .55 : 1,
+        opacity: ended ? .55 : 1,
         child: Container(
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(10),
@@ -165,6 +166,7 @@ class EventRow extends ConsumerWidget {
                 ]),
               ),
             ),
+            if (heart) ...[const SizedBox(width: 8), HeartButton(eventId: e.id)],
           ]),
         ),
       ),

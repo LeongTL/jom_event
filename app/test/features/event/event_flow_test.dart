@@ -385,22 +385,28 @@ void main() {
   });
 
   group('Saved', () {
-    testWidgets('saved_tab_lists_hearted_events_and_greys_ended_with_Ended_tag', (t) async {
+    testWidgets('saved_uses_event_rows_and_the_empty_text_is_Nothing_saved_yet', (t) async {
       final upcoming = sum('a', title: 'Batik Workshop');
       final past = sum('p', title: 'Old Concert', starts: DateTime.utc(2029, 12, 1, 12));
       await pumpApp(t, location: '/saved', repo: FakeEvents(hearts: {'a', 'p'}, savedList: [past, upcoming]));
       expect(find.text('Batik Workshop'), findsOneWidget);
       expect(find.text('Old Concert'), findsOneWidget);
-      expect(find.descendant(of: poster('p'), matching: find.text('Ended')), findsOneWidget);
-      expect(find.descendant(of: poster('a'), matching: find.text('Ended')), findsNothing);
-      expect(t.widget<Opacity>(find.byKey(const Key('dim:p'))).opacity, lessThan(1));
-      expect(t.widget<Opacity>(find.byKey(const Key('dim:a'))).opacity, 1);
+      expect(row('a'), findsOneWidget);
+      expect(row('p'), findsOneWidget);
+      expect(find.descendant(of: row('p'), matching: find.text('Ended')), findsOneWidget);
+      expect(find.descendant(of: row('a'), matching: find.text('Ended')), findsNothing);
+      double dim(String id) => t.widget<Opacity>(find.descendant(of: row(id), matching: find.byType(Opacity))).opacity;
+      expect(dim('p'), lessThan(1));
+      expect(dim('a'), 1);
+      await t.tap(row('a'));
+      await t.pumpAndSettle();
+      expect(find.byKey(const Key('event-screen')), findsOneWidget, reason: 'a row opens its event');
     });
 
     testWidgets('an ended saved event can still be un-hearted', (t) async {
       final past = sum('p', starts: DateTime.utc(2029, 12, 1, 12));
       await pumpApp(t, location: '/saved', repo: FakeEvents(hearts: {'p'}, savedList: [past]));
-      await t.tap(find.byKey(const Key('heart-on:p')));
+      await t.tap(find.descendant(of: row('p'), matching: find.byKey(const Key('heart-on:p'))));
       await t.pumpAndSettle();
       expect(events.toggles, ['p']);
     });
