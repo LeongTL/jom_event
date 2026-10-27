@@ -62,10 +62,19 @@ void main() {
     expect(durationText(const Duration(minutes: 45)), '45 min');
   });
 
-  test('cancelPolicyText says it per policy', () {
-    expect(cancelPolicyText('24h'), 'Free cancellation up to 24 hours before');
-    expect(cancelPolicyText('48h'), 'Free cancellation up to 48 hours before');
-    expect(cancelPolicyText('7d'), 'Free cancellation up to 7 days before');
-    expect(cancelPolicyText('none'), 'No refunds once booked');
+  test('policy_card_text_per_policy', () {
+    expect(policyTitle('24h'), 'Full refund up to 24 hours before it starts');
+    expect(policyTitle('48h'), 'Full refund up to 48 hours before it starts');
+    expect(policyTitle('7d'), 'Full refund up to 7 days before it starts');
+    expect(policyTitle('none'), 'No refunds once booked');
+    expect(policyTitle('24h', free: true), 'Free event', reason: 'a free event has nothing to refund');
+  });
+
+  test('the refund cutoff is the start minus the policy, and none for no refunds', () {
+    final starts = DateTime.utc(2030, 1, 12, 1); // Sat 9:00 AM in Kuala Lumpur
+    expect(refundCutoff('24h', starts), DateTime.utc(2030, 1, 11, 1));
+    expect(refundCutoff('48h', starts), DateTime.utc(2030, 1, 10, 1));
+    expect(refundCutoff('7d', starts), DateTime.utc(2030, 1, 5, 1));
+    expect(refundCutoff('none', starts), isNull);
   });
 }
