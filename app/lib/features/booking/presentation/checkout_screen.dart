@@ -104,7 +104,7 @@ class _BodyState extends ConsumerState<_Body> {
     try {
       final (name, phone) = await _contactNow();
       final b = await ref.read(bookingRepositoryProvider).create(d.summary.id, _people, name, phone);
-      if (mounted) context.pushReplacement('/booking/${b.id}/ticket');
+      if (mounted) context.pushReplacement('/booking/${b.id}/ticket?new=1');
     } on BookingError catch (e) {
       if (mounted) setState(() => _error = e.message);
     } finally {

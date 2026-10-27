@@ -67,7 +67,7 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
         GoRoute(path: '/booking/:id/gateway', builder: (context, state) => GatewayScreen(bookingId: state.pathParameters['id']!, session: state.extra as PaymentSession?)),
         GoRoute(path: '/booking/:id/processing', builder: (context, state) => ProcessingScreen(bookingId: state.pathParameters['id']!)),
         GoRoute(path: '/booking/:id/failed', builder: (context, state) => FailedScreen(bookingId: state.pathParameters['id']!)),
-        GoRoute(path: '/booking/:id/ticket', builder: (context, state) => TicketScreen(bookingId: state.pathParameters['id']!)),
+        GoRoute(path: '/booking/:id/ticket', builder: (context, state) => TicketScreen(bookingId: state.pathParameters['id']!, fresh: state.uri.queryParameters['new'] == '1')),
         _screen('/review/:bookingId', 'Review'),
         _screen('/host/:id', 'Host profile'),
         GoRoute(

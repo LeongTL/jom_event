@@ -223,6 +223,10 @@ void main() {
       bookings.setStatus('b1', 'confirmed');
       await t.pumpAndSettle();
       expect(key('ticket-screen'), findsOneWidget);
+      await t.tap(key('ticket-done'));
+      await t.pumpAndSettle();
+      expect(key('checkout-screen'), findsNothing, reason: 'Done leaves the booking, it does not step back into Review and pay');
+      expect(key('tickets-screen'), findsOneWidget);
     });
 
     testWidgets('gateway_lists_methods_and_pay_calls_client_once_on_double_tap', (t) async {
@@ -332,6 +336,16 @@ void main() {
       await t.pumpAndSettle();
       expect(find.text('Your spot was released because the time ran out.'), findsOneWidget);
       expect(key('gateway-screen'), findsNothing);
+    });
+
+    testWidgets('the gateway has a back button that returns to checkout', (t) async {
+      await pumpApp(t, location: '/event/e1/checkout');
+      await t.tap(key('pay'));
+      await t.pumpAndSettle();
+      await t.tap(key('gateway-back'));
+      await t.pumpAndSettle();
+      expect(key('gateway-screen'), findsNothing);
+      expect(key('checkout-screen'), findsOneWidget);
     });
 
     testWidgets('the gateway shows who is paying what', (t) async {

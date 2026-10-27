@@ -25,7 +25,7 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen> {
     if (to == null || _left) return;
     _left = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.pushReplacement('/booking/${widget.bookingId}/$to');
+      if (mounted) context.pushReplacement('/booking/${widget.bookingId}/$to${to == 'ticket' ? '?new=1' : ''}');
     });
   }
 
