@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -30,6 +31,8 @@ void main() {
     await t.enterText(key('apply-name'), 'E2E Studio');
     await t.tap(key('apply-area-Bangsar'));
     await t.enterText(key('apply-holder'), 'E2E Studio');
+    await t.drag(find.byType(Scrollable).first, const Offset(0, -300));
+    await settle(t);
     await t.enterText(key('apply-bank'), 'Maybank');
     await t.enterText(key('apply-number'), '1234564821');
     await t.pump();
@@ -46,12 +49,12 @@ void main() {
     await t.tap(key('field-when'));
     for (var i = 0; i < 3; i++) {
       // the date, then the start time, then the end time
-      await t.pumpAndSettle();
+      await settle(t);
       await t.tap(find.text('OK'));
     }
-    await t.pumpAndSettle();
+    await settle(t);
     await t.ensureVisible(key('publish'));
-    await t.pumpAndSettle();
+    await settle(t);
     await t.tap(key('publish'));
     await see(t, key('host-events'));
     await see(t, label(title));

@@ -33,7 +33,7 @@ void main() {
 
       // message the host and see the reply arrive
       await t.tap(key('ticket-done'));
-      await t.pumpAndSettle(const Duration(seconds: 1));
+      await settle(t, const Duration(seconds: 1));
       await openTab(t, 'Explore');
       await openEventFromHome(t, title);
       await t.tap(key('message'));
@@ -68,7 +68,7 @@ void main() {
       await t.tap(key('star-5'));
       await t.enterText(key('review-body'), 'Lovely, calm class.');
       await t.tap(key('submit-review'));
-      await t.pumpAndSettle(const Duration(seconds: 2));
+      await settle(t, const Duration(seconds: 2));
       expect(key('review-screen'), findsNothing);
       final stars =
           await host.db

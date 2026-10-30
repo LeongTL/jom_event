@@ -171,7 +171,14 @@ Future<void> eventually(
 /// Starts the real app and waits for Home.
 Future<void> launchApp(WidgetTester t) async {
   await app.main();
-  await t.pumpAndSettle(const Duration(seconds: 2));
+  // the app stays installed between runs and keeps its last login; every journey starts signed out
+  // the stored session is restored in the background, so sign out until it is really gone
+  final auth = Supabase.instance.client.auth;
+  await eventually(() async {
+    await auth.signOut(scope: SignOutScope.local);
+    return auth.currentSession == null;
+  });
+  await settle(t, const Duration(seconds: 2));
 }
 
 /// Pumps until [finder] appears (network calls make the usual pumpAndSettle too short).
@@ -198,18 +205,18 @@ Finder key(String k) => find.byKey(Key(k));
 /// Signs the app in with the test phone number: from the sign-in sheet or a tab's prompt, at the phone button.
 Future<void> signInWithPhone(WidgetTester t) async {
   await t.tap(find.text('Continue with phone number'));
-  await t.pumpAndSettle();
+  await settle(t);
   await t.enterText(key('phone-field'), testPhone);
   await t.tap(find.text('Send code'));
   await see(t, key('otp-field'));
   await t.enterText(key('otp-field'), testOtp);
   await t.tap(find.text('Verify'));
-  await t.pumpAndSettle(const Duration(seconds: 2));
+  await settle(t, const Duration(seconds: 2));
   // a brand-new account is asked for a name once
   if (key('name-field').evaluate().isNotEmpty) {
     await t.enterText(key('name-field'), 'E2E Tester');
     await t.tap(find.text('Continue'));
-    await t.pumpAndSettle(const Duration(seconds: 2));
+    await settle(t, const Duration(seconds: 2));
   }
 }
 
@@ -219,9 +226,16 @@ Finder label(String text) =>
 
 /// From Home: search for [title], scroll to its card and open the event page.
 Future<void> openEventFromHome(WidgetTester t, String title) async {
+  if (key('home-search').evaluate().isEmpty) {
+    // the Explore tab keeps its scroll position from the last visit
+    await t.drag(find.byType(Scrollable).first, const Offset(0, 3000));
+    await settle(t);
+  }
+  await see(t, key('home-search'));
   await t.enterText(key('home-search'), title);
   await see(t, label(title));
-  await t.pumpAndSettle(
+  await settle(
+    t,
     const Duration(seconds: 1),
   ); // the list is rebuilt once the search settles
   await t.scrollUntilVisible(
@@ -234,7 +248,7 @@ Future<void> openEventFromHome(WidgetTester t, String title) async {
     find.byType(Scrollable).first,
     const Offset(0, -150),
   ); // clear of the tab bar
-  await t.pumpAndSettle();
+  await settle(t);
   await t.tap(label(title).last);
   await see(t, key('event-screen'));
 }
@@ -275,11 +289,27 @@ Future<void> checkIn(Person host, String eventId, String token) async {
 /// Taps a tab in the bottom bar by its label.
 Future<void> openTab(WidgetTester t, String label) async {
   await t.tap(find.text(label).last);
-  await t.pumpAndSettle(const Duration(seconds: 1));
+  await settle(t, const Duration(seconds: 1));
 }
 
 /// Jumps to a route the way a deep link would, from whatever screen is showing.
 Future<void> goTo(WidgetTester t, String path) async {
   GoRouter.of(t.element(find.byType(Scaffold).first)).go(path);
-  await t.pumpAndSettle(const Duration(seconds: 2));
+  await settle(t, const Duration(seconds: 2));
+}
+
+/// pumpAndSettle that gives up after 15 seconds instead of ten minutes (a spinner somewhere may never stop).
+Future<void> settle(
+  WidgetTester t, [
+  Duration step = const Duration(milliseconds: 100),
+]) async {
+  try {
+    await t.pumpAndSettle(
+      step,
+      EnginePhase.sendSemanticsUpdate,
+      const Duration(seconds: 15),
+    );
+  } on FlutterError {
+    // still animating: carry on, the next see() waits for what the step needs
+  }
 }
