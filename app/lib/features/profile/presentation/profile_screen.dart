@@ -6,6 +6,7 @@ import '../../../core/theme/calm.dart';
 import '../../../shared/widgets/screen_parts.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/domain/phone_number.dart';
+import '../../host/data/host_repository.dart';
 
 /// Who I am and the places to go from here. Signed-out visitors never see it (the tab shows the sign-in prompt).
 class ProfileScreen extends ConsumerWidget {
@@ -85,7 +86,10 @@ class ProfileScreen extends ConsumerWidget {
         const SizedBox(height: 6),
         GestureDetector(
           key: const Key('host-mode-card'),
-          onTap: () => context.go('/host-mode/home'),
+          onTap: () async {
+            final go = GoRouter.of(context);
+            go.go(await ref.read(hostRepositoryProvider).me() == null ? '/host-mode/apply' : '/host-mode/home');
+          },
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: Calm.acc, borderRadius: BorderRadius.circular(16)),

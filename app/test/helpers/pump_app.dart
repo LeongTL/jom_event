@@ -11,6 +11,7 @@ import 'package:jom/features/booking/data/booking_repository.dart';
 import 'package:jom/features/chat/data/chat_repository.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
+import 'package:jom/features/host/data/host_repository.dart';
 import 'package:jom/features/notifications/data/notification_repository.dart';
 import 'package:jom/features/reviews/data/review_repository.dart';
 import 'package:jom/shared/models/event_summary.dart';
@@ -19,6 +20,7 @@ import 'fake_auth.dart';
 import 'fake_bookings.dart';
 import 'fake_chat.dart';
 import 'fake_events.dart';
+import 'fake_host.dart';
 import 'fake_notifications.dart';
 import 'fake_reviews.dart';
 
@@ -36,6 +38,7 @@ Future<GoRouter> pumpApp(
   FakeReviews? reviews,
   FakeBookings? bookings,
   FakeEvents? events,
+  FakeHost? host,
 }) async {
   t.view.physicalSize = const Size(800, 2400);
   t.view.devicePixelRatio = 1;
@@ -49,6 +52,7 @@ Future<GoRouter> pumpApp(
       reviewRepositoryProvider.overrideWithValue(reviews ?? FakeReviews()),
       notificationRepositoryProvider.overrideWithValue(FakeNotifications()),
       eventRepositoryProvider.overrideWithValue(events ?? FakeEvents()),
+      hostRepositoryProvider.overrideWithValue(host ?? FakeHost(profile: hostMe())),
       chatRepositoryProvider.overrideWithValue(FakeChat()),
       bookingRepositoryProvider.overrideWithValue(bookings ?? FakeBookings()),
       nowProvider.overrideWithValue(() => clock.add(t.binding.clock.now().difference(start))),
