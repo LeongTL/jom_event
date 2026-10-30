@@ -227,7 +227,9 @@ Launch checklist: privacy policy and terms (the Profile rows); PDPA consent; in-
 | Calm redesign 19A to 19G (cards, design system, Tickets, Home, map, event and checkout, Saved, Chat, Notifications, sign-in) | Built; 19F and 19G wait in PR #30 to reach `main` |
 | Task 20: reviews, host public page, Profile, Help, Terms and privacy, account deletion | Built, in its own PR; simulator walk not done yet |
 | Task 21: host mode (apply, dashboard, events, create, edit, delete) | Built, in its own PR; walked on the simulator against the local DB; no poster upload yet |
-| Tasks 22 to 25: scanner and payouts, end-to-end tests, load tests, closed beta | Not started |
+| Task 22: host event details, QR scanner, check-in, completion, payouts | Built and merged (PR #33); real camera scan from a second phone not tested |
+| Task 23: end-to-end tests | Six journeys pass on the iOS simulator via `tools/e2e.sh`; the Android CI workflow is written but has not run |
+| Tasks 24 to 25: load tests, closed beta | Not started |
 
 Known gaps: the real paid booking through the mock gateway has not been walked on a device; no Android device test; staging does not have the Calm backend yet; the support email and the legal texts are drafts until Task 25.
 

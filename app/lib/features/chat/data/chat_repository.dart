@@ -103,11 +103,12 @@ class SupabaseChatRepository implements ChatRepository {
 
   @override
   Stream<int> unread() {
+    final db = _db; // held now: when the app closes the providers go before this stream is cancelled
     late final StreamController<int> out;
     RealtimeChannel? channel;
     Future<void> fetch() async {
       try {
-        out.add(await _db.schema('chat').rpc('unread_total') as int);
+        out.add(await db.schema('chat').rpc('unread_total') as int);
       } catch (_) {
         // offline: keep the last number
       }
@@ -117,7 +118,7 @@ class SupabaseChatRepository implements ChatRepository {
       onListen: () {
         fetch();
         try {
-          channel = _db
+          channel = db
               .channel('chat-unread')
               .onPostgresChanges(
                 event: PostgresChangeEvent.insert,
@@ -131,7 +132,7 @@ class SupabaseChatRepository implements ChatRepository {
         }
       },
       onCancel: () async {
-        if (channel != null) await _db.removeChannel(channel!);
+        if (channel != null) await db.removeChannel(channel!);
       },
     );
     return out.stream;
