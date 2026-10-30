@@ -364,7 +364,7 @@ void main() {
       await pumpApp(t, location: '/event/a', repo: FakeEvents(details: {'a': detailOf(a)}));
       await t.tap(find.byKey(const Key('host-row')));
       await t.pumpAndSettle();
-      expect(t.widget<Text>(find.byKey(const Key('screen-title'))).data, 'Host profile');
+      expect(find.byKey(const Key('host-public-screen')), findsOneWidget);
     });
 
     testWidgets('an ended event cannot be joined', (t) async {

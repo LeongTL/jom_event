@@ -508,7 +508,7 @@ void main() {
       expect(key('tickets-screen'), findsOneWidget, reason: 'a cancelled booking opens nothing');
       await t.tap(key('booking-a1'));
       await t.pumpAndSettle();
-      expect(t.widget<Text>(key('screen-title')).data, 'Review');
+      expect(key('review-screen'), findsOneWidget);
     });
 
     testWidgets('a_cancelled_booking_whose_event_is_gone_still_shows_in_previous', (t) async {

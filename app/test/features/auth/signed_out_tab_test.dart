@@ -114,10 +114,11 @@ void main() {
     await openTab(t, 'Profile');
     expect(find.text('Mei Tan'), findsOneWidget);
     expect(find.text('+60 12 345 6789'), findsOneWidget);
+    await t.scrollUntilVisible(find.text('Sign out'), 200); // below the fold in the test window
     await t.tap(find.text('Sign out'));
     await t.pumpAndSettle();
     expect(repo.signOutCalls, 1);
-    expect(find.text('Sign in to see your profile'), findsOneWidget);
+    expect(find.text('Sign out'), findsNothing); // sent back to Explore
   });
 
   testWidgets('while the session is still loading, nothing flashes the sign-in prompt', (t) async {

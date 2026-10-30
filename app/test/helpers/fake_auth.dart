@@ -32,6 +32,8 @@ class FakeAuthRepository implements AuthRepository {
   final names = <String>[];
   var googleCalls = 0;
   var signOutCalls = 0;
+  var deleteCalls = 0;
+  Object? deleteError;
   Object? googleError;
   Object? sendError;
 
@@ -70,6 +72,13 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> setName(String name) async {
     names.add(name);
     _set(fakeSession(phone: _current?.user.phone, name: name));
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    deleteCalls++;
+    if (deleteError != null) throw deleteError!;
+    _set(null);
   }
 
   @override

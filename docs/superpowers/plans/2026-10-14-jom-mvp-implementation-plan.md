@@ -525,11 +525,11 @@ Not in the original 25. The prototype was redesigned to feel calmer and more tru
 **Interfaces:**
 - Produces: `ReviewRepository { Future<void> submit(String bookingId, int stars, List<String> tags, String body); Future<List<Review>> mine(); Future<HostPublic> host(String hostId); }`; Profile rows My reviews, Notifications, Help & support, Terms & privacy, Sign out, Delete account (confirm dialog calling `delete-account`), and the accent Switch to Host mode card. Calm look: large "Profile" heading with avatar, name and phone. Review screen: five stars, four tag toggles, text box, "Verified attendee". Host public page: category-art hero, avatar with tick, rating, reviews and guests tiles, a "Coming up" carousel (`EventCard`) and a "What people said" card.
 
-- [ ] **Step 1: Write failing tests.** `review_has_five_tappable_stars_four_tags_and_verified_attendee_label`; `submit_requires_at_least_one_star_and_calls_repository_once`; `only_attended_booking_opens_review`; `host_public_shows_hero_avatar_tick_stats_coming_up_carousel_and_what_people_said`; `profile_signed_out_shows_the_sign_in_prompt`; `profile_log_out_returns_to_explore_signed_out`; `delete_account_asks_confirmation_then_calls_function_and_signs_out`; `host_with_active_events_gets_clear_refusal_message`; `terms_and_privacy_pages_render_from_assets`.
-- [ ] **Step 2: Run** `flutter test test/features/reviews test/features/profile`. Expected: FAIL.
-- [ ] **Step 3: Implement** the screens; terms and privacy text ship as markdown assets (drafted in Task 25).
-- [ ] **Step 4: Run** the tests. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "feat: reviews, host profile, profile, account deletion"`.
+- [x] **Step 1: Write failing tests.** `review_has_five_tappable_stars_four_tags_and_verified_attendee_label`; `submit_requires_at_least_one_star_and_calls_repository_once`; `only_attended_booking_opens_review`; `host_public_shows_hero_avatar_tick_stats_coming_up_carousel_and_what_people_said`; `profile_signed_out_shows_the_sign_in_prompt`; `profile_log_out_returns_to_explore_signed_out`; `delete_account_asks_confirmation_then_calls_function_and_signs_out`; `host_with_active_events_gets_clear_refusal_message`; `terms_and_privacy_pages_render_from_assets`.
+- [x] **Step 2: Run** `flutter test test/features/reviews test/features/profile`. Expected: FAIL.
+- [x] **Step 3: Implement** the screens; terms and privacy text ship as markdown assets (drafted in Task 25).
+- [x] **Step 4: Run** the tests. Expected: PASS. *271 Flutter tests pass; new pgTAP `events_host_page`. Simulator walk NOT done yet. Profile "My reviews" lists only (the database has no edit or delete). Review screen shows event, date and host name from the ticket card. Added `events.host_page` (migration 0103) for the host page, and `AuthRepository.deleteAccount`.*
+- [x] **Step 5: Commit** `git commit -am "feat: reviews, host profile, profile, account deletion"`.
 
 ## Phase 3: host mode
 

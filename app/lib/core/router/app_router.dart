@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/domain/auth_gate.dart';
-import '../../features/auth/presentation/profile_placeholder.dart';
 import '../../features/auth/presentation/signed_out_tab.dart';
 import '../../features/booking/presentation/tickets_screen.dart';
 import '../../features/chat/presentation/chat_list_screen.dart';
@@ -20,6 +19,12 @@ import '../../features/event/presentation/view_all_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/home/presentation/map_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../features/profile/presentation/help_screen.dart';
+import '../../features/profile/presentation/legal_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/reviews/presentation/host_public_screen.dart';
+import '../../features/reviews/presentation/my_reviews_screen.dart';
+import '../../features/reviews/presentation/review_screen.dart';
 import '../../shared/widgets/screen_parts.dart';
 import '../../shared/widgets/shell.dart';
 import 'placeholder_screen.dart';
@@ -56,7 +61,7 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
             _account('/saved', 'Saved', 'Sign in to see your saved events', content: const SavedScreen()),
             _account('/tickets', 'Tickets', 'Sign in to see your tickets', content: const TicketsScreen()),
             _account('/chats', 'Chat', 'Sign in to see your chats', content: const ChatListScreen()),
-            _account('/profile', 'Profile', 'Sign in to see your profile', content: const ProfilePlaceholder()),
+            _account('/profile', 'Profile', 'Sign in to see your profile', content: const ProfileScreen()),
           ],
         ),
         GoRoute(path: '/chats/:threadId', builder: (context, state) => ChatThreadScreen(threadId: state.pathParameters['threadId']!)),
@@ -68,8 +73,11 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
         GoRoute(path: '/booking/:id/processing', builder: (context, state) => ProcessingScreen(bookingId: state.pathParameters['id']!)),
         GoRoute(path: '/booking/:id/failed', builder: (context, state) => FailedScreen(bookingId: state.pathParameters['id']!)),
         GoRoute(path: '/booking/:id/ticket', builder: (context, state) => TicketScreen(bookingId: state.pathParameters['id']!, fresh: state.uri.queryParameters['new'] == '1')),
-        _screen('/review/:bookingId', 'Review'),
-        _screen('/host/:id', 'Host profile'),
+        GoRoute(path: '/review/:bookingId', builder: (context, state) => ReviewScreen(bookingId: state.pathParameters['bookingId']!)),
+        GoRoute(path: '/host/:id', builder: (context, state) => HostPublicScreen(hostId: state.pathParameters['id']!)),
+        GoRoute(path: '/my-reviews', builder: (context, state) => const MyReviewsScreen()),
+        GoRoute(path: '/help', builder: (context, state) => const HelpScreen()),
+        GoRoute(path: '/legal', builder: (context, state) => const LegalScreen()),
         GoRoute(
           path: '/notifications',
           builder: (context, state) => AuthGate(

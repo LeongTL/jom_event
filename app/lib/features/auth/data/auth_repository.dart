@@ -20,6 +20,14 @@ class GoogleCancelled implements Exception {
   String toString() => 'Google sign-in was cancelled';
 }
 
+/// The server would not delete the account yet; [reason] is its code (host_has_active_events, host_has_pending_payouts).
+class AccountDeleteRefused implements Exception {
+  const AccountDeleteRefused(this.reason);
+  final String reason;
+  @override
+  String toString() => 'AccountDeleteRefused($reason)';
+}
+
 /// Everything the app does about who the user is. Screens only ever see this, so tests swap it for a fake.
 abstract class AuthRepository {
   /// The current session first (null when signed out), then every change.
@@ -33,6 +41,9 @@ abstract class AuthRepository {
   /// Saves the display name on the account and on the profile row.
   Future<void> setName(String name);
   Future<void> signOut();
+
+  /// Erases my data and the sign-in (the delete-account function), then signs out. Throws [AccountDeleteRefused].
+  Future<void> deleteAccount();
 }
 
 // Compile-time settings (--dart-define-from-file). The web client ID is what Supabase checks the Google token
@@ -92,6 +103,18 @@ class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() => _auth.signOut();
+
+  @override
+  Future<void> deleteAccount() async {
+    try {
+      await _client.functions.invoke('delete-account');
+    } on FunctionException catch (e) {
+      final body = e.details;
+      if (e.status == 409 && body is Map && body['error'] is String) throw AccountDeleteRefused(body['error'] as String);
+      rethrow;
+    }
+    await _auth.signOut(scope: SignOutScope.local); // the account is gone, so there is no server session to end
+  }
 }
 
 final authRepositoryProvider = Provider<AuthRepository>(
