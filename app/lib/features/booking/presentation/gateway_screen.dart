@@ -53,6 +53,9 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
     }
   }
 
+  // The hold keeps running, so leaving here costs nothing; after Try again there is no checkout behind, so go to Tickets.
+  void _back() => context.canPop() ? context.pop() : context.go('/tickets');
+
   Future<void> _pay() async {
     if (_paying) return;
     setState(() => _paying = true);
@@ -74,16 +77,21 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       body: DefaultTextStyle.merge(
         style: const TextStyle(color: Color(0xFF111111)),
         child: s == null
-            ? Center(child: _error == null ? Skeleton.box(120) : Padding(padding: const EdgeInsets.all(32), child: Text(_error!, textAlign: TextAlign.center)))
+            ? Center(child: _error == null ? Skeleton.box(120) : Padding(padding: const EdgeInsets.all(32), child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Text(_error!, textAlign: TextAlign.center),
+                TextButton(key: const Key('gateway-back'), onPressed: _back, child: const Text('Back')),
+              ])))
             : Stack(children: [
                 Positioned.fill(
                   child: ListView(padding: const EdgeInsets.only(bottom: 110), children: [
                     Container(
                       color: Colors.white,
                       padding: EdgeInsets.fromLTRB(20, MediaQuery.paddingOf(context).top + 5, 20, 14),
-                      child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                        Text('🔒 Secure payment', style: TextStyle(fontWeight: FontWeight.w700)),
-                        Text('[gateway]', style: TextStyle(color: Color(0x80111111), fontWeight: FontWeight.w700)),
+                      child: Row(children: [
+                        IconButton(key: const Key('gateway-back'), onPressed: _back, icon: const Icon(Icons.arrow_back), visualDensity: VisualDensity.compact, padding: EdgeInsets.zero, constraints: const BoxConstraints()),
+                        const SizedBox(width: 12),
+                        const Expanded(child: Text('🔒 Secure payment', style: TextStyle(fontWeight: FontWeight.w700))),
+                        const Text('[gateway]', style: TextStyle(color: Color(0x80111111), fontWeight: FontWeight.w700)),
                       ]),
                     ),
                     const Divider(height: 1, color: Color(0xFFE5E7EB)),

@@ -79,7 +79,7 @@ The prototype has buttons and rows that lead to screens it never shows. Because 
 |---|---|
 | Bell on Home (and none on Host Home) | Notifications screen is drawn; add the same bell to Host Home |
 | Profile > Notifications | Opens the Notifications screen (list and switches) |
-| Profile > My reviews | List of the reviews I wrote, with edit or delete |
+| Profile > My reviews | List of the reviews I wrote (no edit or delete in the MVP: the database keeps one review per booking) |
 | Profile > Help & support | Contact and FAQ page |
 | Profile > Terms & privacy | Terms and privacy policy pages |
 | Profile avatar on Home | Opens Profile |
@@ -218,6 +218,17 @@ Launch checklist: privacy policy and terms (the Profile rows); PDPA consent; in-
 | **Full editing of published events** | Not in the MVP. Only title, description and spots can change; everything else is delete and recreate. |
 | **Admin backend** | Not in the MVP. |
 | **App name** | "Jom" is assumed available. |
+
+## Build progress (30 Oct 2026)
+
+| Part | Status |
+|---|---|
+| Backend, sign-in, Home, event page, booking, chat, notifications (Tasks 1 to 19) | Built and merged |
+| Calm redesign 19A to 19G (cards, design system, Tickets, Home, map, event and checkout, Saved, Chat, Notifications, sign-in) | Built; 19F and 19G wait in PR #30 to reach `main` |
+| Task 20: reviews, host public page, Profile, Help, Terms and privacy, account deletion | Built, in its own PR; simulator walk not done yet |
+| Tasks 21 to 25: host mode, scanner and payouts, end-to-end tests, load tests, closed beta | Not started |
+
+Known gaps: the real paid booking through the mock gateway has not been walked on a device; no Android device test; staging does not have the Calm backend yet; the support email and the legal texts are drafts until Task 25.
 
 ## Open questions
 

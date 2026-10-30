@@ -65,13 +65,18 @@ String where(GoRouter r) => r.routerDelegate.currentConfiguration.last.matchedLo
 
 void main() {
   group('the list', () {
-    testWidgets('list_shows_icon_title_body_time_and_unread_dot', (t) async {
+    testWidgets('notifications_show_title_body_time_and_an_unread_dot_with_no_emoji', (t) async {
       await pumpApp(t, repo: FakeNotifications(items: [n1, n2, n3, n4]));
       expect(key('notifications-screen'), findsOneWidget);
       expect(find.text('Notifications'), findsOneWidget);
-      for (final s in ['✅', '💬', '💸', '↩️', 'Booking confirmed', 'Beginner Mat Pilates', 'Mei Studio replied', 'Yes, mats are provided', 'Payout scheduled']) {
+      for (final s in ['Booking confirmed', 'Beginner Mat Pilates', 'Mei Studio replied', 'Yes, mats are provided', 'Payout scheduled']) {
         expect(find.text(s), findsOneWidget, reason: s);
       }
+      for (final id in ['n1', 'n2', 'n3', 'n4']) {
+        expect(find.descendant(of: key('notif-$id'), matching: find.byType(Icon)), findsOneWidget, reason: 'an icon, not an emoji, on $id');
+      }
+      final emoji = RegExp(r'[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{21A9}]', unicode: true);
+      expect([for (final w in t.widgetList<Text>(find.byType(Text))) if (emoji.hasMatch(w.data ?? '')) w.data], isEmpty);
       for (final w in ['2 min ago', '1 h ago', 'Yesterday', 'Mon']) {
         expect(find.text(w), findsOneWidget, reason: w);
       }

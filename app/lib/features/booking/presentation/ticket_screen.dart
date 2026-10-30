@@ -18,8 +18,9 @@ final ticketTokenProvider = FutureProvider.autoDispose.family<String, String>((r
 /// "You're booked" with the ticket under it; for a booking that is already over or cancelled it just says "Your
 /// ticket" and the status.
 class TicketScreen extends ConsumerWidget {
-  const TicketScreen({super.key, required this.bookingId});
+  const TicketScreen({super.key, required this.bookingId, this.fresh = false});
   final String bookingId;
+  final bool fresh; // just booked: Done must not step back into the checkout still under this screen
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,7 +37,7 @@ class TicketScreen extends ConsumerWidget {
               // a cancelled booking outlives its event: say that, rather than a bare "not available"
               data: (d) => d == null
                   ? _Plain(Text(b.status == 'cancelled' ? 'This booking was cancelled' : "This event isn't available"))
-                  : _Ticket(Ticket(b, d.summary)),
+                  : _Ticket(Ticket(b, d.summary), fresh: fresh),
             ),
       ),
     );
@@ -56,8 +57,9 @@ class _Plain extends StatelessWidget {
 }
 
 class _Ticket extends StatelessWidget {
-  const _Ticket(this.ticket);
+  const _Ticket(this.ticket, {required this.fresh});
   final Ticket ticket;
+  final bool fresh;
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +88,7 @@ class _Ticket extends StatelessWidget {
           ],
         ),
       ),
-      CtaBar(children: [Expanded(child: KeyedSubtree(key: const Key('ticket-done'), child: JomButton(label: 'Done', onPressed: () => context.canPop() ? context.pop() : context.go('/explore'))))]),
+      CtaBar(children: [Expanded(child: KeyedSubtree(key: const Key('ticket-done'), child: JomButton(label: 'Done', onPressed: () => fresh ? context.go('/tickets') : context.canPop() ? context.pop() : context.go('/explore'))))]),
     ]);
   }
 }

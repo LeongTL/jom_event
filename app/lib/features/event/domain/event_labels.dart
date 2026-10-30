@@ -60,12 +60,22 @@ String posterTag(EventSummary e, DateTime now) {
   return whenLabel(e.startsAt, now).replaceFirst('Tomorrow', _days[_kl(e.startsAt).weekday - 1]).toUpperCase();
 }
 
-/// The host's refund promise as the event pages and checkout word it.
-String cancelPolicyText(String policy) => switch (policy) {
-      '24h' => 'Free cancellation up to 24 hours before',
-      '48h' => 'Free cancellation up to 48 hours before',
-      '7d' => 'Free cancellation up to 7 days before',
-      _ => 'No refunds once booked',
+/// The title of the policy card on the event page: the host's refund promise, or "Free event".
+String policyTitle(String policy, {bool free = false}) => free
+    ? 'Free event'
+    : switch (policy) {
+        '24h' => 'Full refund up to 24 hours before it starts',
+        '48h' => 'Full refund up to 48 hours before it starts',
+        '7d' => 'Full refund up to 7 days before it starts',
+        _ => 'No refunds once booked',
+      };
+
+/// The last moment a guest gets a full refund, or null when the policy gives none.
+DateTime? refundCutoff(String policy, DateTime startsAt) => switch (policy) {
+      '24h' => startsAt.subtract(const Duration(hours: 24)),
+      '48h' => startsAt.subtract(const Duration(hours: 48)),
+      '7d' => startsAt.subtract(const Duration(days: 7)),
+      _ => null,
     };
 
 /// "8:04 PM" in KL time, for any instant.

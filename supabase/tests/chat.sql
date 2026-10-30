@@ -1,5 +1,5 @@
 begin;
-select plan(51);
+select plan(52);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'alice@example.com', '{"full_name":"Alice Owner"}'),  -- host "Mei Studio"
@@ -13,6 +13,8 @@ insert into identity.hosts (user_id, host_name, area, avatar_url) values
 insert into events.events (id, host_id, title, status, price_sen, capacity, starts_at, ends_at, area, venue) values
   ('e1000000-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Pottery night', 'published', 3000, 10, '2030-01-10 20:00+08', '2030-01-10 22:00+08', 'Bangsar', 'V'),
   ('e2000000-0000-0000-0000-000000000002', 'dddddddd-0000-0000-0000-000000000004', 'Sunrise run', 'published', 0, 10, '2030-01-11 06:00+08', '2030-01-11 07:00+08', 'PJ', 'V');
+
+update events.events set categories = array['make'] where id = 'e1000000-0000-0000-0000-000000000001';
 
 -- threads
 select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-000000000002","role":"authenticated"}', true);
@@ -124,6 +126,8 @@ select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-0000000
 set local role authenticated;
 select results_eq($$select other_name, other_avatar, unread from chat.my_threads()$$,
   $$values ('Mei Studio'::text, 'https://img/mei.png'::text, false)$$, 'guest inbox: the host''s name and avatar; their own messages are never unread');
+select results_eq($$select event_id, event_categories from chat.my_threads()$$,
+  $$values ('e1000000-0000-0000-0000-000000000001'::uuid, array['make']::text[])$$, 'the inbox row carries its event and the event''s categories');
 reset role;
 
 -- a new message from the host makes it unread for the guest again

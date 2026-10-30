@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show Icons;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jom/features/notifications/domain/notification.dart';
 import 'package:jom/features/notifications/domain/notification_labels.dart';
@@ -29,15 +30,15 @@ void main() {
     });
   });
 
-  test('notifIcon: one picture per kind of notice, a bell for anything new', () {
+  test('notifIcon: one icon per kind of notice, a bell for anything new', () {
     expect({for (final t in ['payment', 'booking', 'payout', 'event_cancelled', 'chat_message', 'review_request', 'something_new']) t: notifIcon(t)}, {
-      'payment': '✅',
-      'booking': '🎟️',
-      'payout': '💸',
-      'event_cancelled': '↩️',
-      'chat_message': '💬',
-      'review_request': '⭐',
-      'something_new': '🔔',
+      'payment': Icons.check_circle_outline,
+      'booking': Icons.confirmation_number_outlined,
+      'payout': Icons.account_balance_wallet_outlined,
+      'event_cancelled': Icons.undo,
+      'chat_message': Icons.chat_bubble_outline,
+      'review_request': Icons.star_outline,
+      'something_new': Icons.notifications_none,
     });
   });
 

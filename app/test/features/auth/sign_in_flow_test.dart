@@ -72,6 +72,20 @@ void main() {
       });
     }
 
+    testWidgets('sign_in_sheet_keeps_the_three_headings_and_uses_accent_buttons', (t) async {
+      for (final e in copy.entries) {
+        await pumpProbe(t, FakeAuthRepository(), why: e.key, onDone: () {});
+        await t.pumpAndSettle();
+        await tapText(t, 'Do it');
+        expect(find.text(e.value.$1), findsOneWidget, reason: e.key.name);
+        final google = t.widget<FilledButton>(find.widgetWithText(FilledButton, 'Continue with Google'));
+        expect(google.style!.backgroundColor!.resolve({}), Calm.acc);
+        expect(t.widget<Text>(find.text(e.value.$1)).style!.fontFamily, Calm.serif, reason: 'headings are Fraunces');
+        await t.tapAt(const Offset(10, 10));
+        await t.pumpAndSettle();
+      }
+    });
+
     testWidgets('dismissing the sheet means no, and the action does not run', (t) async {
       var done = 0, refused = 0;
       await pumpProbe(t, FakeAuthRepository(), onDone: () => done++, onRefused: () => refused++);

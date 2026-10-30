@@ -1,5 +1,5 @@
 begin;
-select plan(9);
+select plan(13);
 
 insert into auth.users (id, email) values ('aaaaaaaa-0000-0000-0000-000000000001', 'alice@example.com'),
                                           ('bbbbbbbb-0000-0000-0000-000000000002', 'bob@example.com');
@@ -14,6 +14,7 @@ insert into events.events (id, host_id, title, description, venue, status, price
    '2030-01-10 20:00+08', '2030-01-10 22:00+08', 'Bangsar', 3.1290, 101.6710, 'none', 'https://instagram.com/p/x', true),
   ('e3000000-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000001', 'Secret draft', null, null, 'draft', 3000, 10,
    null, null, null, null, null, '24h', null, true);
+update events.events set poster_url = 'https://example.com/p.jpg' where id = 'e1000000-0000-0000-0000-000000000001';
 insert into bookings.bookings (event_id, attendee_id, people, status, ticket_code, contact_name, contact_phone, amount_sen) values
   ('e1000000-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000002', 2, 'confirmed', 'T-1', 'Bob', '601', 6000),
   ('e1000000-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000002', 2, 'confirmed', 'T-2', 'Bob', '601', 6000);
@@ -31,6 +32,10 @@ select ok((select distance_km is null from events.event_detail('e1000000-0000-00
 select is((select source_url from events.event_detail('e2000000-0000-0000-0000-000000000002', null, null)), 'https://instagram.com/p/x', 'a free event carries its source link');
 select is((select count(*)::int from events.event_detail('e3000000-0000-0000-0000-000000000003', null, null)), 0, 'a draft is invisible');
 select is((select count(*)::int from events.event_detail(gen_random_uuid(), null, null)), 0, 'an unknown id gives no row');
+select is((select going from events.event_detail('e1000000-0000-0000-0000-000000000001', null, null)), 4, 'going counts people, not bookings');
+select is((select host_event_count from events.event_detail('e1000000-0000-0000-0000-000000000001', null, null)), 2, 'it counts the host''s published events, not the draft');
+select is((select poster_url from events.event_detail('e1000000-0000-0000-0000-000000000001', null, null)), 'https://example.com/p.jpg', 'it carries the poster');
+select is((select host_verified from events.event_detail('e1000000-0000-0000-0000-000000000001', null, null)), false, 'an unverified host has no tick');
 reset role;
 
 select * from finish();

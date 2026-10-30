@@ -9,6 +9,7 @@ const row = {
   'color_b': '#ffc371', 'starts_at': '2026-10-23T07:04:26.884487+00:00', 'ends_at': '2026-10-23T09:34:26.884487+00:00',
   'price_sen': 0, 'area': 'KLCC', 'lat': 3.1553, 'lng': 101.7122, 'distance_km': 5.42926988510857, 'is_live': true,
   'is_ended': false, 'spots_left': 12, 'categories': ['meet'], 'cancel_policy': '24h', 'source_url': null, 'is_bookable': false,
+  'poster_url': null, 'going': 5, 'host_verified': true, 'host_event_count': 38,
 };
 
 void main() {
@@ -21,6 +22,14 @@ void main() {
     expect(d.ratingAvg, isNull);
     expect(d.isBookable, isFalse);
     expect(d.sourceUrl, isNull);
+  });
+
+  test('it also reads the going count, the host tick, the events hosted and the poster', () {
+    final d = EventDetail.fromJson({...row, 'poster_url': 'https://x.test/p.jpg'});
+    expect(d.summary.going, 5);
+    expect(d.summary.hostVerified, isTrue);
+    expect(d.summary.posterUrl, 'https://x.test/p.jpg');
+    expect(d.hostEventCount, 38);
   });
 
   test('a rated host and a paid event read too', () {

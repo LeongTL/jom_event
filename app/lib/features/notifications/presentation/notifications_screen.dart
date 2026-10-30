@@ -56,8 +56,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final k = context.jom;
-    final muted = TextStyle(fontSize: 13, color: k.sheetInk.withValues(alpha: .62));
+    const muted = TextStyle(fontSize: 13, color: Calm.mut);
     final p = _prefs;
     Widget switchRow(String id, String title, {String? note, bool? value, ValueChanged<bool>? onChanged}) => CardBox(
           gap: 8,
@@ -65,7 +64,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           child: Row(children: [
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
                 if (note != null) Text(note, style: muted),
               ]),
             ),
@@ -76,7 +75,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
     return Scaffold(
       key: const Key('notifications-screen'),
-      backgroundColor: k.sheet,
+      backgroundColor: Calm.bg,
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
         children: [
@@ -91,7 +90,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               ),
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 18, 4, 8),
-            child: Text('SHOW ME', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: .88, color: k.sheetInk.withValues(alpha: .62))),
+            child: Text('SHOW ME', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: .88, color: Calm.mut)),
           ),
           switchRow('booking', 'Booking and payment updates', note: 'Always on'),
           switchRow('chat', 'New chat messages', value: p?.chat, onChanged: p == null ? null : (v) => _toggle(p.copyWith(chat: v))),
@@ -111,26 +110,25 @@ class _Row extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final k = context.jom;
     final route = notifRoute(n);
     return CardBox(
       key: Key('notif-${n.id}'),
       gap: 8,
       onTap: route == null ? null : () => n.type == 'payout' ? context.go(route) : context.push(route),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(notifIcon(n.type), style: const TextStyle(fontSize: 22, height: 1.2)),
+        Container(width: 40, height: 40, decoration: const BoxDecoration(color: Calm.accSoft, shape: BoxShape.circle), child: Icon(notifIcon(n.type), size: 20, color: Calm.acc)),
         const SizedBox(width: 12),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(n.title, style: const TextStyle(fontWeight: FontWeight.w700)),
-            if (n.body != null) Text(n.body!, style: TextStyle(fontSize: 13, color: k.sheetInk.withValues(alpha: .62))),
+            Text(n.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+            if (n.body != null) Text(n.body!, style: const TextStyle(fontSize: 13, color: Calm.mut)),
             const SizedBox(height: 4),
-            Text(notifWhen(n.createdAt, ref.read(nowProvider)()), style: TextStyle(fontSize: 11, color: k.sheetInk.withValues(alpha: .62))),
+            Text(notifWhen(n.createdAt, ref.read(nowProvider)()), style: const TextStyle(fontSize: 11, color: Calm.faint)),
           ]),
         ),
         if (dot) ...[
           const SizedBox(width: 12),
-          Container(key: Key('notif-dot-${n.id}'), width: 10, height: 10, margin: const EdgeInsets.only(top: 6), decoration: const BoxDecoration(color: Color(0xFFFF4F6D), shape: BoxShape.circle)),
+          Container(key: Key('notif-dot-${n.id}'), width: 10, height: 10, margin: const EdgeInsets.only(top: 6), decoration: const BoxDecoration(color: Calm.badge, shape: BoxShape.circle)),
         ],
       ]),
     );

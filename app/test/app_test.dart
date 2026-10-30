@@ -17,6 +17,7 @@ import 'package:jom/features/notifications/data/notification_repository.dart';
 import 'package:jom/features/notifications/domain/bell_provider.dart';
 import 'package:jom/shared/models/event_summary.dart';
 import 'package:jom/shared/widgets/skeleton.dart';
+import 'package:jom/features/reviews/data/review_repository.dart';
 import 'package:jom/shared/widgets/shell.dart';
 
 import 'helpers/fake_auth.dart';
@@ -24,6 +25,7 @@ import 'helpers/fake_bookings.dart';
 import 'helpers/fake_chat.dart';
 import 'helpers/fake_events.dart';
 import 'helpers/fake_notifications.dart';
+import 'helpers/fake_reviews.dart';
 
 final yoga = EventSummary.fromJson({
   'event_id': 'e1', 'title': 'Sunset Yoga Deck', 'glyph': '🧘', 'color_a': '#11998e', 'color_b': '#38ef7d',
@@ -47,6 +49,7 @@ Future<GoRouter> pumpApp(
       chatRepositoryProvider.overrideWithValue(FakeChat(infos: {'t1': const ThreadInfo(id: 't1', iAmHost: false, otherName: 'Mei Studio')})),
       bookingRepositoryProvider.overrideWithValue(FakeBookings()..byId['b1'] = bk('b1', status: 'processing')),
       notificationRepositoryProvider.overrideWithValue(FakeNotifications()),
+      reviewRepositoryProvider.overrideWithValue(FakeReviews()),
       weekendProvider.overrideWith((ref, a) async => <EventSummary>[]),
       nearYouProvider.overrideWith((ref, q) => (near ?? () async => [yoga])()),
       deviceLocationProvider.overrideWithValue(() async => null),
@@ -92,7 +95,7 @@ void main() {
       } else if (entry.value == '/chats') {
         expect(find.byKey(const Key('chat-list-screen')), findsOneWidget);
       } else {
-        expect(title(t), entry.key);
+        expect(find.byKey(const Key('profile-screen')), findsOneWidget);
       }
     }
   });
@@ -110,7 +113,7 @@ void main() {
       '/host/h1', '/notifications', '/host-mode/home', '/host-mode/events', '/host-mode/events/e1',
       '/host-mode/events/e1/edit', '/host-mode/events/e1/scan', '/host-mode/events/e1/checkin',
       '/host-mode/events/e1/guests', '/host-mode/new', '/host-mode/payouts', '/host-mode/payout-account',
-      '/host-mode/chats', '/host-mode/profile', '/explore/all',
+      '/host-mode/chats', '/host-mode/profile', '/explore/all', '/my-reviews', '/help', '/legal',
     ];
     for (final p in paths) {
       final router = await pumpApp(t, location: p, settle: p != '/booking/b1/processing');
@@ -119,6 +122,7 @@ void main() {
         '/explore': 'home-screen', '/saved': 'saved-screen', '/explore/all': 'view-all', '/event/e1': 'event-screen',
         '/tickets': 'tickets-screen', '/chats': 'chat-list-screen', '/chats/t1': 'thread-screen', '/host-mode/chats': 'chat-list-screen', '/event/e1/checkout': 'checkout-screen', '/booking/b1/gateway': 'gateway-screen',
         '/booking/b1/processing': 'processing-screen', '/booking/b1/failed': 'failed-screen', '/booking/b1/ticket': 'ticket-screen', '/notifications': 'notifications-screen',
+        '/profile': 'profile-screen', '/review/b1': 'review-screen', '/host/h1': 'host-public-screen', '/my-reviews': 'my-reviews-screen', '/help': 'help-screen', '/legal': 'legal-screen',
       }[p] ?? 'screen-title';
       expect(find.byKey(Key(screen)), findsOneWidget, reason: p);
     }
