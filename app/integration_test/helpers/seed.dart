@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:jom/main.dart' as app;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -23,30 +24,44 @@ var _n = 0;
 
 /// A word that is unique per run and has no digits (long digit runs are refused as phone numbers in event text).
 String uniqueWord() => [
-  for (final c in DateTime.now().microsecondsSinceEpoch.toString().split('')) 'abcdefghij'[int.parse(c)],
+  for (final c in DateTime.now().microsecondsSinceEpoch.toString().split(''))
+    'abcdefghij'[int.parse(c)],
 ].join();
 
 Future<Person> newPerson() async {
-  final email = 'e2e-${DateTime.now().microsecondsSinceEpoch}-${_n++}@example.com';
+  final email =
+      'e2e-${DateTime.now().microsecondsSinceEpoch}-${_n++}@example.com';
   final admin = SupabaseClient(_url, _service);
   await admin.auth.admin.createUser(
-    AdminUserAttributes(email: email, password: 'e2e-pass-123', emailConfirm: true),
+    AdminUserAttributes(
+      email: email,
+      password: 'e2e-pass-123',
+      emailConfirm: true,
+    ),
   );
   final db = SupabaseClient(_url, _anon);
-  final s = await db.auth.signInWithPassword(email: email, password: 'e2e-pass-123');
+  final s = await db.auth.signInWithPassword(
+    email: email,
+    password: 'e2e-pass-123',
+  );
   return Person(db, s.user!.id);
 }
 
 Future<Person> newHost(String name) async {
   final p = await newPerson();
-  await p.db.schema('identity').rpc('apply_host', params: {
-    'host_name': name,
-    'area': 'Bangsar',
-    'bio': null,
-    'account_holder': name,
-    'bank': 'Maybank',
-    'account_number': '1234564821',
-  });
+  await p.db
+      .schema('identity')
+      .rpc(
+        'apply_host',
+        params: {
+          'host_name': name,
+          'area': 'Bangsar',
+          'bio': null,
+          'account_holder': name,
+          'bank': 'Maybank',
+          'account_number': '1234564821',
+        },
+      );
   return p;
 }
 
@@ -61,56 +76,91 @@ Future<String> publishEvent(
   String category = 'make',
 }) async {
   final start = DateTime.now().toUtc().add(startsIn);
-  final id = await host.db.schema('events').rpc('save_draft', params: {
-    'payload': {
-      'title': title,
-      'description': 'An end-to-end test event.',
-      'categories': [category],
-      'area': 'Bangsar',
-      'venue': 'Test Deck',
-      'starts_at': start.toIso8601String(),
-      'ends_at': start.add(lasts).toIso8601String(),
-      'capacity': capacity,
-      'price_sen': priceSen,
-      'cancel_policy': '24h',
-      'accept_bookings': true,
-    },
-  }) as String;
+  final id =
+      await host.db
+              .schema('events')
+              .rpc(
+                'save_draft',
+                params: {
+                  'payload': {
+                    'title': title,
+                    'description': 'An end-to-end test event.',
+                    'categories': [category],
+                    'area': 'Bangsar',
+                    'venue': 'Test Deck',
+                    'starts_at': start.toIso8601String(),
+                    'ends_at': start.add(lasts).toIso8601String(),
+                    'capacity': capacity,
+                    'price_sen': priceSen,
+                    'cancel_policy': '24h',
+                    'accept_bookings': true,
+                  },
+                },
+              )
+          as String;
   await host.db.schema('events').rpc('publish', params: {'event_id': id});
   return id;
 }
 
 /// What a guest does in the app: hold the seat, then pay at the mock gateway. Returns the booking id once the
 /// gateway's webhook has confirmed it (a free event is confirmed straight away).
-Future<String> bookAndPay(Person guest, String eventId, {int people = 1}) async {
-  final b = await guest.db.schema('bookings').rpc('create_booking', params: {
-    'p_event_id': eventId,
-    'p_people': people,
-    'p_name': 'E2E Guest',
-    'p_phone': '60111111111',
-  }) as Map<String, dynamic>;
+Future<String> bookAndPay(
+  Person guest,
+  String eventId, {
+  int people = 1,
+}) async {
+  final b =
+      await guest.db
+              .schema('bookings')
+              .rpc(
+                'create_booking',
+                params: {
+                  'p_event_id': eventId,
+                  'p_people': people,
+                  'p_name': 'E2E Guest',
+                  'p_phone': '60111111111',
+                },
+              )
+          as Map<String, dynamic>;
   final id = b['id'] as String;
   if (b['status'] != 'confirmed') {
-    final session = (await guest.db.schema('payments').rpc('start_payment', params: {'p_booking_id': id}) as List).first
-        as Map<String, dynamic>;
-    await guest.db.functions.invoke('mock-gateway-pay', body: {
-      'attemptId': session['attempt_id'],
-      'method': 'FPX',
-    });
+    final session =
+        (await guest.db
+                        .schema('payments')
+                        .rpc('start_payment', params: {'p_booking_id': id})
+                    as List)
+                .first
+            as Map<String, dynamic>;
+    await guest.db.functions.invoke(
+      'mock-gateway-pay',
+      body: {'attemptId': session['attempt_id'], 'method': 'FPX'},
+    );
     await eventually(() async => await bookingStatus(guest, id) == 'confirmed');
   }
   return id;
 }
 
 Future<String> bookingStatus(Person who, String bookingId) async =>
-    (await who.db.schema('bookings').from('bookings').select('status').eq('id', bookingId).single())['status'] as String;
+    (await who.db
+            .schema('bookings')
+            .from('bookings')
+            .select('status')
+            .eq('id', bookingId)
+            .single())['status']
+        as String;
 
 /// The signed ticket token a guest shows at the door.
 Future<String> ticketToken(Person guest, String bookingId) async =>
-    await guest.db.schema('bookings').rpc('ticket_token', params: {'p_booking_id': bookingId}) as String;
+    await guest.db
+            .schema('bookings')
+            .rpc('ticket_token', params: {'p_booking_id': bookingId})
+        as String;
 
 /// Polls [check] until it is true (the webhook and Realtime are not instant).
-Future<void> eventually(Future<bool> Function() check, {Duration within = const Duration(seconds: 20)}) async {
+Future<void> eventually(
+  Future<bool> Function() check, {
+  Duration within = const Duration(seconds: 20),
+}) async {
   final end = DateTime.now().add(within);
   while (!await check()) {
     if (DateTime.now().isAfter(end)) fail('condition not met within $within');
@@ -125,11 +175,17 @@ Future<void> launchApp(WidgetTester t) async {
 }
 
 /// Pumps until [finder] appears (network calls make the usual pumpAndSettle too short).
-Future<void> see(WidgetTester t, Finder finder, {Duration within = const Duration(seconds: 20)}) async {
+Future<void> see(
+  WidgetTester t,
+  Finder finder, {
+  Duration within = const Duration(seconds: 20),
+}) async {
   final end = DateTime.now().add(within);
   while (finder.evaluate().isEmpty) {
     if (DateTime.now().isAfter(end)) {
-      final texts = [for (final w in t.widgetList<Text>(find.byType(Text))) w.data ?? ''].where((x) => x.isNotEmpty);
+      final texts = [
+        for (final w in t.widgetList<Text>(find.byType(Text))) w.data ?? '',
+      ].where((x) => x.isNotEmpty);
       fail('never saw $finder. On screen: ${texts.take(40).join(' | ')}');
     }
     await t.pump(const Duration(milliseconds: 250));
@@ -158,16 +214,72 @@ Future<void> signInWithPhone(WidgetTester t) async {
 }
 
 /// A Text with exactly [text]: unlike find.text it does not match what is typed into a search box.
-Finder label(String text) => find.byWidgetPredicate((w) => w is Text && w.data == text);
+Finder label(String text) =>
+    find.byWidgetPredicate((w) => w is Text && w.data == text);
 
 /// From Home: search for [title], scroll to its card and open the event page.
 Future<void> openEventFromHome(WidgetTester t, String title) async {
   await t.enterText(key('home-search'), title);
   await see(t, label(title));
-  await t.pumpAndSettle(const Duration(seconds: 1)); // the list is rebuilt once the search settles
-  await t.scrollUntilVisible(label(title), 200, scrollable: find.byType(Scrollable).first);
-  await t.drag(find.byType(Scrollable).first, const Offset(0, -150)); // clear of the tab bar
+  await t.pumpAndSettle(
+    const Duration(seconds: 1),
+  ); // the list is rebuilt once the search settles
+  await t.scrollUntilVisible(
+    label(title)
+        .last, // the same event can also be in the weekend carousel above
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await t.drag(
+    find.byType(Scrollable).first,
+    const Offset(0, -150),
+  ); // clear of the tab bar
   await t.pumpAndSettle();
-  await t.tap(label(title));
+  await t.tap(label(title).last);
   await see(t, key('event-screen'));
+}
+
+/// The user the app itself is signed in as, so a journey can act as them without the UI.
+Person me() {
+  final db = Supabase.instance.client;
+  return Person(db, db.auth.currentUser!.id);
+}
+
+/// The host's reply in their newest conversation.
+Future<void> replyInLatestThread(Person host, String body) async {
+  final threads = await host.db.schema('chat').rpc('my_threads') as List;
+  await host.db
+      .schema('chat')
+      .rpc(
+        'send_message',
+        params: {
+          'p_thread_id': (threads.first as Map)['thread_id'],
+          'p_body': body,
+        },
+      );
+}
+
+/// The host scans a guest's ticket at the door.
+Future<void> checkIn(Person host, String eventId, String token) async {
+  final r =
+      await host.db
+              .schema('bookings')
+              .rpc(
+                'check_in',
+                params: {'p_event_id': eventId, 'p_token': token},
+              )
+          as Map;
+  expect(r['result'], 'checked_in');
+}
+
+/// Taps a tab in the bottom bar by its label.
+Future<void> openTab(WidgetTester t, String label) async {
+  await t.tap(find.text(label).last);
+  await t.pumpAndSettle(const Duration(seconds: 1));
+}
+
+/// Jumps to a route the way a deep link would, from whatever screen is showing.
+Future<void> goTo(WidgetTester t, String path) async {
+  GoRouter.of(t.element(find.byType(Scaffold).first)).go(path);
+  await t.pumpAndSettle(const Duration(seconds: 2));
 }
