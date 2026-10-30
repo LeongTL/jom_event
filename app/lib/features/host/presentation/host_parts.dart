@@ -233,9 +233,18 @@ class FillBar extends StatelessWidget {
 
 /// A number over a small label in a card (prototype .fc / .stat).
 class StatTile extends StatelessWidget {
-  const StatTile(this.k, this.big, this.small, {super.key});
+  const StatTile(
+    this.k,
+    this.big,
+    this.small, {
+    super.key,
+    this.compact = false,
+  });
   final Key k;
   final String big, small;
+
+  /// Centered with a small bold number (the event page's three tiles).
+  final bool compact;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -247,17 +256,27 @@ class StatTile extends StatelessWidget {
       border: Border.all(color: Calm.line),
     ),
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: compact
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
-        Text(
-          big,
-          style: const TextStyle(
-            fontFamily: Calm.serif,
-            fontSize: 26,
-            fontWeight: FontWeight.w600,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            big,
+            style: compact
+                ? const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)
+                : const TextStyle(
+                    fontFamily: Calm.serif,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w600,
+                  ),
           ),
         ),
-        Text(small, style: const TextStyle(color: Calm.mut, fontSize: 13)),
+        Text(
+          small,
+          style: TextStyle(color: Calm.mut, fontSize: compact ? 12 : 13),
+        ),
       ],
     ),
   );
@@ -270,8 +289,14 @@ class MoneyLine extends StatelessWidget {
   final bool total;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 5),
+  Widget build(BuildContext context) => Container(
+    margin: total ? const EdgeInsets.only(top: 6) : null,
+    padding: EdgeInsets.only(top: total ? 10 : 5, bottom: 5),
+    decoration: total
+        ? const BoxDecoration(
+            border: Border(top: BorderSide(color: Calm.line)),
+          )
+        : null,
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -57,136 +58,151 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     bool on(Guest g) => _ticked[g.bookingId] ?? g.checkedIn;
     final total = guests.fold(0, (n, g) => n + g.people);
     final done = guests.where(on).fold(0, (n, g) => n + g.people);
-    return Scaffold(
-      key: const Key('checkin-screen'),
-      backgroundColor: Calm.bg,
-      body: Stack(
-        children: [
-          ListView(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 130),
-            children: [
-              const BookingNav(title: 'Check-in'),
-              Center(
-                child: Container(
-                  key: const Key('checkin-ring'),
-                  width: 120,
-                  height: 120,
-                  margin: const EdgeInsets.only(bottom: 18),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Calm.chip,
-                    border: Border.all(color: Calm.acc, width: 6),
-                  ),
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '$done / $total',
-                        style: const TextStyle(
-                          fontFamily: Calm.serif,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
-                        ),
+    // the scanner under this screen asks for light status-bar icons; this one is on a light background
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        key: const Key('checkin-screen'),
+        backgroundColor: Calm.bg,
+        body: Stack(
+          children: [
+            ListView(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 130),
+              children: [
+                const BookingNav(title: 'Check-in'),
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 18),
+                    child: SizedBox(
+                      key: const Key('checkin-ring'),
+                      width: 120,
+                      height: 120,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox.expand(
+                            child: CircularProgressIndicator(
+                              value: total == 0 ? 0 : done / total,
+                              strokeWidth: 7,
+                              color: Calm.acc,
+                              backgroundColor: const Color(0xFFE8E3DA),
+                            ),
+                          ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '$done / $total',
+                                style: const TextStyle(
+                                  fontFamily: Calm.serif,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const Text(
+                                'checked in',
+                                style: TextStyle(color: Calm.mut, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      const Text(
-                        'checked in',
-                        style: TextStyle(color: Calm.mut, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(
-                      color: Calm.bad,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-              for (final g in guests)
-                CardBox(
-                  key: Key('guest-${g.bookingId}'),
-                  gap: 8,
-                  onTap: locked ? null : () => _toggle(g, on(g)),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              g.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              '${g.code} · ${g.people} ${g.people == 1 ? 'person' : 'people'}',
-                              style: const TextStyle(
-                                color: Calm.mut,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
+                if (_error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(
+                        color: Calm.bad,
+                        fontWeight: FontWeight.w600,
                       ),
-                      Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: on(g) ? Calm.acc : Colors.transparent,
-                          border: Border.all(
-                            color: on(g) ? Calm.acc : Calm.line,
-                            width: 2,
+                    ),
+                  ),
+                for (final g in guests)
+                  CardBox(
+                    key: Key('guest-${g.bookingId}'),
+                    gap: 8,
+                    onTap: locked ? null : () => _toggle(g, on(g)),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                g.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                '${g.code} · ${g.people} ${g.people == 1 ? 'person' : 'people'}',
+                                style: const TextStyle(
+                                  color: Calm.mut,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        child: on(g)
-                            ? const Icon(
-                                Icons.check,
-                                size: 16,
-                                color: Colors.white,
-                              )
-                            : null,
-                      ),
-                    ],
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: on(g) ? Calm.ok : Colors.transparent,
+                            border: Border.all(
+                              color: on(g) ? Calm.ok : Calm.line,
+                              width: 2,
+                            ),
+                          ),
+                          child: on(g)
+                              ? const Icon(
+                                  Icons.check,
+                                  size: 16,
+                                  color: Colors.white,
+                                )
+                              : null,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-            ],
-          ),
-          if (!locked && event != null)
-            CtaBar(
-              children: [
-                Expanded(
-                  child: JomButton(
-                    label: 'Scan',
-                    primary: false,
-                    onPressed: () =>
-                        context.push('/host-mode/events/${widget.id}/scan'),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: JomButton(
-                    label: 'Mark as completed',
-                    onPressed: over
-                        ? () => completeAndLeave(
-                            context,
-                            ref,
-                            event,
-                            guests.where((g) => !on(g)).length,
-                          )
-                        : null,
-                  ),
-                ),
               ],
             ),
-        ],
+            if (!locked && event != null)
+              CtaBar(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: JomButton(
+                      label: 'Scan',
+                      primary: false,
+                      onPressed: () =>
+                          context.push('/host-mode/events/${widget.id}/scan'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 3,
+                    child: JomButton(
+                      label: 'Mark as completed',
+                      onPressed: over
+                          ? () => completeAndLeave(
+                              context,
+                              ref,
+                              event,
+                              guests.where((g) => !on(g)).length,
+                            )
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }

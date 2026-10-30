@@ -74,6 +74,7 @@ class FakeHost implements HostRepository {
   final updated = <(String, String?, String?, int?)>[];
   final deleted = <String>[];
   final scanned = <String>[];
+  var guestCalls = 0;
   final ticks = <(String, bool)>[];
   final completed = <String>[];
 
@@ -139,7 +140,10 @@ class FakeHost implements HostRepository {
   }
 
   @override
-  Future<List<Guest>> guests(String eventId) async => guestRows;
+  Future<List<Guest>> guests(String eventId) async {
+    guestCalls++;
+    return guestRows;
+  }
 
   @override
   Future<void> setCheckedIn(String bookingId, bool value) async =>

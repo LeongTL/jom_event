@@ -267,12 +267,41 @@ void main() {
 
     testWidgets('a_camera_held_on_one_ticket_counts_the_guest_once', (t) async {
       final (host, cam) = await pumpScan(t, [
-        const ScanResult(ScanKind.checkedIn, name: 'Aina Rahman', people: 2, code: 'KLS-1'),
+        const ScanResult(
+          ScanKind.checkedIn,
+          name: 'Aina Rahman',
+          people: 2,
+          code: 'KLS-1',
+        ),
       ]);
       await scan(t, cam, 'tok1');
       await scan(t, cam, 'tok1');
       expect(host.scanned, ['tok1']);
-      expect(find.descendant(of: key('scan-counter'), matching: find.text('4 / 12')), findsOneWidget);
+      expect(
+        find.descendant(of: key('scan-counter'), matching: find.text('4 / 12')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a_check_in_refreshes_the_guest_list_the_manual_list_reads', (
+      t,
+    ) async {
+      final (host, cam) = await pumpScan(t, [
+        const ScanResult(
+          ScanKind.checkedIn,
+          name: 'Aina Rahman',
+          people: 1,
+          code: 'KLS-1',
+        ),
+      ]);
+      final before = host.guestCalls;
+      await scan(t, cam, 'tok1');
+      await t.pump();
+      expect(host.guestCalls, greaterThan(before));
+      expect(
+        find.descendant(of: key('scan-counter'), matching: find.text('3 / 12')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('scan_other_event_and_unpaid_and_garbage_show_their_messages', (
