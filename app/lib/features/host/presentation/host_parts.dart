@@ -51,7 +51,7 @@ class HostField extends StatelessWidget {
   );
 }
 
-/// The framed box under a small label; [lock] greys it and adds the lock icon.
+/// The framed box with its small label inside (prototype .fld); [lock] greys it and adds the lock icon.
 class FieldBox extends StatelessWidget {
   const FieldBox({
     super.key,
@@ -67,41 +67,41 @@ class FieldBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 2, bottom: 5),
-          child: Row(
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  color: Calm.mut,
-                  fontWeight: FontWeight.w500,
-                ),
+    padding: const EdgeInsets.only(bottom: 10),
+    child: GestureDetector(
+      onTap: lock == null ? onTap : null,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: lock == null ? Calm.surface : Calm.soft,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Calm.line),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Row(
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: Calm.faint,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (lock != null) LockIcon(lock!),
+                ],
               ),
-              if (lock != null) LockIcon(lock!),
-            ],
-          ),
-        ),
-        GestureDetector(
-          onTap: lock == null ? onTap : null,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: lock == null ? Calm.surface : Calm.soft,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Calm.line),
             ),
-            child: child,
-          ),
+            child,
+          ],
         ),
-      ],
+      ),
     ),
   );
 }
