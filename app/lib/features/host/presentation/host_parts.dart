@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/money.dart';
 import '../../../core/theme/calm.dart';
 import '../../../shared/widgets/jom_button.dart';
 
@@ -200,3 +201,119 @@ Widget hostFailed(String what) => Center(
     style: const TextStyle(color: Calm.mut),
   ),
 );
+
+/// Money for the host screens: formatMoney says "Free" for zero, which is wrong for earnings.
+String rm(int sen) => sen == 0 ? 'RM 0' : formatMoney(sen);
+
+/// The thin progress bar under an event (prototype .bar). [fraction] is 0 to 1.
+class FillBar extends StatelessWidget {
+  const FillBar(this.fraction, {super.key});
+  final double fraction;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    key: const Key('fill-bar'),
+    height: 6,
+    decoration: BoxDecoration(
+      color: Calm.chip,
+      borderRadius: BorderRadius.circular(3),
+    ),
+    alignment: Alignment.centerLeft,
+    child: FractionallySizedBox(
+      widthFactor: fraction,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Calm.acc,
+          borderRadius: BorderRadius.circular(3),
+        ),
+      ),
+    ),
+  );
+}
+
+/// A number over a small label in a card (prototype .fc / .stat).
+class StatTile extends StatelessWidget {
+  const StatTile(
+    this.k,
+    this.big,
+    this.small, {
+    super.key,
+    this.compact = false,
+  });
+  final Key k;
+  final String big, small;
+
+  /// Centered with a small bold number (the event page's three tiles).
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    key: k,
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: Calm.surface,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: Calm.line),
+    ),
+    child: Column(
+      crossAxisAlignment: compact
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            big,
+            style: compact
+                ? const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)
+                : const TextStyle(
+                    fontFamily: Calm.serif,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w600,
+                  ),
+          ),
+        ),
+        Text(
+          small,
+          style: TextStyle(color: Calm.mut, fontSize: compact ? 12 : 13),
+        ),
+      ],
+    ),
+  );
+}
+
+/// A label on the left, a value on the right (prototype .line). [total] makes it the bold last line.
+class MoneyLine extends StatelessWidget {
+  const MoneyLine(this.label, this.value, {super.key, this.total = false});
+  final String label, value;
+  final bool total;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: total ? const EdgeInsets.only(top: 6) : null,
+    padding: EdgeInsets.only(top: total ? 10 : 5, bottom: 5),
+    decoration: total
+        ? const BoxDecoration(
+            border: Border(top: BorderSide(color: Calm.line)),
+          )
+        : null,
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: total ? Calm.ink : Calm.mut,
+            fontWeight: total ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontWeight: total ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+      ],
+    ),
+  );
+}

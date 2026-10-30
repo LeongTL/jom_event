@@ -21,23 +21,36 @@ class AreaSelectionController extends Notifier<AreaSelection> {
   @override
   AreaSelection build() => (area: 'Bangsar', km: 5, useDevice: true);
 
-  void choose(String area, int km) => state = (area: area, km: km, useDevice: false);
+  void choose(String area, int km) =>
+      state = (area: area, km: km, useDevice: false);
 }
 
-final areaSelectionProvider = NotifierProvider<AreaSelectionController, AreaSelection>(AreaSelectionController.new);
+final areaSelectionProvider =
+    NotifierProvider<AreaSelectionController, AreaSelection>(
+      AreaSelectionController.new,
+    );
 
 /// The phone's position, or null when permission is refused or no fix arrives. Tests override it.
-final deviceLocationProvider = Provider<Future<LatLng?> Function()>((ref) => _geolocate);
+final deviceLocationProvider = Provider<Future<LatLng?> Function()>(
+  (ref) => _geolocate,
+);
 
 Future<LatLng?> _geolocate() async {
   try {
     var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) return null;
+    if (permission == LocationPermission.denied)
+      permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever)
+      return null;
     // The last fix is instant and good enough for a 1 km area; only ask for a fresh one when the phone has none.
-    final p = await Geolocator.getLastKnownPosition() ??
+    final p =
+        await Geolocator.getLastKnownPosition() ??
         await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(accuracy: LocationAccuracy.low, timeLimit: Duration(seconds: 4)),
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.low,
+            timeLimit: Duration(seconds: 4),
+          ),
         );
     return (lat: p.latitude, lng: p.longitude);
   } catch (_) {

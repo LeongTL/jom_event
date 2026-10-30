@@ -3,11 +3,17 @@ import 'dart:async';
 import 'package:jom/features/chat/data/chat_repository.dart';
 import 'package:jom/features/chat/domain/chat.dart';
 
-Message msg(String id, String sender, String body, DateTime at) => Message(id: id, senderId: sender, body: body, createdAt: at);
+Message msg(String id, String sender, String body, DateTime at) =>
+    Message(id: id, senderId: sender, body: body, createdAt: at);
 
 /// Stands in for the database and Realtime: the test pushes messages and unread counts.
 class FakeChat implements ChatRepository {
-  FakeChat({this.threads = const [], this.infos = const {}, Map<String, List<Message>>? messages, this.unreadCount = 0}) : _messages = messages ?? {};
+  FakeChat({
+    this.threads = const [],
+    this.infos = const {},
+    Map<String, List<Message>>? messages,
+    this.unreadCount = 0,
+  }) : _messages = messages ?? {};
 
   List<ThreadSummary> threads;
   final Map<String, ThreadInfo> infos;
@@ -19,7 +25,10 @@ class FakeChat implements ChatRepository {
   final read = <String>[];
   Object? sendError;
 
-  StreamController<List<Message>> _c(String id) => _msgCtrls.putIfAbsent(id, () => StreamController<List<Message>>.broadcast());
+  StreamController<List<Message>> _c(String id) => _msgCtrls.putIfAbsent(
+    id,
+    () => StreamController<List<Message>>.broadcast(),
+  );
 
   @override
   Future<List<ThreadSummary>> mine() async => threads;

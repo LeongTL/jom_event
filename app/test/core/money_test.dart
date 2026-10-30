@@ -8,14 +8,23 @@ void main() {
     expect(formatMoney(4550), 'RM 45.50');
   });
 
-  test('formatMoney keeps two digits for small cents and shows big sums whole', () {
-    expect(formatMoney(5), 'RM 0.05');
-    expect(formatMoney(4505), 'RM 45.05');
-    expect(formatMoney(100), 'RM 1');
-    expect(formatMoney(31860), 'RM 318.60'); // 12 guests at RM 30: what the host receives
-  });
+  test(
+    'formatMoney keeps two digits for small cents and shows big sums whole',
+    () {
+      expect(formatMoney(5), 'RM 0.05');
+      expect(formatMoney(4505), 'RM 45.05');
+      expect(formatMoney(100), 'RM 1');
+      expect(
+        formatMoney(31860),
+        'RM 318.60',
+      ); // 12 guests at RM 30: what the host receives
+    },
+  );
 
-  test('formatMoney refuses a negative amount instead of printing nonsense', () {
-    expect(() => formatMoney(-1), throwsArgumentError);
-  });
+  test(
+    'formatMoney refuses a negative amount instead of printing nonsense',
+    () {
+      expect(() => formatMoney(-1), throwsArgumentError);
+    },
+  );
 }

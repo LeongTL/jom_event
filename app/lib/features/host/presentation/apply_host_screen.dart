@@ -163,6 +163,26 @@ class _ApplyFormState extends ConsumerState<_ApplyForm> {
                 controller: _ssm,
                 hint: 'SSM number',
               ),
+              if (widget.initial?.verifiedAt != null)
+                const CardBox(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Payout account checked',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      Text(
+                        '✓ Verified',
+                        style: TextStyle(
+                          color: Calm.ok,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               if (_error != null)
                 Text(
                   _error!,

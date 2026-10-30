@@ -29,42 +29,82 @@ import '../../helpers/fake_map.dart';
 late FakeMap fakeMap;
 final launched = <Uri>[];
 
-Future<void> pumpMap(WidgetTester t, List<EventSummary> events, {List<Booking> tickets = const [], LatLng? device}) async {
+Future<void> pumpMap(
+  WidgetTester t,
+  List<EventSummary> events, {
+  List<Booking> tickets = const [],
+  LatLng? device,
+}) async {
   t.view.physicalSize = const Size(800, 1800);
   t.view.devicePixelRatio = 2;
   addTearDown(t.view.reset);
   fakeMap = FakeMap(events);
   launched.clear();
   final router = createRouter(initialLocation: '/explore/map');
-  await t.pumpWidget(ProviderScope(
-    overrides: [
-      routerProvider.overrideWithValue(router),
-      appConfigProvider.overrideWithValue(const AppConfig(flavor: 'dev', supabaseUrl: 'http://x', supabaseAnonKey: 'k')),
-      mapTileProvider.overrideWithValue(BlankTiles()),
-      mapRepositoryProvider.overrideWithValue(fakeMap),
-      launchUrlProvider.overrideWithValue((u) async {
-        launched.add(u);
-        return true;
-      }),
-      authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: fakeSession(name: 'Mei'))),
-      eventRepositoryProvider.overrideWithValue(FakeEvents(all: events, details: {for (final e in events) e.id: detailOf(e)})),
-      bookingRepositoryProvider.overrideWithValue(FakeBookings(upcoming: tickets)),
-      chatRepositoryProvider.overrideWithValue(FakeChat()),
-      nowProvider.overrideWithValue(() => clock),
-      deviceLocationProvider.overrideWithValue(() async => device),
-      bellCountProvider.overrideWith((ref) => Stream.value(0)),
-    ],
-    child: const JomApp(),
-  ));
+  await t.pumpWidget(
+    ProviderScope(
+      overrides: [
+        routerProvider.overrideWithValue(router),
+        appConfigProvider.overrideWithValue(
+          const AppConfig(
+            flavor: 'dev',
+            supabaseUrl: 'http://x',
+            supabaseAnonKey: 'k',
+          ),
+        ),
+        mapTileProvider.overrideWithValue(BlankTiles()),
+        mapRepositoryProvider.overrideWithValue(fakeMap),
+        launchUrlProvider.overrideWithValue((u) async {
+          launched.add(u);
+          return true;
+        }),
+        authRepositoryProvider.overrideWithValue(
+          FakeAuthRepository(initial: fakeSession(name: 'Mei')),
+        ),
+        eventRepositoryProvider.overrideWithValue(
+          FakeEvents(
+            all: events,
+            details: {for (final e in events) e.id: detailOf(e)},
+          ),
+        ),
+        bookingRepositoryProvider.overrideWithValue(
+          FakeBookings(upcoming: tickets),
+        ),
+        chatRepositoryProvider.overrideWithValue(FakeChat()),
+        nowProvider.overrideWithValue(() => clock),
+        deviceLocationProvider.overrideWithValue(() async => device),
+        bellCountProvider.overrideWith((ref) => Stream.value(0)),
+      ],
+      child: const JomApp(),
+    ),
+  );
   await t.pumpAndSettle();
 }
 
 // Bangsar is the map's centre when there is no phone position; b is 2 km north of a.
 final a = sum('a', title: 'Batik', price: 3000);
-final b = sum('b', title: 'Salsa', price: 4500, lat: 3.1470, cats: const ['move']);
-final free = sum('f', title: 'Picnic', price: 0, lat: 3.1290, lng: 101.6910, cats: const ['meet']);
+final b = sum(
+  'b',
+  title: 'Salsa',
+  price: 4500,
+  lat: 3.1470,
+  cats: const ['move'],
+);
+final free = sum(
+  'f',
+  title: 'Picnic',
+  price: 0,
+  lat: 3.1290,
+  lng: 101.6910,
+  cats: const ['meet'],
+);
 
-PricePin pin(WidgetTester t, String id) => t.widget<PricePin>(find.descendant(of: find.byKey(Key('pin-$id')), matching: find.byType(PricePin)));
+PricePin pin(WidgetTester t, String id) => t.widget<PricePin>(
+  find.descendant(
+    of: find.byKey(Key('pin-$id')),
+    matching: find.byType(PricePin),
+  ),
+);
 
 void main() {
   test('pinLabel_booked_free_and_paid', () {
@@ -74,29 +114,52 @@ void main() {
   });
 
   test('user_position_sent_to_the_server_is_rounded_to_0_01_degrees', () {
-    final p = mapPinsParams((lat: 3.129049, lng: 101.671651, km: 5, category: 'all', tonight: false));
+    final p = mapPinsParams((
+      lat: 3.129049,
+      lng: 101.671651,
+      km: 5,
+      category: 'all',
+      tonight: false,
+    ));
     expect(p['p_lat'], 3.13);
     expect(p['p_lng'], 101.67);
   });
 
   group('Map', () {
-    testWidgets('shows_a_price_pin_per_event_the_first_selected_and_its_card', (t) async {
+    testWidgets('shows_a_price_pin_per_event_the_first_selected_and_its_card', (
+      t,
+    ) async {
       await pumpMap(t, [a, b]);
       expect(find.text('RM 30'), findsWidgets);
       expect(find.text('RM 45'), findsWidgets);
       expect(pin(t, 'a').selected, isTrue);
-      expect(find.descendant(of: find.byKey(const Key('map-card-event')), matching: find.text('Batik')), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('map-card-event')),
+          matching: find.text('Batik'),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('2 events in this area'), findsOneWidget);
     });
 
-    testWidgets('selecting_a_pin_updates_the_bottom_card_and_highlights_the_pin', (t) async {
-      await pumpMap(t, [a, b]);
-      await t.tap(find.byKey(const Key('pin-b')));
-      await t.pumpAndSettle();
-      expect(pin(t, 'b').selected, isTrue);
-      expect(pin(t, 'a').selected, isFalse);
-      expect(find.descendant(of: find.byKey(const Key('map-card-event')), matching: find.text('Salsa')), findsOneWidget);
-    });
+    testWidgets(
+      'selecting_a_pin_updates_the_bottom_card_and_highlights_the_pin',
+      (t) async {
+        await pumpMap(t, [a, b]);
+        await t.tap(find.byKey(const Key('pin-b')));
+        await t.pumpAndSettle();
+        expect(pin(t, 'b').selected, isTrue);
+        expect(pin(t, 'a').selected, isFalse);
+        expect(
+          find.descendant(
+            of: find.byKey(const Key('map-card-event')),
+            matching: find.text('Salsa'),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets('a_booked_event_shows_a_dark_booked_pin', (t) async {
       await pumpMap(t, [a, b], tickets: [bk('t1', event: 'b')]);
@@ -105,36 +168,52 @@ void main() {
       expect(pin(t, 'a').booked, isFalse);
     });
 
-    testWidgets('category_chips_refetch_and_Tonight_sets_the_tonight_flag', (t) async {
+    testWidgets('category_chips_refetch_and_Tonight_sets_the_tonight_flag', (
+      t,
+    ) async {
       await pumpMap(t, [a, b]);
       expect(fakeMap.queries.last.category, 'all');
       await t.tap(find.byKey(const Key('map-chip-move')));
       await t.pumpAndSettle();
-      expect((fakeMap.queries.last.category, fakeMap.queries.last.tonight), ('move', false));
+      expect(
+        (fakeMap.queries.last.category, fakeMap.queries.last.tonight),
+        ('move', false),
+      );
       expect(find.byKey(const Key('pin-a')), findsNothing);
       await t.drag(find.byType(ListView), const Offset(-300, 0));
       await t.pumpAndSettle();
       await t.tap(find.byKey(const Key('map-chip-tonight')));
       await t.pumpAndSettle();
-      expect((fakeMap.queries.last.category, fakeMap.queries.last.tonight), ('all', true));
+      expect(
+        (fakeMap.queries.last.category, fakeMap.queries.last.tonight),
+        ('all', true),
+      );
     });
 
-    testWidgets('search_this_area_appears_only_after_the_map_moves_and_refetches_once_at_the_centre', (t) async {
-      await pumpMap(t, [a, b]);
-      expect(find.byKey(const Key('map-search-area')), findsNothing);
-      final before = fakeMap.queries.length;
-      await t.drag(find.byType(FlutterMap), const Offset(0, 400));
-      await t.pumpAndSettle();
-      expect(find.byKey(const Key('map-search-area')), findsOneWidget);
-      expect(fakeMap.queries.length, before); // moving alone does not search
-      await t.tap(find.byKey(const Key('map-search-area')));
-      await t.pumpAndSettle();
-      expect(fakeMap.queries.length, before + 1);
-      expect(fakeMap.queries.last.lat, greaterThan(3.1290)); // dragging the map down moves the centre north
-      expect(find.byKey(const Key('map-search-area')), findsNothing);
-    });
+    testWidgets(
+      'search_this_area_appears_only_after_the_map_moves_and_refetches_once_at_the_centre',
+      (t) async {
+        await pumpMap(t, [a, b]);
+        expect(find.byKey(const Key('map-search-area')), findsNothing);
+        final before = fakeMap.queries.length;
+        await t.drag(find.byType(FlutterMap), const Offset(0, 400));
+        await t.pumpAndSettle();
+        expect(find.byKey(const Key('map-search-area')), findsOneWidget);
+        expect(fakeMap.queries.length, before); // moving alone does not search
+        await t.tap(find.byKey(const Key('map-search-area')));
+        await t.pumpAndSettle();
+        expect(fakeMap.queries.length, before + 1);
+        expect(
+          fakeMap.queries.last.lat,
+          greaterThan(3.1290),
+        ); // dragging the map down moves the centre north
+        expect(find.byKey(const Key('map-search-area')), findsNothing);
+      },
+    );
 
-    testWidgets('locate_with_a_position_recentres_and_searches_there', (t) async {
+    testWidgets('locate_with_a_position_recentres_and_searches_there', (
+      t,
+    ) async {
       await pumpMap(t, [a], device: (lat: 3.1579, lng: 101.7116));
       expect(find.byKey(const Key('map-me')), findsOneWidget);
       expect(fakeMap.queries.first.lat, 3.1579);
@@ -146,13 +225,16 @@ void main() {
       expect(find.byKey(const Key('map-search-area')), findsNothing);
     });
 
-    testWidgets('locate_with_permission_denied_says_showing_the_selected_area', (t) async {
-      await pumpMap(t, [a]);
-      await t.tap(find.byKey(const Key('map-locate')));
-      await t.pumpAndSettle();
-      expect(find.text('Showing the selected area'), findsOneWidget);
-      expect(find.byKey(const Key('map-me')), findsNothing);
-    });
+    testWidgets(
+      'locate_with_permission_denied_says_showing_the_selected_area',
+      (t) async {
+        await pumpMap(t, [a]);
+        await t.tap(find.byKey(const Key('map-locate')));
+        await t.pumpAndSettle();
+        expect(find.text('Showing the selected area'), findsOneWidget);
+        expect(find.byKey(const Key('map-me')), findsNothing);
+      },
+    );
 
     testWidgets('no_results_shows_an_empty_card_and_no_pins', (t) async {
       await pumpMap(t, []);
@@ -161,7 +243,9 @@ void main() {
       expect(find.byKey(const Key('map-directions')), findsNothing);
     });
 
-    testWidgets('directions_opens_a_maps_uri_with_the_event_lat_lng', (t) async {
+    testWidgets('directions_opens_a_maps_uri_with_the_event_lat_lng', (
+      t,
+    ) async {
       await pumpMap(t, [a]);
       await t.tap(find.byKey(const Key('map-directions')));
       await t.pumpAndSettle();
@@ -174,7 +258,9 @@ void main() {
       expect(find.text('© OpenStreetMap contributors'), findsOneWidget);
     });
 
-    testWidgets('view_event_opens_the_event_and_back_keeps_the_selection', (t) async {
+    testWidgets('view_event_opens_the_event_and_back_keeps_the_selection', (
+      t,
+    ) async {
       await pumpMap(t, [a, b]);
       await t.tap(find.byKey(const Key('pin-b')));
       await t.pumpAndSettle();

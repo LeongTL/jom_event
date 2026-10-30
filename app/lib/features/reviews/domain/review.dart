@@ -13,7 +13,14 @@ const reviewTags = {
 /// A review I wrote (reviews.my_reviews).
 @immutable
 class Review {
-  const Review({required this.id, required this.bookingId, required this.stars, required this.tags, required this.createdAt, this.body});
+  const Review({
+    required this.id,
+    required this.bookingId,
+    required this.stars,
+    required this.tags,
+    required this.createdAt,
+    this.body,
+  });
   final String id, bookingId;
   final int stars;
   final List<String> tags;
@@ -21,13 +28,13 @@ class Review {
   final DateTime createdAt;
 
   factory Review.fromJson(Map<String, dynamic> j) => Review(
-        id: j['id'] as String,
-        bookingId: j['booking_id'] as String,
-        stars: (j['stars'] as num).toInt(),
-        tags: [for (final t in j['tags'] as List) t as String],
-        body: j['body'] as String?,
-        createdAt: DateTime.parse(j['created_at'] as String).toUtc(),
-      );
+    id: j['id'] as String,
+    bookingId: j['booking_id'] as String,
+    stars: (j['stars'] as num).toInt(),
+    tags: [for (final t in j['tags'] as List) t as String],
+    body: j['body'] as String?,
+    createdAt: DateTime.parse(j['created_at'] as String).toUtc(),
+  );
 }
 
 /// One line of "What people said" (reviews.host_reviews): first name only.
@@ -38,8 +45,11 @@ class HostReview {
   final int stars;
   final String? body;
 
-  factory HostReview.fromJson(Map<String, dynamic> j) =>
-      HostReview(firstName: j['attendee_first_name'] as String, stars: (j['stars'] as num).toInt(), body: j['body'] as String?);
+  factory HostReview.fromJson(Map<String, dynamic> j) => HostReview(
+    firstName: j['attendee_first_name'] as String,
+    stars: (j['stars'] as num).toInt(),
+    body: j['body'] as String?,
+  );
 }
 
 /// Everything on a host's public page.
@@ -72,12 +82,15 @@ class ReviewError implements Exception {
   final String code;
 
   String get message => switch (code) {
-        'already_reviewed' => 'You already reviewed this event.',
-        'event_not_completed' => 'You can review once the host has closed the event.',
-        'not_attended' || 'not_owner' => 'Only events you attended can be reviewed.',
-        'contact_info_not_allowed' => 'Please leave phone numbers and links out of your review.',
-        _ => 'Could not send your review. Try again.',
-      };
+    'already_reviewed' => 'You already reviewed this event.',
+    'event_not_completed' =>
+      'You can review once the host has closed the event.',
+    'not_attended' ||
+    'not_owner' => 'Only events you attended can be reviewed.',
+    'contact_info_not_allowed' =>
+      'Please leave phone numbers and links out of your review.',
+    _ => 'Could not send your review. Try again.',
+  };
 
   @override
   String toString() => 'ReviewError($code)';

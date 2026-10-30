@@ -28,9 +28,9 @@ class CategoryArt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ColoredBox(
-        color: _backgrounds[kind]!,
-        child: SizedBox.expand(child: CustomPaint(painter: _ArtPainter(kind))),
-      );
+    color: _backgrounds[kind]!,
+    child: SizedBox.expand(child: CustomPaint(painter: _ArtPainter(kind))),
+  );
 }
 
 class _ArtPainter extends CustomPainter {
@@ -39,17 +39,31 @@ class _ArtPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final scale = size.width / 400 > size.height / 300 ? size.width / 400 : size.height / 300; // "slice": cover
+    final scale = size.width / 400 > size.height / 300
+        ? size.width / 400
+        : size.height / 300; // "slice": cover
     canvas.save();
     canvas.clipRect(Offset.zero & size);
-    canvas.translate((size.width - 400 * scale) / 2, (size.height - 300 * scale) / 2);
+    canvas.translate(
+      (size.width - 400 * scale) / 2,
+      (size.height - 300 * scale) / 2,
+    );
     canvas.scale(scale);
     switch (kind) {
       case ArtKind.free:
         _circle(canvas, 300, 150, 70, const Color(0xFFE8B74A));
         _ring(canvas, 300, 150, 104, const Color(0x66E8B74A));
         _ring(canvas, 300, 150, 140, const Color(0x38E8B74A));
-        _wave(canvas, 230, [110, 170, 220, 230, 330, 290, 440, 230], const Color(0xFFD9C58E));
+        _wave(canvas, 230, [
+          110,
+          170,
+          220,
+          230,
+          330,
+          290,
+          440,
+          230,
+        ], const Color(0xFFD9C58E));
       case ArtKind.move:
         _circle(canvas, 90, 90, 46, const Color(0xFFF3D9A4));
         _wave(canvas, 170, _swell(170, 40), const Color(0xFF9CC4B6));
@@ -67,19 +81,49 @@ class _ArtPainter extends CustomPainter {
         _arch(canvas, 70, 150, 80, const Color(0xFFD98B6A));
         _arch(canvas, 110, 160, 40, const Color(0xFFFBF1E8));
         _circle(canvas, 300, 80, 26, const Color(0x8CC9704F));
-        canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(250, 210, 110, 90), const Radius.circular(4)),
-            Paint()..color = const Color(0xFFE9C3AB));
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            const Rect.fromLTWH(250, 210, 110, 90),
+            const Radius.circular(4),
+          ),
+          Paint()..color = const Color(0xFFE9C3AB),
+        );
     }
     canvas.restore();
   }
 
   // Control points of "M0 y Q60 y-d 120 y T240 y T360 y T480 y": each T mirrors the last control point.
-  static List<double> _swell(double y, double d) => [60, y - d, 120, y, 180, y + d, 240, y, 300, y - d, 360, y, 420, y + d, 480, y];
+  static List<double> _swell(double y, double d) => [
+    60,
+    y - d,
+    120,
+    y,
+    180,
+    y + d,
+    240,
+    y,
+    300,
+    y - d,
+    360,
+    y,
+    420,
+    y + d,
+    480,
+    y,
+  ];
 
-  void _circle(Canvas c, double x, double y, double r, Color color) => c.drawCircle(Offset(x, y), r, Paint()..color = color);
+  void _circle(Canvas c, double x, double y, double r, Color color) =>
+      c.drawCircle(Offset(x, y), r, Paint()..color = color);
 
-  void _ring(Canvas c, double x, double y, double r, Color color) => c.drawCircle(
-      Offset(x, y), r, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 2);
+  void _ring(Canvas c, double x, double y, double r, Color color) =>
+      c.drawCircle(
+        Offset(x, y),
+        r,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
 
   /// A filled band under a curve that starts at (0, y); [q] holds the control and end points of each quad segment.
   void _wave(Canvas c, double y, List<double> q, Color color) {
@@ -87,7 +131,10 @@ class _ArtPainter extends CustomPainter {
     for (var i = 0; i < q.length; i += 4) {
       p.quadraticBezierTo(q[i], q[i + 1], q[i + 2], q[i + 3]);
     }
-    p..lineTo(q[q.length - 2], 300)..lineTo(0, 300)..close();
+    p
+      ..lineTo(q[q.length - 2], 300)
+      ..lineTo(0, 300)
+      ..close();
     c.drawPath(p, Paint()..color = color);
   }
 
@@ -114,5 +161,9 @@ class EventArt extends StatelessWidget {
   @override
   Widget build(BuildContext context) => posterUrl == null || posterUrl!.isEmpty
       ? CategoryArt(kind: kind)
-      : Image.network(posterUrl!, fit: BoxFit.cover, errorBuilder: (_, _, _) => CategoryArt(kind: kind));
+      : Image.network(
+          posterUrl!,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => CategoryArt(kind: kind),
+        );
 }

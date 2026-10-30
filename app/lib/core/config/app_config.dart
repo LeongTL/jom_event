@@ -30,7 +30,9 @@ class AppConfig {
       flavor: flavor,
       supabaseUrl: need('SUPABASE_URL'),
       supabaseAnonKey: need('SUPABASE_ANON_KEY'),
-      mapTileUrl: tiles != null && tiles.isNotEmpty ? tiles : (flavor == 'prod' ? need('MAP_TILE_URL') : osmTileUrl),
+      mapTileUrl: tiles != null && tiles.isNotEmpty
+          ? tiles
+          : (flavor == 'prod' ? need('MAP_TILE_URL') : osmTileUrl),
     );
   }
 }

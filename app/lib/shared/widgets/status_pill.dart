@@ -6,7 +6,11 @@ enum StatusTone { neutral, good, warn, bad }
 
 /// The small rounded status label ("Confirmed", "Processing"...) in the Calm colours.
 class StatusPill extends StatelessWidget {
-  const StatusPill({super.key, required this.label, this.tone = StatusTone.neutral});
+  const StatusPill({
+    super.key,
+    required this.label,
+    this.tone = StatusTone.neutral,
+  });
 
   /// A pill for a booking status as the database spells it.
   factory StatusPill.booking(String status, {Key? key}) {
@@ -38,10 +42,20 @@ class StatusPill extends StatelessWidget {
       StatusTone.neutral => (Calm.chip, Calm.mut),
     };
     return DecoratedBox(
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        child: Text(label, style: TextStyle(color: ink, fontSize: 11.5, fontWeight: FontWeight.w600)),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: ink,
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

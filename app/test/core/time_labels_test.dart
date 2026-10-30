@@ -7,13 +7,32 @@ void main() {
 
   test('relativeStart_cases', () {
     final end = at(const Duration(days: 9));
-    expect(relativeStart(at(const Duration(minutes: -30)), at(const Duration(minutes: 30)), now), 'Happening now');
-    expect(relativeStart(at(const Duration(minutes: 22)), end, now), 'in 22 min');
-    expect(relativeStart(at(const Duration(minutes: 93)), end, now), 'in 93 min');
+    expect(
+      relativeStart(
+        at(const Duration(minutes: -30)),
+        at(const Duration(minutes: 30)),
+        now,
+      ),
+      'Happening now',
+    );
+    expect(
+      relativeStart(at(const Duration(minutes: 22)), end, now),
+      'in 22 min',
+    );
+    expect(
+      relativeStart(at(const Duration(minutes: 93)), end, now),
+      'in 93 min',
+    );
     expect(relativeStart(at(const Duration(minutes: 120)), end, now), 'in 2h');
-    expect(relativeStart(at(const Duration(hours: 3, minutes: 18)), end, now), 'in 3h 18m');
+    expect(
+      relativeStart(at(const Duration(hours: 3, minutes: 18)), end, now),
+      'in 3h 18m',
+    );
     expect(relativeStart(at(const Duration(hours: 30)), end, now), 'in 1 day');
-    expect(relativeStart(at(const Duration(days: 3, hours: 2)), end, now), 'in 3 days');
+    expect(
+      relativeStart(at(const Duration(days: 3, hours: 2)), end, now),
+      'in 3 days',
+    );
   });
 
   test('dayLabel_and_timeLabel_use_kuala_lumpur_not_the_device_zone', () {

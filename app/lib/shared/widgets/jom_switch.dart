@@ -18,8 +18,18 @@ class JomSwitch extends StatelessWidget {
         height: 28,
         padding: const EdgeInsets.all(3),
         alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-        decoration: BoxDecoration(color: value ? Calm.acc : const Color(0xFFD8D3CA), borderRadius: BorderRadius.circular(14)),
-        child: Container(width: 22, height: 22, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+        decoration: BoxDecoration(
+          color: value ? Calm.acc : const Color(0xFFD8D3CA),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Container(
+          width: 22,
+          height: 22,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+        ),
       ),
     );
   }

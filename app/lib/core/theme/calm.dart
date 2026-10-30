@@ -17,7 +17,9 @@ abstract final class Calm {
   static const warn = Color(0xFF9A6200);
   static const warnSoft = Color(0xFFFBF0D9);
   static const badge = Color(0xFFC9432F); // unread counts and the saved heart
-  static const chip = Color(0xFFF0EDE8); // neutral status chip and segmented control track
+  static const chip = Color(
+    0xFFF0EDE8,
+  ); // neutral status chip and segmented control track
   static const soft = Color(0xFFF4F1EC); // soft notes and locked fields
 
   /// Headings and big numbers: Fraunces. Everything else is Inter (the theme's font).
@@ -34,11 +36,11 @@ String primaryCategory(List<String> categories) {
 
 /// The ticket header colour of a primary category.
 Color ticketColor(String primary) => switch (primary) {
-      'move' => const Color(0xFF1F5E5B),
-      'make' => const Color(0xFFA8553A),
-      'meet' => const Color(0xFF4B5A9E),
-      _ => const Color(0xFF7A6A2B),
-    };
+  'move' => const Color(0xFF1F5E5B),
+  'make' => const Color(0xFFA8553A),
+  'meet' => const Color(0xFF4B5A9E),
+  _ => const Color(0xFF7A6A2B),
+};
 
 /// The few colours the screens read through `context.jom` (screens, cards, lines, accent). They are the Calm palette.
 @immutable
@@ -63,7 +65,11 @@ extension JomTokensContext on BuildContext {
 }
 
 ThemeData calmTheme() {
-  final base = ThemeData(useMaterial3: true, brightness: Brightness.light, fontFamily: 'Inter');
+  final base = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.light,
+    fontFamily: 'Inter',
+  );
   return base.copyWith(
     scaffoldBackgroundColor: Calm.bg,
     colorScheme: const ColorScheme.light(
@@ -75,7 +81,10 @@ ThemeData calmTheme() {
       surface: Calm.bg,
       onSurface: Calm.ink,
     ),
-    textTheme: base.textTheme.apply(bodyColor: Calm.ink, displayColor: Calm.ink),
+    textTheme: base.textTheme.apply(
+      bodyColor: Calm.ink,
+      displayColor: Calm.ink,
+    ),
     extensions: const [JomTokens()],
   );
 }

@@ -35,19 +35,22 @@ class EventDetail {
   final int hostEventCount; // published and ended events the host has run
 
   factory EventDetail.fromJson(Map<String, dynamic> j) => EventDetail(
-        summary: EventSummary.fromJson({...j, 'score': 0}), // the page has no ranking score; the poster parser wants one
-        hostId: j['host_id'] as String,
-        hostName: j['host_name'] as String?,
-        ratingAvg: (j['rating_avg'] as num?)?.toDouble(),
-        ratingCount: (j['rating_count'] as num).toInt(),
-        description: j['description'] as String?,
-        venue: j['venue'] as String?,
-        lat: (j['lat'] as num?)?.toDouble(),
-        lng: (j['lng'] as num?)?.toDouble(),
-        cancelPolicy: j['cancel_policy'] as String,
-        sourceUrl: j['source_url'] as String?,
-        isBookable: j['is_bookable'] as bool,
-        isEnded: j['is_ended'] as bool,
-        hostEventCount: (j['host_event_count'] as num).toInt(),
-      );
+    summary: EventSummary.fromJson({
+      ...j,
+      'score': 0,
+    }), // the page has no ranking score; the poster parser wants one
+    hostId: j['host_id'] as String,
+    hostName: j['host_name'] as String?,
+    ratingAvg: (j['rating_avg'] as num?)?.toDouble(),
+    ratingCount: (j['rating_count'] as num).toInt(),
+    description: j['description'] as String?,
+    venue: j['venue'] as String?,
+    lat: (j['lat'] as num?)?.toDouble(),
+    lng: (j['lng'] as num?)?.toDouble(),
+    cancelPolicy: j['cancel_policy'] as String,
+    sourceUrl: j['source_url'] as String?,
+    isBookable: j['is_bookable'] as bool,
+    isEnded: j['is_ended'] as bool,
+    hostEventCount: (j['host_event_count'] as num).toInt(),
+  );
 }

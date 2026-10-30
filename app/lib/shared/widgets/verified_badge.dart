@@ -8,5 +8,10 @@ class VerifiedBadge extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) => Icon(Icons.verified_outlined, key: const Key('verified-badge'), size: size, color: Calm.acc);
+  Widget build(BuildContext context) => Icon(
+    Icons.verified_outlined,
+    key: const Key('verified-badge'),
+    size: size,
+    color: Calm.acc,
+  );
 }

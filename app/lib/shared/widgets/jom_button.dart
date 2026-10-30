@@ -4,7 +4,13 @@ import '../../core/theme/calm.dart';
 
 /// The Calm button (`.btn`): 50 tall, 12 radius, accent when primary, white with a hairline when secondary.
 class JomButton extends StatelessWidget {
-  const JomButton({super.key, required this.label, required this.onPressed, this.primary = true, this.busy = false});
+  const JomButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.primary = true,
+    this.busy = false,
+  });
 
   final String label;
   final VoidCallback? onPressed;
@@ -27,10 +33,21 @@ class JomButton extends StatelessWidget {
           foregroundColor: ink,
           disabledBackgroundColor: background.withValues(alpha: .6),
           disabledForegroundColor: ink,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: primary ? BorderSide.none : const BorderSide(color: Calm.line)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: primary
+                ? BorderSide.none
+                : const BorderSide(color: Calm.line),
+          ),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
-        child: busy ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: ink)) : Text(label),
+        child: busy
+            ? SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2.5, color: ink),
+              )
+            : Text(label),
       ),
     );
   }

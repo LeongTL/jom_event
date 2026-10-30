@@ -12,7 +12,11 @@ enum AuthReason { join, save, chat }
 /// Call this before anything that needs an account (Join, the heart, Message). Returns true at once when the
 /// user is signed in. Otherwise it opens the sign-in sheet and, once they have signed in, returns true so the
 /// caller can carry on with what they were doing; it returns false if they close the sheet.
-Future<bool> requireAuth(WidgetRef ref, BuildContext context, AuthReason why) async {
+Future<bool> requireAuth(
+  WidgetRef ref,
+  BuildContext context,
+  AuthReason why,
+) async {
   // The repository's stream always starts with the current session, so its first event is "who is signed in now".
   // (Asking the provider here would wait for a listener that a button press does not have.)
   final session = await ref.read(authRepositoryProvider).session.first;
@@ -38,7 +42,9 @@ class AuthGate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ref.watch(sessionProvider).when(
+    return ref
+        .watch(sessionProvider)
+        .when(
           loading: () => Scaffold(body: SafeArea(child: Skeleton.page())),
           error: (_, _) => signedOut,
           data: (session) => session == null ? signedOut : child,

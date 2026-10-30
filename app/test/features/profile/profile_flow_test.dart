@@ -14,7 +14,14 @@ void main() {
     final router = await pumpApp(t, location: '/profile');
     expect(find.text('Mei Tan'), findsOneWidget);
     expect(find.text('+60 12 345 6789'), findsOneWidget);
-    for (final row in ['My reviews', 'Notifications', 'Help & support', 'Terms & privacy', 'Sign out', 'Delete account']) {
+    for (final row in [
+      'My reviews',
+      'Notifications',
+      'Help & support',
+      'Terms & privacy',
+      'Sign out',
+      'Delete account',
+    ]) {
       expect(find.text(row), findsOneWidget, reason: row);
     }
     expect(find.text('Switch to Host mode'), findsOneWidget);
@@ -25,7 +32,11 @@ void main() {
 
   testWidgets('rows_open_notifications_help_terms_and_host_mode', (t) async {
     final router = await pumpApp(t, location: '/profile');
-    for (final (label, path) in [('Notifications', '/notifications'), ('Help & support', '/help'), ('Terms & privacy', '/legal')]) {
+    for (final (label, path) in [
+      ('Notifications', '/notifications'),
+      ('Help & support', '/help'),
+      ('Terms & privacy', '/legal'),
+    ]) {
       await t.tap(find.text(label));
       await t.pumpAndSettle();
       expect(where(router), path);
@@ -38,7 +49,11 @@ void main() {
   });
 
   testWidgets('profile_without_a_name_or_email_falls_back_to_guest', (t) async {
-    await pumpApp(t, location: '/profile', auth: FakeAuthRepository(initial: fakeSession(email: '')));
+    await pumpApp(
+      t,
+      location: '/profile',
+      auth: FakeAuthRepository(initial: fakeSession(email: '')),
+    );
     expect(t.takeException(), isNull);
     expect(find.byKey(const Key('profile-name')), findsOneWidget);
     expect(find.text('Guest'), findsOneWidget);
@@ -60,50 +75,69 @@ void main() {
   });
 
   group('delete account', () {
-    testWidgets('delete_account_asks_confirmation_then_calls_function_and_signs_out', (t) async {
-      final auth = FakeAuthRepository(initial: fakeSession(name: 'Mei Tan'));
-      final router = await pumpApp(t, location: '/profile', auth: auth);
-      await t.tap(find.text('Delete account'));
-      await t.pumpAndSettle();
-      expect(find.text('Delete your account?'), findsOneWidget);
-      await t.tap(find.text('Keep my account'));
-      await t.pumpAndSettle();
-      expect(auth.deleteCalls, 0);
+    testWidgets(
+      'delete_account_asks_confirmation_then_calls_function_and_signs_out',
+      (t) async {
+        final auth = FakeAuthRepository(initial: fakeSession(name: 'Mei Tan'));
+        final router = await pumpApp(t, location: '/profile', auth: auth);
+        await t.tap(find.text('Delete account'));
+        await t.pumpAndSettle();
+        expect(find.text('Delete your account?'), findsOneWidget);
+        await t.tap(find.text('Keep my account'));
+        await t.pumpAndSettle();
+        expect(auth.deleteCalls, 0);
 
+        await t.tap(find.text('Delete account'));
+        await t.pumpAndSettle();
+        await t.tap(key('confirm-delete'));
+        await t.pumpAndSettle();
+        expect(auth.deleteCalls, 1);
+        expect(where(router), '/explore');
+      },
+    );
+
+    testWidgets('host_with_active_events_gets_clear_refusal_message', (
+      t,
+    ) async {
+      final auth = FakeAuthRepository(initial: fakeSession(name: 'Mei Tan'))
+        ..deleteError = const AccountDeleteRefused('host_has_active_events');
+      final router = await pumpApp(t, location: '/profile', auth: auth);
       await t.tap(find.text('Delete account'));
       await t.pumpAndSettle();
       await t.tap(key('confirm-delete'));
       await t.pumpAndSettle();
-      expect(auth.deleteCalls, 1);
-      expect(where(router), '/explore');
-    });
-
-    testWidgets('host_with_active_events_gets_clear_refusal_message', (t) async {
-      final auth = FakeAuthRepository(initial: fakeSession(name: 'Mei Tan'))..deleteError = const AccountDeleteRefused('host_has_active_events');
-      final router = await pumpApp(t, location: '/profile', auth: auth);
-      await t.tap(find.text('Delete account'));
-      await t.pumpAndSettle();
-      await t.tap(key('confirm-delete'));
-      await t.pumpAndSettle();
-      expect(find.text('You still have events with guests. Finish or cancel them first, then try again.'), findsOneWidget);
+      expect(
+        find.text(
+          'You still have events with guests. Finish or cancel them first, then try again.',
+        ),
+        findsOneWidget,
+      );
       expect(where(router), '/profile');
     });
 
     testWidgets('a_failed_delete_says_so_and_stays_signed_in', (t) async {
-      final auth = FakeAuthRepository(initial: fakeSession(name: 'Mei Tan'))..deleteError = Exception('offline');
+      final auth = FakeAuthRepository(initial: fakeSession(name: 'Mei Tan'))
+        ..deleteError = Exception('offline');
       final router = await pumpApp(t, location: '/profile', auth: auth);
       await t.tap(find.text('Delete account'));
       await t.pumpAndSettle();
       await t.tap(key('confirm-delete'));
       await t.pumpAndSettle();
-      expect(find.text('Could not delete your account. Check your connection and try again.'), findsOneWidget);
+      expect(
+        find.text(
+          'Could not delete your account. Check your connection and try again.',
+        ),
+        findsOneWidget,
+      );
       expect(where(router), '/profile');
     });
   });
 
   testWidgets('terms_and_privacy_pages_render_from_assets', (t) async {
     await pumpApp(t, location: '/legal');
-    await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100))); // the asset read is real I/O
+    await t.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    ); // the asset read is real I/O
     await t.pumpAndSettle();
     expect(find.text('Terms of use'), findsOneWidget);
     await t.scrollUntilVisible(find.text('Privacy policy'), 400);

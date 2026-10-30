@@ -154,7 +154,11 @@ class _Row extends StatelessWidget {
     return CardBox(
       key: Key('host-event-${e.id}'),
       gap: 8,
-      onTap: () => context.push('/host-mode/events/${e.id}/edit'),
+      onTap: () => context.push(
+        e.status == 'draft'
+            ? '/host-mode/events/${e.id}/edit'
+            : '/host-mode/events/${e.id}',
+      ),
       child: Row(
         children: [
           ClipRRect(
