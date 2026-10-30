@@ -8,7 +8,9 @@ import '../../auth/domain/auth_gate.dart';
 import '../data/event_repository.dart';
 
 /// Every heart in the app (posters, event hero, bottom bar, Saved tab) reads this one set. Signed out it is empty.
-final savedProvider = AsyncNotifierProvider<SavedController, Set<String>>(SavedController.new);
+final savedProvider = AsyncNotifierProvider<SavedController, Set<String>>(
+  SavedController.new,
+);
 
 class SavedController extends AsyncNotifier<Set<String>> {
   final _inFlight = <String>{};
@@ -25,7 +27,9 @@ class SavedController extends AsyncNotifier<Set<String>> {
     if (!_inFlight.add(eventId)) return;
     try {
       final saved = await ref.read(eventRepositoryProvider).toggleSave(eventId);
-      state = AsyncData({...(state.value ?? <String>{})}..update(eventId, saved));
+      state = AsyncData(
+        {...(state.value ?? <String>{})}..update(eventId, saved),
+      );
     } finally {
       _inFlight.remove(eventId);
     }
@@ -37,14 +41,22 @@ extension on Set<String> {
 }
 
 /// What a tap on any heart does: ask for sign-in if needed ("Sign in to save"), then flip the heart.
-Future<void> toggleHeart(WidgetRef ref, BuildContext context, String eventId) async {
+Future<void> toggleHeart(
+  WidgetRef ref,
+  BuildContext context,
+  String eventId,
+) async {
   if (!await requireAuth(ref, context, AuthReason.save)) return;
-  await ref.read(savedProvider.future); // right after signing in the set is still loading
+  await ref.read(
+    savedProvider.future,
+  ); // right after signing in the set is still loading
   await ref.read(savedProvider.notifier).toggle(eventId);
 }
 
 /// The hearted events for the Saved tab; refetches when a heart changes.
-final savedEventsProvider = FutureProvider.autoDispose<List<EventSummary>>((ref) async {
+final savedEventsProvider = FutureProvider.autoDispose<List<EventSummary>>((
+  ref,
+) async {
   ref.watch(savedProvider);
   final at = await ref.watch(homeCentreProvider.future);
   return ref.watch(eventRepositoryProvider).saved(at);

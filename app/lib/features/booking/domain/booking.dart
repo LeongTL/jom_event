@@ -36,7 +36,8 @@ class Booking {
   bool get isPaid => amountSen > 0;
 
   factory Booking.fromJson(Map<String, dynamic> j) {
-    DateTime? t(String k) => j[k] == null ? null : DateTime.parse(j[k] as String).toUtc();
+    DateTime? t(String k) =>
+        j[k] == null ? null : DateTime.parse(j[k] as String).toUtc();
     return Booking(
       id: (j['booking_id'] ?? j['id']) as String,
       eventId: j['event_id'] as String,
@@ -50,8 +51,18 @@ class Booking {
       contactPhone: j['contact_phone'] as String?,
       title: j['event_title'] as String?,
       glyph: j['event_glyph'] as String?,
-      colorA: j['event_color_a'] == null ? null : parseHexColor(j['event_color_a'] as String, const Color(0xFF8B5CF6)),
-      colorB: j['event_color_b'] == null ? null : parseHexColor(j['event_color_b'] as String, const Color(0xFFFF7AA8)),
+      colorA: j['event_color_a'] == null
+          ? null
+          : parseHexColor(
+              j['event_color_a'] as String,
+              const Color(0xFF8B5CF6),
+            ),
+      colorB: j['event_color_b'] == null
+          ? null
+          : parseHexColor(
+              j['event_color_b'] as String,
+              const Color(0xFFFF7AA8),
+            ),
       area: j['event_area'] as String?,
       startsAt: t('event_starts_at'),
       paymentMethod: j['payment_method'] as String?,
@@ -62,17 +73,22 @@ class Booking {
 /// What the gateway needs to take a payment (payments.start_payment).
 @immutable
 class PaymentSession {
-  const PaymentSession({required this.attemptId, required this.reference, required this.amountSen, required this.expiresAt});
+  const PaymentSession({
+    required this.attemptId,
+    required this.reference,
+    required this.amountSen,
+    required this.expiresAt,
+  });
   final String attemptId, reference;
   final int amountSen;
   final DateTime expiresAt;
 
   factory PaymentSession.fromJson(Map<String, dynamic> j) => PaymentSession(
-        attemptId: j['attempt_id'] as String,
-        reference: j['reference'] as String,
-        amountSen: (j['amount_sen'] as num).toInt(),
-        expiresAt: DateTime.parse(j['expires_at'] as String).toUtc(),
-      );
+    attemptId: j['attempt_id'] as String,
+    reference: j['reference'] as String,
+    amountSen: (j['amount_sen'] as num).toInt(),
+    expiresAt: DateTime.parse(j['expires_at'] as String).toUtc(),
+  );
 }
 
 /// A refusal from the database ("sold_out", "hold_expired"...) with a sentence a person can read.
@@ -81,14 +97,14 @@ class BookingError implements Exception {
   final String code;
 
   String get message => switch (code) {
-        'sold_out' => 'Sorry, that just sold out.',
-        'event_started' => 'This event has already started.',
-        'event_not_available' => 'This event is no longer available.',
-        'bookings_closed' => 'The host has closed bookings for this event.',
-        'hold_expired' => 'Your spot was released because the time ran out.',
-        'cancel_not_allowed' => 'The free cancellation window has passed.',
-        _ => 'Something went wrong. Please try again.',
-      };
+    'sold_out' => 'Sorry, that just sold out.',
+    'event_started' => 'This event has already started.',
+    'event_not_available' => 'This event is no longer available.',
+    'bookings_closed' => 'The host has closed bookings for this event.',
+    'hold_expired' => 'Your spot was released because the time ran out.',
+    'cancel_not_allowed' => 'The free cancellation window has passed.',
+    _ => 'Something went wrong. Please try again.',
+  };
 
   @override
   String toString() => 'BookingError($code)';

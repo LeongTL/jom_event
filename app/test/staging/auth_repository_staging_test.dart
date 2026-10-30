@@ -22,7 +22,11 @@ void main() {
   tearDown(() => client.dispose());
 
   test('the test number signs in, a name is saved on the account and the profile, and signing out works', () async {
-    expect(_url, isNotEmpty, reason: 'run with --dart-define-from-file=env/staging.json');
+    expect(
+      _url,
+      isNotEmpty,
+      reason: 'run with --dart-define-from-file=env/staging.json',
+    );
 
     // signed out to begin with: the stream's first event is "nobody"
     expect(await repo.session.first, isNull);
@@ -37,15 +41,31 @@ void main() {
     final before = (session.user.userMetadata ?? const {})['full_name'];
 
     await repo.setName('Staging Test');
-    final profile = await client.schema('identity').from('profiles').select('name, phone').single();
+    final profile = await client
+        .schema('identity')
+        .from('profiles')
+        .select('name, phone')
+        .single();
     expect(profile['name'], 'Staging Test');
     expect(profile['phone'], '60123456789');
-    expect((client.auth.currentUser!.userMetadata ?? const {})['full_name'], 'Staging Test');
+    expect(
+      (client.auth.currentUser!.userMetadata ?? const {})['full_name'],
+      'Staging Test',
+    );
 
     // put the account back as it was, so the next real sign-in still shows the "what should we call you?" step
     await client.auth.updateUser(UserAttributes(data: {'full_name': before}));
-    await client.schema('identity').rpc('update_profile', params: {'name': before, 'phone': '60123456789'});
-    final restored = await client.schema('identity').from('profiles').select('name').single();
+    await client
+        .schema('identity')
+        .rpc(
+          'update_profile',
+          params: {'name': before, 'phone': '60123456789'},
+        );
+    final restored = await client
+        .schema('identity')
+        .from('profiles')
+        .select('name')
+        .single();
     expect(restored['name'], before);
 
     await repo.signOut();
@@ -53,14 +73,22 @@ void main() {
   });
 
   test('a wrong code is refused by the real backend', () async {
-    await Future<void>.delayed(const Duration(seconds: 4)); // Supabase allows one text per number every 3 seconds
+    await Future<void>.delayed(
+      const Duration(seconds: 4),
+    ); // Supabase allows one text per number every 3 seconds
     await repo.sendOtp(_phone);
-    await expectLater(repo.verifyOtp(_phone, '000000'), throwsA(isA<AuthException>()));
+    await expectLater(
+      repo.verifyOtp(_phone, '000000'),
+      throwsA(isA<AuthException>()),
+    );
     expect(await repo.session.first, isNull);
   });
 
-  test('a number that is not on the test list does not get a working code', () async {
-    // phone sign-in with the dummy SMS provider cannot send a real text: it must fail, not pretend
-    await expectLater(repo.sendOtp('+60198765432'), throwsA(anything));
-  });
+  test(
+    'a number that is not on the test list does not get a working code',
+    () async {
+      // phone sign-in with the dummy SMS provider cannot send a real text: it must fail, not pretend
+      await expectLater(repo.sendOtp('+60198765432'), throwsA(anything));
+    },
+  );
 }

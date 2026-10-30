@@ -32,7 +32,9 @@ abstract class EventRepository {
   Future<String> openThread(String hostId, String eventId);
 }
 
-final eventRepositoryProvider = Provider<EventRepository>((ref) => SupabaseEventRepository(ref));
+final eventRepositoryProvider = Provider<EventRepository>(
+  (ref) => SupabaseEventRepository(ref),
+);
 
 class SupabaseEventRepository implements EventRepository {
   SupabaseEventRepository(this._ref);
@@ -42,29 +44,59 @@ class SupabaseEventRepository implements EventRepository {
 
   @override
   Future<List<EventSummary>> listAll(String category, LatLng at, int km) async {
-    final rows = await _db.schema('events').rpc('list_all', params: {
-      'p_lat': at.lat, 'p_lng': at.lng, 'p_category': category, 'p_km': km,
-    }) as List;
-    return [for (final r in rows) EventSummary.fromJson(r as Map<String, dynamic>)];
+    final rows =
+        await _db
+                .schema('events')
+                .rpc(
+                  'list_all',
+                  params: {
+                    'p_lat': at.lat,
+                    'p_lng': at.lng,
+                    'p_category': category,
+                    'p_km': km,
+                  },
+                )
+            as List;
+    return [
+      for (final r in rows) EventSummary.fromJson(r as Map<String, dynamic>),
+    ];
   }
 
   @override
   Future<List<EventSummary>> cards(List<String> ids, LatLng at) async {
-    final rows = await _db.schema('events').rpc('cards', params: {'p_ids': ids, 'p_lat': at.lat, 'p_lng': at.lng}) as List;
-    return [for (final r in rows) EventSummary.fromJson(r as Map<String, dynamic>)];
+    final rows =
+        await _db
+                .schema('events')
+                .rpc(
+                  'cards',
+                  params: {'p_ids': ids, 'p_lat': at.lat, 'p_lng': at.lng},
+                )
+            as List;
+    return [
+      for (final r in rows) EventSummary.fromJson(r as Map<String, dynamic>),
+    ];
   }
 
   @override
   Future<EventDetail?> detail(String id, LatLng at) async {
-    final rows = await _db.schema('events').rpc('event_detail', params: {
-      'p_event_id': id, 'p_lat': at.lat, 'p_lng': at.lng,
-    }) as List;
-    return rows.isEmpty ? null : EventDetail.fromJson(rows.first as Map<String, dynamic>);
+    final rows =
+        await _db
+                .schema('events')
+                .rpc(
+                  'event_detail',
+                  params: {'p_event_id': id, 'p_lat': at.lat, 'p_lng': at.lng},
+                )
+            as List;
+    return rows.isEmpty
+        ? null
+        : EventDetail.fromJson(rows.first as Map<String, dynamic>);
   }
 
   @override
   Future<Set<String>> savedIds() async {
-    final rows = await _db.schema('identity').from('saved_events').select('event_id') as List;
+    final rows =
+        await _db.schema('identity').from('saved_events').select('event_id')
+            as List;
     return {for (final r in rows) r['event_id'] as String};
   }
 
@@ -72,9 +104,15 @@ class SupabaseEventRepository implements EventRepository {
   Future<List<EventSummary>> saved(LatLng at) async {
     final ids = await savedIds();
     if (ids.isEmpty) return const [];
-    final rows = await _db.schema('events').from('events')
-        .select('id, title, glyph, color_a, color_b, starts_at, ends_at, price_sen, area, lat, lng, status, categories')
-        .inFilter('id', ids.toList()) as List;
+    final rows =
+        await _db
+                .schema('events')
+                .from('events')
+                .select(
+                  'id, title, glyph, color_a, color_b, starts_at, ends_at, price_sen, area, lat, lng, status, categories',
+                )
+                .inFilter('id', ids.toList())
+            as List;
     final now = DateTime.now().toUtc();
     final list = <EventSummary>[
       for (final r in rows)
@@ -82,8 +120,12 @@ class SupabaseEventRepository implements EventRepository {
           ...r as Map<String, dynamic>,
           'event_id': r['id'],
           'price_sen': r['price_sen'] ?? 0,
-          'distance_km': r['lat'] == null ? null : _km(at, r['lat'] as num, r['lng'] as num),
-          'is_live': DateTime.parse(r['starts_at'] as String).isBefore(now) && DateTime.parse(r['ends_at'] as String).isAfter(now),
+          'distance_km': r['lat'] == null
+              ? null
+              : _km(at, r['lat'] as num, r['lng'] as num),
+          'is_live':
+              DateTime.parse(r['starts_at'] as String).isBefore(now) &&
+              DateTime.parse(r['ends_at'] as String).isAfter(now),
           'spots_left': 0, // a saved poster shows no seat count
           'score': 0,
         }),
@@ -94,28 +136,42 @@ class SupabaseEventRepository implements EventRepository {
 
   @override
   Future<bool> toggleSave(String id) async =>
-      await _db.schema('identity').rpc('toggle_save', params: {'event_id': id}) as bool;
+      await _db.schema('identity').rpc('toggle_save', params: {'event_id': id})
+          as bool;
 
   @override
   Future<String> openThread(String hostId, String eventId) async =>
-      await _db.schema('chat').rpc('open_thread', params: {'p_host_id': hostId, 'p_event_id': eventId}) as String;
+      await _db
+              .schema('chat')
+              .rpc(
+                'open_thread',
+                params: {'p_host_id': hostId, 'p_event_id': eventId},
+              )
+          as String;
 }
 
 // great-circle distance, enough for "1.2 km away"
 double _km(LatLng a, num lat, num lng) {
   const r = 6371.0, p = math.pi / 180;
   final dLat = (lat - a.lat) * p, dLng = (lng - a.lng) * p;
-  final h = math.pow(math.sin(dLat / 2), 2) + math.cos(a.lat * p) * math.cos(lat * p) * math.pow(math.sin(dLng / 2), 2);
+  final h =
+      math.pow(math.sin(dLat / 2), 2) +
+      math.cos(a.lat * p) * math.cos(lat * p) * math.pow(math.sin(dLng / 2), 2);
   return 2 * r * math.asin(math.sqrt(h));
 }
 
 /// Every upcoming or live event near the user, for View all. The chips and sections filter this one list.
-final viewAllProvider = FutureProvider.autoDispose<List<EventSummary>>((ref) async {
+final viewAllProvider = FutureProvider.autoDispose<List<EventSummary>>((
+  ref,
+) async {
   final at = await ref.watch(homeCentreProvider.future);
-  return ref.watch(eventRepositoryProvider).listAll('all', at, ref.watch(areaSelectionProvider).km);
+  return ref
+      .watch(eventRepositoryProvider)
+      .listAll('all', at, ref.watch(areaSelectionProvider).km);
 });
 
-final eventDetailProvider = FutureProvider.autoDispose.family<EventDetail?, String>((ref, id) async {
-  final at = await ref.watch(homeCentreProvider.future);
-  return ref.watch(eventRepositoryProvider).detail(id, at);
-});
+final eventDetailProvider = FutureProvider.autoDispose
+    .family<EventDetail?, String>((ref, id) async {
+      final at = await ref.watch(homeCentreProvider.future);
+      return ref.watch(eventRepositoryProvider).detail(id, at);
+    });

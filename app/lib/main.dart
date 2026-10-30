@@ -16,7 +16,12 @@ Future<void> main() async {
       'MAP_TILE_URL': const String.fromEnvironment('MAP_TILE_URL'),
     });
     await initSupabase(config);
-    runApp(ProviderScope(overrides: [appConfigProvider.overrideWithValue(config)], child: const JomApp()));
+    runApp(
+      ProviderScope(
+        overrides: [appConfigProvider.overrideWithValue(config)],
+        child: const JomApp(),
+      ),
+    );
   } on StateError catch (e) {
     runApp(_ConfigError('$e'));
   }
@@ -29,16 +34,16 @@ class _ConfigError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                'Jom was started without its settings.\n\n$message\n\nRun it with:\nflutter run --dart-define-from-file=env/staging.json',
-                textAlign: TextAlign.center,
-              ),
-            ),
+    home: Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            'Jom was started without its settings.\n\n$message\n\nRun it with:\nflutter run --dart-define-from-file=env/staging.json',
+            textAlign: TextAlign.center,
           ),
         ),
-      );
+      ),
+    ),
+  );
 }

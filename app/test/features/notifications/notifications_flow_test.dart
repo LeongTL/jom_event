@@ -28,81 +28,180 @@ import '../../helpers/fake_events.dart';
 import '../../helpers/fake_notifications.dart';
 
 // the shared fake clock: 14:00 in Kuala Lumpur on Wednesday 9 January 2030
-final n1 = note('n1', 'payment', 'Booking confirmed', clock.subtract(const Duration(minutes: 2)), refType: 'booking', refId: 'b1', body: 'Beginner Mat Pilates');
-final n2 = note('n2', 'chat_message', 'Mei Studio replied', clock.subtract(const Duration(hours: 1)), refType: 'thread', refId: 't1', body: 'Yes, mats are provided');
-final n3 = note('n3', 'payout', 'Payout scheduled', clock.subtract(const Duration(days: 1)), refType: 'event', refId: 'e1', body: 'RM 25', read: true);
-final n4 = note('n4', 'event_cancelled', 'Salsa Social was cancelled', clock.subtract(const Duration(days: 2)), refType: 'event', refId: 'e1', body: 'RM25 is on its way back', read: true);
+final n1 = note(
+  'n1',
+  'payment',
+  'Booking confirmed',
+  clock.subtract(const Duration(minutes: 2)),
+  refType: 'booking',
+  refId: 'b1',
+  body: 'Beginner Mat Pilates',
+);
+final n2 = note(
+  'n2',
+  'chat_message',
+  'Mei Studio replied',
+  clock.subtract(const Duration(hours: 1)),
+  refType: 'thread',
+  refId: 't1',
+  body: 'Yes, mats are provided',
+);
+final n3 = note(
+  'n3',
+  'payout',
+  'Payout scheduled',
+  clock.subtract(const Duration(days: 1)),
+  refType: 'event',
+  refId: 'e1',
+  body: 'RM 25',
+  read: true,
+);
+final n4 = note(
+  'n4',
+  'event_cancelled',
+  'Salsa Social was cancelled',
+  clock.subtract(const Duration(days: 2)),
+  refType: 'event',
+  refId: 'e1',
+  body: 'RM25 is on its way back',
+  read: true,
+);
 
-Future<GoRouter> pumpApp(WidgetTester t, {String location = '/notifications', FakeNotifications? repo, bool signedIn = true, FakeChat? chat, Map<String, Booking> bookings = const {}}) async {
+Future<GoRouter> pumpApp(
+  WidgetTester t, {
+  String location = '/notifications',
+  FakeNotifications? repo,
+  bool signedIn = true,
+  FakeChat? chat,
+  Map<String, Booking> bookings = const {},
+}) async {
   // wider than a phone on purpose: the test font's letters are so wide that tab names would wrap
   t.view.physicalSize = const Size(800, 2400);
   t.view.devicePixelRatio = 1;
   addTearDown(t.view.reset);
   final router = createRouter(initialLocation: location);
   final start = t.binding.clock.now();
-  await t.pumpWidget(ProviderScope(
-    overrides: [
-      routerProvider.overrideWithValue(router),
-      authRepositoryProvider.overrideWithValue(FakeAuthRepository(initial: signedIn ? fakeSession(name: 'Mei') : null)),
-      notificationRepositoryProvider.overrideWithValue(repo ?? FakeNotifications()),
-      eventRepositoryProvider.overrideWithValue(FakeEvents(details: {'e1': detailOf(sum('e1', title: 'Batik Workshop'))})),
-      chatRepositoryProvider.overrideWithValue(chat ?? FakeChat(infos: {'t1': const ThreadInfo(id: 't1', iAmHost: false, otherName: 'Mei Studio')})),
-      bookingRepositoryProvider.overrideWithValue(FakeBookings()..byId.addAll({'b1': bk('b1', status: 'confirmed'), ...bookings})),
-      nowProvider.overrideWithValue(() => clock.add(t.binding.clock.now().difference(start))),
-      weekendProvider.overrideWith((ref, a) async => <EventSummary>[]),
-      nearYouProvider.overrideWith((ref, q) async => <EventSummary>[]),
-      deviceLocationProvider.overrideWithValue(() async => null),
-    ],
-    child: const JomApp(),
-  ));
+  await t.pumpWidget(
+    ProviderScope(
+      overrides: [
+        routerProvider.overrideWithValue(router),
+        authRepositoryProvider.overrideWithValue(
+          FakeAuthRepository(
+            initial: signedIn ? fakeSession(name: 'Mei') : null,
+          ),
+        ),
+        notificationRepositoryProvider.overrideWithValue(
+          repo ?? FakeNotifications(),
+        ),
+        eventRepositoryProvider.overrideWithValue(
+          FakeEvents(
+            details: {'e1': detailOf(sum('e1', title: 'Batik Workshop'))},
+          ),
+        ),
+        chatRepositoryProvider.overrideWithValue(
+          chat ??
+              FakeChat(
+                infos: {
+                  't1': const ThreadInfo(
+                    id: 't1',
+                    iAmHost: false,
+                    otherName: 'Mei Studio',
+                  ),
+                },
+              ),
+        ),
+        bookingRepositoryProvider.overrideWithValue(
+          FakeBookings()
+            ..byId.addAll({'b1': bk('b1', status: 'confirmed'), ...bookings}),
+        ),
+        nowProvider.overrideWithValue(
+          () => clock.add(t.binding.clock.now().difference(start)),
+        ),
+        weekendProvider.overrideWith((ref, a) async => <EventSummary>[]),
+        nearYouProvider.overrideWith((ref, q) async => <EventSummary>[]),
+        deviceLocationProvider.overrideWithValue(() async => null),
+      ],
+      child: const JomApp(),
+    ),
+  );
   await t.pumpAndSettle();
   return router;
 }
 
 Finder key(String k) => find.byKey(Key(k));
 // the top of the stack: a pushed screen does not move the router's own location
-String where(GoRouter r) => r.routerDelegate.currentConfiguration.last.matchedLocation;
+String where(GoRouter r) =>
+    r.routerDelegate.currentConfiguration.last.matchedLocation;
 
 void main() {
   group('the list', () {
-    testWidgets('notifications_show_title_body_time_and_an_unread_dot_with_no_emoji', (t) async {
-      await pumpApp(t, repo: FakeNotifications(items: [n1, n2, n3, n4]));
-      expect(key('notifications-screen'), findsOneWidget);
-      expect(find.text('Notifications'), findsOneWidget);
-      for (final s in ['Booking confirmed', 'Beginner Mat Pilates', 'Mei Studio replied', 'Yes, mats are provided', 'Payout scheduled']) {
-        expect(find.text(s), findsOneWidget, reason: s);
-      }
-      for (final id in ['n1', 'n2', 'n3', 'n4']) {
-        expect(find.descendant(of: key('notif-$id'), matching: find.byType(Icon)), findsOneWidget, reason: 'an icon, not an emoji, on $id');
-      }
-      final emoji = RegExp(r'[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{21A9}]', unicode: true);
-      expect([for (final w in t.widgetList<Text>(find.byType(Text))) if (emoji.hasMatch(w.data ?? '')) w.data], isEmpty);
-      for (final w in ['2 min ago', '1 h ago', 'Yesterday', 'Mon']) {
-        expect(find.text(w), findsOneWidget, reason: w);
-      }
-      expect(key('notif-dot-n1'), findsOneWidget);
-      expect(key('notif-dot-n2'), findsOneWidget);
-      expect(key('notif-dot-n3'), findsNothing);
-      expect(key('notif-dot-n4'), findsNothing);
-    });
+    testWidgets(
+      'notifications_show_title_body_time_and_an_unread_dot_with_no_emoji',
+      (t) async {
+        await pumpApp(t, repo: FakeNotifications(items: [n1, n2, n3, n4]));
+        expect(key('notifications-screen'), findsOneWidget);
+        expect(find.text('Notifications'), findsOneWidget);
+        for (final s in [
+          'Booking confirmed',
+          'Beginner Mat Pilates',
+          'Mei Studio replied',
+          'Yes, mats are provided',
+          'Payout scheduled',
+        ]) {
+          expect(find.text(s), findsOneWidget, reason: s);
+        }
+        for (final id in ['n1', 'n2', 'n3', 'n4']) {
+          expect(
+            find.descendant(of: key('notif-$id'), matching: find.byType(Icon)),
+            findsOneWidget,
+            reason: 'an icon, not an emoji, on $id',
+          );
+        }
+        final emoji = RegExp(
+          r'[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{21A9}]',
+          unicode: true,
+        );
+        expect([
+          for (final w in t.widgetList<Text>(find.byType(Text)))
+            if (emoji.hasMatch(w.data ?? '')) w.data,
+        ], isEmpty);
+        for (final w in ['2 min ago', '1 h ago', 'Yesterday', 'Mon']) {
+          expect(find.text(w), findsOneWidget, reason: w);
+        }
+        expect(key('notif-dot-n1'), findsOneWidget);
+        expect(key('notif-dot-n2'), findsOneWidget);
+        expect(key('notif-dot-n3'), findsNothing);
+        expect(key('notif-dot-n4'), findsNothing);
+      },
+    );
 
-    testWidgets('an empty list says so, and the switches are still there', (t) async {
+    testWidgets('an empty list says so, and the switches are still there', (
+      t,
+    ) async {
       await pumpApp(t);
       expect(find.text('Nothing yet'), findsOneWidget);
       expect(find.text('SHOW ME'), findsOneWidget);
     });
 
-    testWidgets('a notice that arrives while the screen is open shows at the top and is marked read', (t) async {
-      final repo = FakeNotifications(items: [n3]);
-      await pumpApp(t, repo: repo);
-      repo.push(n1);
-      await t.pumpAndSettle();
-      expect(find.text('Booking confirmed'), findsOneWidget);
-      expect(t.getTopLeft(key('notif-n1')).dy, lessThan(t.getTopLeft(key('notif-n3')).dy));
-      expect(repo.marked, ['n1']);
-    });
+    testWidgets(
+      'a notice that arrives while the screen is open shows at the top and is marked read',
+      (t) async {
+        final repo = FakeNotifications(items: [n3]);
+        await pumpApp(t, repo: repo);
+        repo.push(n1);
+        await t.pumpAndSettle();
+        expect(find.text('Booking confirmed'), findsOneWidget);
+        expect(
+          t.getTopLeft(key('notif-n1')).dy,
+          lessThan(t.getTopLeft(key('notif-n3')).dy),
+        );
+        expect(repo.marked, ['n1']);
+      },
+    );
 
-    testWidgets('signed_out visitors get the sign-in prompt, with a way back', (t) async {
+    testWidgets('signed_out visitors get the sign-in prompt, with a way back', (
+      t,
+    ) async {
       await pumpApp(t, signedIn: false);
       expect(find.text('Sign in to see your notifications'), findsOneWidget);
       expect(key('notifications-screen'), findsNothing);
@@ -111,25 +210,45 @@ void main() {
   });
 
   group('reading', () {
-    testWidgets('opening_screen_marks_visible_items_read_and_badge_drops', (t) async {
+    testWidgets('opening_screen_marks_visible_items_read_and_badge_drops', (
+      t,
+    ) async {
       final repo = FakeNotifications(items: [n1, n2, n3]);
       await pumpApp(t, location: '/explore', repo: repo);
-      expect(find.descendant(of: key('bell-badge'), matching: find.text('2')), findsOneWidget);
+      expect(
+        find.descendant(of: key('bell-badge'), matching: find.text('2')),
+        findsOneWidget,
+      );
 
       await t.tap(key('bell'));
       await t.pumpAndSettle();
       expect(key('notifications-screen'), findsOneWidget);
-      expect(repo.marked, unorderedEquals(['n1', 'n2']), reason: 'only the unread ones are sent');
-      expect(key('notif-dot-n1'), findsOneWidget, reason: 'the dots stay for this visit so you can see what was new');
+      expect(
+        repo.marked,
+        unorderedEquals(['n1', 'n2']),
+        reason: 'only the unread ones are sent',
+      );
+      expect(
+        key('notif-dot-n1'),
+        findsOneWidget,
+        reason: 'the dots stay for this visit so you can see what was new',
+      );
 
       await t.tap(key('nav-back'));
       await t.pumpAndSettle();
       expect(key('home-screen'), findsOneWidget);
-      expect(key('bell-badge'), findsNothing, reason: 'the bell badge dropped to nothing');
+      expect(
+        key('bell-badge'),
+        findsNothing,
+        reason: 'the bell badge dropped to nothing',
+      );
     });
 
-    testWidgets('a failure to mark read is quiet: the screen still works', (t) async {
-      final repo = FakeNotifications(items: [n1])..markError = Exception('offline');
+    testWidgets('a failure to mark read is quiet: the screen still works', (
+      t,
+    ) async {
+      final repo = FakeNotifications(items: [n1])
+        ..markError = Exception('offline');
       await pumpApp(t, repo: repo);
       expect(find.text('Booking confirmed'), findsOneWidget);
       expect(t.takeException(), isNull);
@@ -141,10 +260,13 @@ void main() {
       ('n1', '/booking/b1/ticket', 'ticket-screen'),
       ('n2', '/chats/t1', 'thread-screen'),
       ('n4', '/event/e1', 'event-screen'),
-      ('n3', '/host-mode/payouts', 'screen-title'),
+      ('n3', '/host-mode/payouts', 'payouts'),
     ]) {
       testWidgets('tap_routes_by_ref_type: ${c.$1} opens ${c.$2}', (t) async {
-        final router = await pumpApp(t, repo: FakeNotifications(items: [n1, n2, n3, n4]));
+        final router = await pumpApp(
+          t,
+          repo: FakeNotifications(items: [n1, n2, n3, n4]),
+        );
         await t.tap(key('notif-${c.$1}'));
         await t.pumpAndSettle();
         expect(key(c.$3), findsOneWidget);
@@ -152,43 +274,80 @@ void main() {
       });
     }
 
-    testWidgets('Done on a ticket opened from a notification returns to Notifications, not Explore', (t) async {
-      final router = await pumpApp(t, repo: FakeNotifications(items: [n1]));
-      await t.tap(key('notif-n1'));
-      await t.pumpAndSettle();
-      expect(key('ticket-screen'), findsOneWidget);
-      await t.ensureVisible(key('ticket-done'));
-      await t.tap(key('ticket-done'));
-      await t.pumpAndSettle();
-      expect(key('notifications-screen'), findsOneWidget);
-      expect(where(router), '/notifications');
-    });
+    testWidgets(
+      'Done on a ticket opened from a notification returns to Notifications, not Explore',
+      (t) async {
+        final router = await pumpApp(t, repo: FakeNotifications(items: [n1]));
+        await t.tap(key('notif-n1'));
+        await t.pumpAndSettle();
+        expect(key('ticket-screen'), findsOneWidget);
+        await t.ensureVisible(key('ticket-done'));
+        await t.tap(key('ticket-done'));
+        await t.pumpAndSettle();
+        expect(key('notifications-screen'), findsOneWidget);
+        expect(where(router), '/notifications');
+      },
+    );
 
     for (final c in [
       ('cancelled', 'This booking was cancelled'),
       ('confirmed', "This event isn't available"),
     ]) {
-      testWidgets('a ticket whose event is gone says why (${c.$1}) and has a way back', (t) async {
-        final gone = note('g', 'payment', 'Payment received', clock, refType: 'booking', refId: 'bg');
-        await pumpApp(t, repo: FakeNotifications(items: [gone]), bookings: {'bg': bk('bg', event: 'deleted-event', status: c.$1)});
-        await t.tap(key('notif-g'));
-        await t.pumpAndSettle();
-        expect(find.text(c.$2), findsOneWidget);
-        await t.tap(key('nav-back'));
-        await t.pumpAndSettle();
-        expect(key('notifications-screen'), findsOneWidget);
-      });
+      testWidgets(
+        'a ticket whose event is gone says why (${c.$1}) and has a way back',
+        (t) async {
+          final gone = note(
+            'g',
+            'payment',
+            'Payment received',
+            clock,
+            refType: 'booking',
+            refId: 'bg',
+          );
+          await pumpApp(
+            t,
+            repo: FakeNotifications(items: [gone]),
+            bookings: {'bg': bk('bg', event: 'deleted-event', status: c.$1)},
+          );
+          await t.tap(key('notif-g'));
+          await t.pumpAndSettle();
+          expect(find.text(c.$2), findsOneWidget);
+          await t.tap(key('nav-back'));
+          await t.pumpAndSettle();
+          expect(key('notifications-screen'), findsOneWidget);
+        },
+      );
     }
 
-    testWidgets('a notice about an event that no longer exists says so instead of showing a broken page', (t) async {
-      await pumpApp(t, repo: FakeNotifications(items: [note('gone', 'booking', 'New booking', clock, refType: 'event', refId: 'deleted-event')]));
-      await t.tap(key('notif-gone'));
-      await t.pumpAndSettle();
-      expect(find.text("This event isn't available"), findsOneWidget);
-    });
+    testWidgets(
+      'a notice about an event that no longer exists says so instead of showing a broken page',
+      (t) async {
+        await pumpApp(
+          t,
+          repo: FakeNotifications(
+            items: [
+              note(
+                'gone',
+                'booking',
+                'New booking',
+                clock,
+                refType: 'event',
+                refId: 'deleted-event',
+              ),
+            ],
+          ),
+        );
+        await t.tap(key('notif-gone'));
+        await t.pumpAndSettle();
+        expect(find.text("This event isn't available"), findsOneWidget);
+      },
+    );
 
     testWidgets('a notice with nothing to open stays where it is', (t) async {
-      final router = await pumpApp(t, repo: FakeNotifications(items: [note('n9', 'payment', 'Hello', clock)]));
+      final router = await pumpApp(
+        t,
+        repo: FakeNotifications(items: [note('n9', 'payment', 'Hello', clock)]),
+      );
       await t.tap(key('notif-n9'));
       await t.pumpAndSettle();
       expect(where(router), '/notifications');
@@ -196,7 +355,9 @@ void main() {
   });
 
   group('Show me', () {
-    testWidgets('show_me_switches_chat_and_review_requests_toggle_prefs', (t) async {
+    testWidgets('show_me_switches_chat_and_review_requests_toggle_prefs', (
+      t,
+    ) async {
       final repo = FakeNotifications();
       await pumpApp(t, repo: repo);
       expect(t.widget<JomSwitch>(key('switch-chat')).value, true);
@@ -205,24 +366,45 @@ void main() {
       await t.tap(key('switch-chat'));
       await t.pumpAndSettle();
       expect(t.widget<JomSwitch>(key('switch-chat')).value, false);
-      expect(repo.saved.last, const NotificationPrefs(chat: false, reviewRequests: true));
+      expect(
+        repo.saved.last,
+        const NotificationPrefs(chat: false, reviewRequests: true),
+      );
 
       await t.tap(key('switch-review'));
       await t.pumpAndSettle();
-      expect(repo.saved.last, const NotificationPrefs(chat: false, reviewRequests: false), reason: 'both are saved together');
+      expect(
+        repo.saved.last,
+        const NotificationPrefs(chat: false, reviewRequests: false),
+        reason: 'both are saved together',
+      );
 
       await t.tap(key('switch-chat'));
       await t.pumpAndSettle();
-      expect(repo.saved.last, const NotificationPrefs(chat: true, reviewRequests: false), reason: 'turning one back on keeps the other as it is');
+      expect(
+        repo.saved.last,
+        const NotificationPrefs(chat: true, reviewRequests: false),
+        reason: 'turning one back on keeps the other as it is',
+      );
     });
 
     testWidgets('the switches start where the account has them', (t) async {
-      await pumpApp(t, repo: FakeNotifications(prefsValue: const NotificationPrefs(chat: false, reviewRequests: true)));
+      await pumpApp(
+        t,
+        repo: FakeNotifications(
+          prefsValue: const NotificationPrefs(
+            chat: false,
+            reviewRequests: true,
+          ),
+        ),
+      );
       expect(t.widget<JomSwitch>(key('switch-chat')).value, false);
       expect(t.widget<JomSwitch>(key('switch-review')).value, true);
     });
 
-    testWidgets('a switch that cannot be saved flips back and says so', (t) async {
+    testWidgets('a switch that cannot be saved flips back and says so', (
+      t,
+    ) async {
       final repo = FakeNotifications()..saveError = Exception('offline');
       await pumpApp(t, repo: repo);
       await t.tap(key('switch-chat'));
@@ -231,47 +413,68 @@ void main() {
       expect(find.text('Could not save that. Try again.'), findsOneWidget);
     });
 
-    testWidgets('booking_payment_and_event_change_rows_are_always_on_and_not_toggleable', (t) async {
-      final repo = FakeNotifications();
-      await pumpApp(t, repo: repo);
-      expect(find.text('Always on'), findsNWidgets(2));
-      for (final k in ['switch-booking', 'switch-event']) {
-        expect(t.widget<JomSwitch>(key(k)).value, true, reason: k);
-        await t.tap(key(k));
-        await t.pumpAndSettle();
-        expect(t.widget<JomSwitch>(key(k)).value, true, reason: k);
-      }
-      expect(repo.saved, isEmpty);
-    });
+    testWidgets(
+      'booking_payment_and_event_change_rows_are_always_on_and_not_toggleable',
+      (t) async {
+        final repo = FakeNotifications();
+        await pumpApp(t, repo: repo);
+        expect(find.text('Always on'), findsNWidgets(2));
+        for (final k in ['switch-booking', 'switch-event']) {
+          expect(t.widget<JomSwitch>(key(k)).value, true, reason: k);
+          await t.tap(key(k));
+          await t.pumpAndSettle();
+          expect(t.widget<JomSwitch>(key(k)).value, true, reason: k);
+        }
+        expect(repo.saved, isEmpty);
+      },
+    );
 
     testWidgets('footer_says_no_push_notifications_yet', (t) async {
       await pumpApp(t);
-      expect(find.text("Notifications show inside Jom only. We don't send push notifications yet."), findsOneWidget);
+      expect(
+        find.text(
+          "Notifications show inside Jom only. We don't send push notifications yet.",
+        ),
+        findsOneWidget,
+      );
     });
   });
 
   group('the bell', () {
-    Future<void> pumpBell(WidgetTester t, int count) => t.pumpWidget(ProviderScope(
-          overrides: [bellCountProvider.overrideWith((ref) => Stream.value(count))],
-          child: MaterialApp(
-            theme: ThemeData(extensions: [const JomTokens()]),
-            home: const Scaffold(body: Center(child: BellButton())),
-          ),
-        ));
+    Future<void> pumpBell(WidgetTester t, int count) => t.pumpWidget(
+      ProviderScope(
+        overrides: [
+          bellCountProvider.overrideWith((ref) => Stream.value(count)),
+        ],
+        child: MaterialApp(
+          theme: ThemeData(extensions: [const JomTokens()]),
+          home: const Scaffold(body: Center(child: BellButton())),
+        ),
+      ),
+    );
 
-    testWidgets('bell_on_host_home_also_shows_count: the same button, wherever it is put', (t) async {
-      await pumpBell(t, 3);
-      await t.pump();
-      expect(find.descendant(of: key('bell-badge'), matching: find.text('3')), findsOneWidget);
-    });
+    testWidgets(
+      'bell_on_host_home_also_shows_count: the same button, wherever it is put',
+      (t) async {
+        await pumpBell(t, 3);
+        await t.pump();
+        expect(
+          find.descendant(of: key('bell-badge'), matching: find.text('3')),
+          findsOneWidget,
+        );
+      },
+    );
 
-    testWidgets('a signed-out visitor sees no badge and the backend is never asked', (t) async {
-      final repo = FakeNotifications(items: [n1]);
-      await pumpApp(t, location: '/explore', repo: repo, signedIn: false);
-      expect(key('bell'), findsOneWidget);
-      expect(key('bell-badge'), findsNothing);
-      expect(repo.unreadCalls, 0);
-    });
+    testWidgets(
+      'a signed-out visitor sees no badge and the backend is never asked',
+      (t) async {
+        final repo = FakeNotifications(items: [n1]);
+        await pumpApp(t, location: '/explore', repo: repo, signedIn: false);
+        expect(key('bell'), findsOneWidget);
+        expect(key('bell-badge'), findsNothing);
+        expect(repo.unreadCalls, 0);
+      },
+    );
 
     testWidgets('no badge when nothing is unread', (t) async {
       await pumpBell(t, 0);

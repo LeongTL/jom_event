@@ -4,23 +4,28 @@ import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// A signed-in (or half signed-in) session for tests. [name] ends up in the user metadata, like Google or setName do.
-Session fakeSession({String? phone = '60123456789', String? name, String? email}) => Session(
-      accessToken: 'token',
-      tokenType: 'bearer',
-      user: User(
-        id: 'u1',
-        appMetadata: const {},
-        userMetadata: name == null ? const {} : {'full_name': name},
-        aud: 'authenticated',
-        createdAt: '2026-10-15T00:00:00Z',
-        phone: phone,
-        email: email,
-      ),
-    );
+Session fakeSession({
+  String? phone = '60123456789',
+  String? name,
+  String? email,
+}) => Session(
+  accessToken: 'token',
+  tokenType: 'bearer',
+  user: User(
+    id: 'u1',
+    appMetadata: const {},
+    userMetadata: name == null ? const {} : {'full_name': name},
+    aud: 'authenticated',
+    createdAt: '2026-10-15T00:00:00Z',
+    phone: phone,
+    email: email,
+  ),
+);
 
 /// Stands in for Supabase: the test OTP +60123456789 / 123456 works, anything else is refused.
 class FakeAuthRepository implements AuthRepository {
-  FakeAuthRepository({Session? initial, this.newUserHasName = false}) : _current = initial;
+  FakeAuthRepository({Session? initial, this.newUserHasName = false})
+    : _current = initial;
 
   Session? _current;
   final _changes = StreamController<Session?>.broadcast();
@@ -65,8 +70,14 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<void> verifyOtp(String phone, String code) async {
     verified.add((phone, code));
-    if (code != '123456') throw const AuthException('Token has expired or is invalid');
-    _set(fakeSession(phone: phone.substring(1), name: newUserHasName ? 'Mei' : null));
+    if (code != '123456')
+      throw const AuthException('Token has expired or is invalid');
+    _set(
+      fakeSession(
+        phone: phone.substring(1),
+        name: newUserHasName ? 'Mei' : null,
+      ),
+    );
   }
 
   @override

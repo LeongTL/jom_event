@@ -37,17 +37,29 @@ class SupabaseNotificationRepository implements NotificationRepository {
       .map((rows) => [for (final r in rows) AppNotification.fromJson(r)]);
 
   @override
-  Future<void> markRead(List<String> ids) => _db.schema('identity').rpc('mark_read', params: {'ids': ids});
+  Future<void> markRead(List<String> ids) =>
+      _db.schema('identity').rpc('mark_read', params: {'ids': ids});
 
   @override
   Future<NotificationPrefs> prefs() async {
-    final r = await _db.schema('identity').from('notification_prefs').select('chat, review_requests').maybeSingle();
-    return NotificationPrefs(chat: r?['chat'] as bool? ?? true, reviewRequests: r?['review_requests'] as bool? ?? true);
+    final r = await _db
+        .schema('identity')
+        .from('notification_prefs')
+        .select('chat, review_requests')
+        .maybeSingle();
+    return NotificationPrefs(
+      chat: r?['chat'] as bool? ?? true,
+      reviewRequests: r?['review_requests'] as bool? ?? true,
+    );
   }
 
   @override
-  Future<void> setPrefs(NotificationPrefs p) =>
-      _db.schema('identity').rpc('set_notification_prefs', params: {'p_chat': p.chat, 'p_review_requests': p.reviewRequests});
+  Future<void> setPrefs(NotificationPrefs p) => _db
+      .schema('identity')
+      .rpc(
+        'set_notification_prefs',
+        params: {'p_chat': p.chat, 'p_review_requests': p.reviewRequests},
+      );
 
   @override
   Stream<int> unread() {
@@ -66,7 +78,15 @@ class SupabaseNotificationRepository implements NotificationRepository {
         fetch();
         try {
           // any change: a new notice arrives, or one is marked read
-          channel = _db.channel('notifications-unread').onPostgresChanges(event: PostgresChangeEvent.all, schema: 'identity', table: 'notifications', callback: (_) => fetch()).subscribe();
+          channel = _db
+              .channel('notifications-unread')
+              .onPostgresChanges(
+                event: PostgresChangeEvent.all,
+                schema: 'identity',
+                table: 'notifications',
+                callback: (_) => fetch(),
+              )
+              .subscribe();
         } catch (_) {
           // no live updates: the badge refreshes the next time it is read
         }
@@ -79,6 +99,10 @@ class SupabaseNotificationRepository implements NotificationRepository {
   }
 }
 
-final notificationRepositoryProvider = Provider<NotificationRepository>((ref) => SupabaseNotificationRepository(ref));
+final notificationRepositoryProvider = Provider<NotificationRepository>(
+  (ref) => SupabaseNotificationRepository(ref),
+);
 
-final notificationsProvider = StreamProvider.autoDispose<List<AppNotification>>((ref) => ref.watch(notificationRepositoryProvider).watch());
+final notificationsProvider = StreamProvider.autoDispose<List<AppNotification>>(
+  (ref) => ref.watch(notificationRepositoryProvider).watch(),
+);

@@ -52,7 +52,11 @@ const _googleWebClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
 const _googleIosClientId = String.fromEnvironment('GOOGLE_IOS_CLIENT_ID');
 
 class SupabaseAuthRepository implements AuthRepository {
-  SupabaseAuthRepository(this._client, {this.googleWebClientId = '', this.googleIosClientId = ''});
+  SupabaseAuthRepository(
+    this._client, {
+    this.googleWebClientId = '',
+    this.googleIosClientId = '',
+  });
 
   final SupabaseClient _client;
   final String googleWebClientId;
@@ -70,19 +74,28 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<void> signInWithGoogle() async {
     // Calling the Google plugin on iOS without its client ID can crash the app, so check first.
-    if (googleWebClientId.isEmpty || (Platform.isIOS && googleIosClientId.isEmpty)) throw const GoogleNotConfigured();
+    if (googleWebClientId.isEmpty ||
+        (Platform.isIOS && googleIosClientId.isEmpty))
+      throw const GoogleNotConfigured();
     final google = GoogleSignIn.instance;
     if (!_googleReady) {
-      await google.initialize(clientId: Platform.isIOS ? googleIosClientId : null, serverClientId: googleWebClientId);
+      await google.initialize(
+        clientId: Platform.isIOS ? googleIosClientId : null,
+        serverClientId: googleWebClientId,
+      );
       _googleReady = true;
     }
     try {
       final account = await google.authenticate();
       final idToken = account.authentication.idToken;
       if (idToken == null) throw const GoogleNotConfigured();
-      await _auth.signInWithIdToken(provider: OAuthProvider.google, idToken: idToken);
+      await _auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+      );
     } on GoogleSignInException catch (e) {
-      if (e.code == GoogleSignInExceptionCode.canceled) throw const GoogleCancelled();
+      if (e.code == GoogleSignInExceptionCode.canceled)
+        throw const GoogleCancelled();
       rethrow;
     }
   }
@@ -98,7 +111,12 @@ class SupabaseAuthRepository implements AuthRepository {
   Future<void> setName(String name) async {
     await _auth.updateUser(UserAttributes(data: {'full_name': name}));
     // the profile row is what other people see; it is changed by a database function, never directly
-    await _client.schema('identity').rpc('update_profile', params: {'name': name, 'phone': _auth.currentUser?.phone});
+    await _client
+        .schema('identity')
+        .rpc(
+          'update_profile',
+          params: {'name': name, 'phone': _auth.currentUser?.phone},
+        );
   }
 
   @override
@@ -110,10 +128,13 @@ class SupabaseAuthRepository implements AuthRepository {
       await _client.functions.invoke('delete-account');
     } on FunctionException catch (e) {
       final body = e.details;
-      if (e.status == 409 && body is Map && body['error'] is String) throw AccountDeleteRefused(body['error'] as String);
+      if (e.status == 409 && body is Map && body['error'] is String)
+        throw AccountDeleteRefused(body['error'] as String);
       rethrow;
     }
-    await _auth.signOut(scope: SignOutScope.local); // the account is gone, so there is no server session to end
+    await _auth.signOut(
+      scope: SignOutScope.local,
+    ); // the account is gone, so there is no server session to end
   }
 }
 
@@ -126,4 +147,6 @@ final authRepositoryProvider = Provider<AuthRepository>(
 );
 
 /// Who is signed in right now (null: nobody). Loading only for an instant at start-up.
-final sessionProvider = StreamProvider<Session?>((ref) => ref.watch(authRepositoryProvider).session);
+final sessionProvider = StreamProvider<Session?>(
+  (ref) => ref.watch(authRepositoryProvider).session,
+);

@@ -47,8 +47,12 @@ class HostProfile {
     required this.accountNumber,
     this.ratingAvg,
     this.ratingCount = 0,
+    this.verifiedAt,
   });
   final String id, name, area, holder, bank, accountNumber;
+
+  /// Set by hand after the payout account holder is checked.
+  final DateTime? verifiedAt;
   final String? bio, ssm;
   final double? ratingAvg;
   final int ratingCount;
@@ -124,4 +128,54 @@ class HostDashboard {
 class DeleteResult {
   const DeleteResult({required this.refunded, required this.released});
   final int refunded, released;
+}
+
+/// One paid booking on the guest and check-in lists.
+class Guest {
+  const Guest({
+    required this.bookingId,
+    required this.name,
+    required this.people,
+    required this.code,
+    required this.checkedIn,
+  });
+  final String bookingId, name, code;
+  final int people;
+  final bool checkedIn;
+}
+
+/// What an event earns, in sen: gross less the two fees is what the host receives.
+class Earnings {
+  const Earnings({
+    required this.gross,
+    required this.gateway,
+    required this.platform,
+    required this.receives,
+  });
+  final int gross, gateway, platform, receives;
+}
+
+class PayoutRow {
+  const PayoutRow({
+    required this.title,
+    required this.startsAt,
+    required this.dueAt,
+    required this.paid,
+    required this.earnings,
+  });
+  final String title;
+  final DateTime? startsAt;
+  final DateTime dueAt;
+  final bool paid;
+  final Earnings earnings;
+}
+
+class Payouts {
+  const Payouts({
+    required this.upcomingSen,
+    required this.paidSen,
+    required this.rows,
+  });
+  final int upcomingSen, paidSen;
+  final List<PayoutRow> rows;
 }

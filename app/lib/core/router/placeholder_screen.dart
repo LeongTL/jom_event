@@ -5,7 +5,13 @@ import '../theme/calm.dart';
 
 /// Stands in for a screen a later task builds, so the whole route map can exist and be tested now.
 class PlaceholderScreen extends StatelessWidget {
-  const PlaceholderScreen({super.key, required this.title, this.note, this.child, this.tabBarBelow = false});
+  const PlaceholderScreen({
+    super.key,
+    required this.title,
+    this.note,
+    this.child,
+    this.tabBarBelow = false,
+  });
 
   final String title;
   final String? note;
@@ -23,10 +29,20 @@ class PlaceholderScreen extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(24, 16, 24, tabBarBelow ? 120 : 24),
           children: [
             if (context.canPop())
-              Align(alignment: Alignment.centerLeft, child: BackButton(onPressed: () => context.pop())),
-            Text(title, key: const Key('screen-title'), style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: BackButton(onPressed: () => context.pop()),
+              ),
+            Text(
+              title,
+              key: const Key('screen-title'),
+              style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+            ),
             const SizedBox(height: 8),
-            Text(note ?? 'This screen is built in a later task.', style: TextStyle(color: k.sheetInk.withValues(alpha: .7))),
+            Text(
+              note ?? 'This screen is built in a later task.',
+              style: TextStyle(color: k.sheetInk.withValues(alpha: .7)),
+            ),
             if (child != null) ...[const SizedBox(height: 24), child!],
           ],
         ),

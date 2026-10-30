@@ -21,13 +21,25 @@ class MockGatewayClient implements PaymentGatewayClient {
   bool get canSimulate => true;
 
   @override
-  Future<void> pay(PaymentSession session, String method, {String? simulate}) async {
-    await _ref.read(supabaseClientProvider).functions.invoke('mock-gateway-pay', body: {
-      'attemptId': session.attemptId,
-      'method': method,
-      'forceOutcome': ?simulate,
-    });
+  Future<void> pay(
+    PaymentSession session,
+    String method, {
+    String? simulate,
+  }) async {
+    await _ref
+        .read(supabaseClientProvider)
+        .functions
+        .invoke(
+          'mock-gateway-pay',
+          body: {
+            'attemptId': session.attemptId,
+            'method': method,
+            'forceOutcome': ?simulate,
+          },
+        );
   }
 }
 
-final paymentGatewayClientProvider = Provider<PaymentGatewayClient>((ref) => MockGatewayClient(ref));
+final paymentGatewayClientProvider = Provider<PaymentGatewayClient>(
+  (ref) => MockGatewayClient(ref),
+);

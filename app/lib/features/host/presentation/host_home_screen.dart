@@ -96,7 +96,7 @@ class HostHomeScreen extends ConsumerWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: _Tile(
+                          child: StatTile(
                             const Key('tile-guests'),
                             '${d.guests}',
                             'guests booked',
@@ -104,7 +104,7 @@ class HostHomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: _Tile(
+                          child: StatTile(
                             const Key('tile-rating'),
                             d.profile.ratingAvg == null
                                 ? 'New'
@@ -230,24 +230,7 @@ class _NextEvent extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Container(
-            key: const Key('fill-bar'),
-            height: 6,
-            decoration: BoxDecoration(
-              color: Calm.chip,
-              borderRadius: BorderRadius.circular(3),
-            ),
-            alignment: Alignment.centerLeft,
-            child: FractionallySizedBox(
-              widthFactor: (e.seatsSold / cap).clamp(0, 1).toDouble(),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Calm.acc,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-            ),
-          ),
+          FillBar((e.seatsSold / cap).clamp(0, 1).toDouble()),
           const SizedBox(height: 6),
           Text(
             '${e.seatsSold} of $cap ${(e.priceSen ?? 0) == 0 ? 'joined' : 'paid'} · ${cap - e.seatsSold} spots left',
@@ -278,35 +261,4 @@ class _NextEvent extends ConsumerWidget {
       ),
     );
   }
-}
-
-class _Tile extends StatelessWidget {
-  const _Tile(this.k, this.big, this.small);
-  final Key k;
-  final String big, small;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    key: k,
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: Calm.surface,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: Calm.line),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          big,
-          style: const TextStyle(
-            fontFamily: Calm.serif,
-            fontSize: 26,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        Text(small, style: const TextStyle(color: Calm.mut, fontSize: 13)),
-      ],
-    ),
-  );
 }
