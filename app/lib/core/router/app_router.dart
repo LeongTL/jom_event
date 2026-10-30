@@ -18,6 +18,11 @@ import '../../features/event/presentation/saved_screen.dart';
 import '../../features/event/presentation/view_all_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/home/presentation/map_screen.dart';
+import '../../features/host/presentation/apply_host_screen.dart';
+import '../../features/host/presentation/event_form_screen.dart';
+import '../../features/host/presentation/host_events_screen.dart';
+import '../../features/host/presentation/host_home_screen.dart';
+import '../../features/host/presentation/host_profile_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/profile/presentation/help_screen.dart';
 import '../../features/profile/presentation/legal_screen.dart';
@@ -91,20 +96,21 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) => JomShell(navigationShell: shell, host: true),
           branches: [
-            _tab('/host-mode/home', 'Host home'),
-            _tab('/host-mode/events', 'Host events'),
+            _tab('/host-mode/home', 'Host home', screen: const HostHomeScreen()),
+            _tab('/host-mode/events', 'Host events', screen: const HostEventsScreen()),
             _tab('/host-mode/payouts', 'Payouts'),
             _tab('/host-mode/chats', 'Host chat', screen: const ChatListScreen(host: true)),
-            _tab('/host-mode/profile', 'Host profile'),
+            _tab('/host-mode/profile', 'Host profile', screen: const HostProfileScreen()),
           ],
         ),
         _screen('/host-mode/events/:id', 'Event details'),
-        _screen('/host-mode/events/:id/edit', 'Edit event'),
+        GoRoute(path: '/host-mode/events/:id/edit', builder: (context, state) => EventFormScreen(id: state.pathParameters['id'])),
         _screen('/host-mode/events/:id/scan', 'Scan tickets'),
         _screen('/host-mode/events/:id/checkin', 'Check-in'),
         _screen('/host-mode/events/:id/guests', 'Guest list'),
-        _screen('/host-mode/new', 'New event'),
-        _screen('/host-mode/payout-account', 'Payout account'),
+        GoRoute(path: '/host-mode/new', builder: (context, state) => const EventFormScreen()),
+        GoRoute(path: '/host-mode/apply', builder: (context, state) => const ApplyHostScreen()),
+        GoRoute(path: '/host-mode/payout-account', builder: (context, state) => const ApplyHostScreen(edit: true)),
       ],
     );
 

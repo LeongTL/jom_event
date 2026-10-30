@@ -543,11 +543,11 @@ Not in the original 25. The prototype was redesigned to feel calmer and more tru
 **Interfaces:**
 - Produces: `HostRepository { Future<void> apply(HostApplication a); Future<String> saveDraft(EventForm f); Future<void> publish(String id); Future<void> update(String id, {String? title, String? description, int? capacity}); Future<DeleteResult> delete(String id); Future<List<HostEventRow>> events(String status); Future<HostDashboard> dashboard(); }`; `EventForm` validation mirrors the SQL rules (title, venue, end after start, spots 1..40, price ≥ 0, description passes a client-side contact check as a hint only; the server is authoritative); `enum EditMode { create, publishedEdit }` where `publishedEdit` locks date, venue, categories, price, switch and refund window and clamps the spots stepper to `[seatsSold, 40]`.
 
-- [ ] **Step 1: Write failing tests.** `first_switch_to_host_opens_apply_with_payout_account_and_optional_ssm`; `host_home_shows_payout_card_next_event_fill_bar_and_tiles`; `events_tabs_draft_published_ended_list_cards_with_paid_over_spots_pill`; `new_event_form_has_description_when_where_price_spots_policy_chips_and_completion_note`; `publish_disabled_until_valid`; `contact_info_in_description_shows_server_error`; `edit_published_locks_date_venue_price_policy_and_clamps_spots_at_sold`; `edit_can_change_title_description_spots_and_saves`; `delete_sheet_shows_guest_count_and_total_and_confirms_then_returns_to_events`; `delete_after_start_is_hidden`; `host_profile_rows_and_switch_back_to_attendee`; `new_event_button_sits_above_the_tab_bar_and_does_not_hide_the_last_card`.
-- [ ] **Step 2: Run** `flutter test test/features/host`. Expected: FAIL.
-- [ ] **Step 3: Implement** the files; poster upload goes to a Supabase Storage bucket `posters` (public read, host-write to own folder), resized to 1200 px wide before upload.
-- [ ] **Step 4: Run** the tests. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "feat(host): apply, dashboard, events, create, edit, delete"`.
+- [x] **Step 1: Write failing tests.** `first_switch_to_host_opens_apply_with_payout_account_and_optional_ssm`; `host_home_shows_payout_card_next_event_fill_bar_and_tiles`; `events_tabs_draft_published_ended_list_cards_with_paid_over_spots_pill`; `new_event_form_has_description_when_where_price_spots_policy_chips_and_completion_note`; `publish_disabled_until_valid`; `contact_info_in_description_shows_server_error`; `edit_published_locks_date_venue_price_policy_and_clamps_spots_at_sold`; `edit_can_change_title_description_spots_and_saves`; `delete_sheet_shows_guest_count_and_total_and_confirms_then_returns_to_events`; `delete_after_start_is_hidden`; `host_profile_rows_and_switch_back_to_attendee`; `new_event_button_sits_above_the_tab_bar_and_does_not_hide_the_last_card`.
+- [x] **Step 2: Run** `flutter test test/features/host`. Expected: FAIL.
+- [x] **Step 3: Implement** the files; poster upload goes to a Supabase Storage bucket `posters` (public read, host-write to own folder), resized to 1200 px wide before upload.
+- [x] **Step 4: Run** the tests. Expected: PASS.
+- [x] **Step 5: Commit** `git commit -am "feat(host): apply, dashboard, events, create, edit, delete"`.
 
 ### Task 22: Host event details, scanner, check-in list, completion, guests, payouts
 

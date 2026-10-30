@@ -13,6 +13,7 @@ import 'package:jom/features/chat/data/chat_repository.dart';
 import 'package:jom/features/chat/domain/chat.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
+import 'package:jom/features/host/data/host_repository.dart';
 import 'package:jom/features/notifications/data/notification_repository.dart';
 import 'package:jom/features/notifications/domain/bell_provider.dart';
 import 'package:jom/shared/models/event_summary.dart';
@@ -24,6 +25,7 @@ import 'helpers/fake_auth.dart';
 import 'helpers/fake_bookings.dart';
 import 'helpers/fake_chat.dart';
 import 'helpers/fake_events.dart';
+import 'helpers/fake_host.dart';
 import 'helpers/fake_notifications.dart';
 import 'helpers/fake_reviews.dart';
 
@@ -50,6 +52,7 @@ Future<GoRouter> pumpApp(
       bookingRepositoryProvider.overrideWithValue(FakeBookings()..byId['b1'] = bk('b1', status: 'processing')),
       notificationRepositoryProvider.overrideWithValue(FakeNotifications()),
       reviewRepositoryProvider.overrideWithValue(FakeReviews()),
+      hostRepositoryProvider.overrideWithValue(FakeHost(profile: hostMe())),
       weekendProvider.overrideWith((ref, a) async => <EventSummary>[]),
       nearYouProvider.overrideWith((ref, q) => (near ?? () async => [yoga])()),
       deviceLocationProvider.overrideWithValue(() async => null),
@@ -123,6 +126,8 @@ void main() {
         '/tickets': 'tickets-screen', '/chats': 'chat-list-screen', '/chats/t1': 'thread-screen', '/host-mode/chats': 'chat-list-screen', '/event/e1/checkout': 'checkout-screen', '/booking/b1/gateway': 'gateway-screen',
         '/booking/b1/processing': 'processing-screen', '/booking/b1/failed': 'failed-screen', '/booking/b1/ticket': 'ticket-screen', '/notifications': 'notifications-screen',
         '/profile': 'profile-screen', '/review/b1': 'review-screen', '/host/h1': 'host-public-screen', '/my-reviews': 'my-reviews-screen', '/help': 'help-screen', '/legal': 'legal-screen',
+        '/host-mode/home': 'host-home', '/host-mode/events': 'host-events', '/host-mode/profile': 'host-profile', '/host-mode/new': 'form-title',
+        '/host-mode/payout-account': 'apply-name', '/host-mode/events/e1/edit': 'event-missing',
       }[p] ?? 'screen-title';
       expect(find.byKey(Key(screen)), findsOneWidget, reason: p);
     }
@@ -155,7 +160,7 @@ void main() {
 
   testWidgets('host mode has its own five tabs', (t) async {
     final router = await pumpApp(t, location: '/host-mode/home');
-    expect(title(t), 'Host home');
+    expect(find.byKey(const Key('host-home')), findsOneWidget);
     for (final label in ['Home', 'Events', 'Payouts', 'Chat', 'Profile']) {
       expect(find.descendant(of: find.byKey(const Key('tab-bar')), matching: find.text(label)), findsOneWidget, reason: label);
     }

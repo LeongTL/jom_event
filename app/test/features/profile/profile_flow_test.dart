@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
@@ -34,6 +35,13 @@ void main() {
     await t.tap(find.text('Switch to Host mode'));
     await t.pumpAndSettle();
     expect(where(router), '/host-mode/home');
+  });
+
+  testWidgets('profile_without_a_name_or_email_falls_back_to_guest', (t) async {
+    await pumpApp(t, location: '/profile', auth: FakeAuthRepository(initial: fakeSession(email: '')));
+    expect(t.takeException(), isNull);
+    expect(find.byKey(const Key('profile-name')), findsOneWidget);
+    expect(find.text('Guest'), findsOneWidget);
   });
 
   testWidgets('profile_signed_out_shows_the_sign_in_prompt', (t) async {
