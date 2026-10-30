@@ -226,7 +226,8 @@ Launch checklist: privacy policy and terms (the Profile rows); PDPA consent; in-
 | Backend, sign-in, Home, event page, booking, chat, notifications (Tasks 1 to 19) | Built and merged |
 | Calm redesign 19A to 19G (cards, design system, Tickets, Home, map, event and checkout, Saved, Chat, Notifications, sign-in) | Built; 19F and 19G wait in PR #30 to reach `main` |
 | Task 20: reviews, host public page, Profile, Help, Terms and privacy, account deletion | Built, in its own PR; simulator walk not done yet |
-| Tasks 21 to 25: host mode, scanner and payouts, end-to-end tests, load tests, closed beta | Not started |
+| Task 21: host mode (apply, dashboard, events, create, edit, delete) | Built, in its own PR; walked on the simulator against the local DB; no poster upload yet |
+| Tasks 22 to 25: scanner and payouts, end-to-end tests, load tests, closed beta | Not started |
 
 Known gaps: the real paid booking through the mock gateway has not been walked on a device; no Android device test; staging does not have the Calm backend yet; the support email and the legal texts are drafts until Task 25.
 

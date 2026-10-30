@@ -47,7 +47,10 @@ class ProfileScreen extends ConsumerWidget {
     final meta = user?.userMetadata;
     final name = ((meta?['full_name'] ?? meta?['name']) as String?)?.trim();
     final phone = user?.phone;
-    final label = (name != null && name.isNotEmpty) ? name : (user?.email ?? 'Guest');
+    final email = user?.email;
+    final label = (name != null && name.isNotEmpty)
+        ? name
+        : (email != null && email.isNotEmpty ? email : 'Guest');
 
     Widget row(String text, VoidCallback onTap, {Color? ink}) => CardBox(
           gap: 8,

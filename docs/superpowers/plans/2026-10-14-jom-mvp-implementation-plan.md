@@ -547,7 +547,7 @@ Not in the original 25. The prototype was redesigned to feel calmer and more tru
 - [x] **Step 2: Run** `flutter test test/features/host`. Expected: FAIL.
 - [x] **Step 3: Implement** the files; poster upload goes to a Supabase Storage bucket `posters` (public read, host-write to own folder), resized to 1200 px wide before upload.
 - [x] **Step 4: Run** the tests. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "feat(host): apply, dashboard, events, create, edit, delete"`.
+- [x] **Step 5: Commit** `git commit -am "feat(host): apply, dashboard, events, create, edit, delete"`.
 
 ### Task 22: Host event details, scanner, check-in list, completion, guests, payouts
 

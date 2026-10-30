@@ -4,7 +4,7 @@ import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// A signed-in (or half signed-in) session for tests. [name] ends up in the user metadata, like Google or setName do.
-Session fakeSession({String? phone = '60123456789', String? name}) => Session(
+Session fakeSession({String? phone = '60123456789', String? name, String? email}) => Session(
       accessToken: 'token',
       tokenType: 'bearer',
       user: User(
@@ -14,6 +14,7 @@ Session fakeSession({String? phone = '60123456789', String? name}) => Session(
         aud: 'authenticated',
         createdAt: '2026-10-15T00:00:00Z',
         phone: phone,
+        email: email,
       ),
     );
 
