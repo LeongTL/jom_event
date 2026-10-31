@@ -39,7 +39,7 @@ jobs:
           api-level: 34
           arch: x86_64
           script: |
-            cd app && flutter pub get && flutter build apk --debug && flutter install -d emulator-5554 && cd ..
+            cd app && flutter pub get && flutter build apk --debug && flutter install --debug -d emulator-5554 && cd ..
             adb shell pm grant com.jom.jom android.permission.ACCESS_FINE_LOCATION
             adb shell pm grant com.jom.jom android.permission.ACCESS_COARSE_LOCATION
             E2E_API_HOST=10.0.2.2 tools/e2e.sh emulator-5554
