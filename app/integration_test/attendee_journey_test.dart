@@ -26,8 +26,13 @@ void main() {
       // join and pay at the mock gateway
       await t.tap(key('join'));
       await see(t, key('checkout-screen'));
+      await see(
+        t,
+        key('pay'),
+      ); // the button appears once the checkout has loaded
       await t.tap(key('pay'));
       await see(t, key('gateway-screen'));
+      await see(t, key('gateway-pay'));
       await t.tap(key('gateway-pay'));
       await see(t, key('ticket-screen'), within: const Duration(seconds: 40));
       await see(t, key('qr'));
