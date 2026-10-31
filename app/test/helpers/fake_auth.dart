@@ -70,8 +70,9 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<void> verifyOtp(String phone, String code) async {
     verified.add((phone, code));
-    if (code != '123456')
+    if (code != '123456') {
       throw const AuthException('Token has expired or is invalid');
+    }
     _set(
       fakeSession(
         phone: phone.substring(1),

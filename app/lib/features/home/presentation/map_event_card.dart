@@ -184,13 +184,14 @@ class MapEventCard extends ConsumerWidget {
                         final dest = e.lat != null && e.lng != null
                             ? '${e.lat},${e.lng}'
                             : (e.area ?? '');
-                        if (dest.isNotEmpty)
+                        if (dest.isNotEmpty) {
                           ref.read(launchUrlProvider)(
                             Uri.https('www.google.com', '/maps/dir/', {
                               'api': '1',
                               'destination': dest,
                             }),
                           );
+                        }
                       },
                     ),
                   ),

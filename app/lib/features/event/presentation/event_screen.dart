@@ -465,14 +465,16 @@ class _Page extends ConsumerWidget {
   }
 
   Future<void> _join(BuildContext context, WidgetRef ref) async {
-    if (!await requireAuth(ref, context, AuthReason.join) || !context.mounted)
+    if (!await requireAuth(ref, context, AuthReason.join) || !context.mounted) {
       return;
+    }
     context.push('/event/${d.summary.id}/checkout');
   }
 
   Future<void> _message(BuildContext context, WidgetRef ref) async {
-    if (!await requireAuth(ref, context, AuthReason.chat) || !context.mounted)
+    if (!await requireAuth(ref, context, AuthReason.chat) || !context.mounted) {
       return;
+    }
     final thread = await ref
         .read(eventRepositoryProvider)
         .openThread(d.hostId, d.summary.id);

@@ -39,11 +39,12 @@ class _CancelSheetState extends ConsumerState<_CancelSheet> {
       await ref.read(bookingRepositoryProvider).cancel(widget.b.id);
       if (mounted) Navigator.pop(context, true);
     } on BookingError catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _busy = false;
           _error = e.message;
         });
+      }
     }
   }
 

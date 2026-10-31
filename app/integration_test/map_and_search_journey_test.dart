@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -14,7 +14,7 @@ void main() {
       final word = uniqueWord();
       final alpha = 'E2E Alpha $word';
       final beta = 'E2E Beta $word';
-      await publishEvent(
+      final alphaId = await publishEvent(
         host,
         title: alpha,
         priceSen: 0,
@@ -42,10 +42,15 @@ void main() {
         t,
         key('home-screen'),
       ); // the list has narrowed once Beta is gone
-      await eventually(() async {
-        await t.pump(const Duration(milliseconds: 300));
-        return label(beta).evaluate().isEmpty;
-      });
+      await eventually(
+        () async {
+          await t.pump(const Duration(milliseconds: 300));
+          // Near you rows only: the This weekend carousel ignores the search, and on a Saturday it can hold Beta
+          return key('event-row-$betaId').evaluate().isEmpty;
+        },
+        describe: () =>
+            'search box: "${t.widget<TextField>(key('home-search')).controller?.text}". On screen: ${onScreen(t)}',
+      );
 
       // a category tile filters what is left: Move keeps Beta only
       await t.enterText(key('home-search'), word);
@@ -54,8 +59,8 @@ void main() {
       await t.tap(key('tile-move'));
       await eventually(() async {
         await t.pump(const Duration(milliseconds: 300));
-        return label(alpha).evaluate().isEmpty &&
-            label(beta).evaluate().isNotEmpty;
+        return key('event-row-$alphaId').evaluate().isEmpty &&
+            key('event-row-$betaId').evaluate().isNotEmpty;
       });
 
       // the map card opens the map; pick Beta's pin and View event

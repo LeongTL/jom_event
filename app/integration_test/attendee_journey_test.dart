@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -25,8 +26,13 @@ void main() {
       // join and pay at the mock gateway
       await t.tap(key('join'));
       await see(t, key('checkout-screen'));
+      await see(
+        t,
+        key('pay'),
+      ); // the button appears once the checkout has loaded
       await t.tap(key('pay'));
       await see(t, key('gateway-screen'));
+      await see(t, key('gateway-pay'));
       await t.tap(key('gateway-pay'));
       await see(t, key('ticket-screen'), within: const Duration(seconds: 40));
       await see(t, key('qr'));
@@ -36,6 +42,14 @@ void main() {
       await settle(t, const Duration(seconds: 1));
       await openTab(t, 'Explore');
       await openEventFromHome(t, title);
+      // the page scrolls under the sticky Book bar, so ensureVisible thinks the button is already on screen
+      await t.drag(
+        find
+            .ancestor(of: key('message'), matching: find.byType(Scrollable))
+            .first,
+        const Offset(0, -300),
+      );
+      await settle(t, const Duration(milliseconds: 500));
       await t.tap(key('message'));
       await see(t, key('thread-screen'));
       await t.enterText(key('msg-field'), 'Hi, do I need to bring a mat?');

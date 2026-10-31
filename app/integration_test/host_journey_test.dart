@@ -34,6 +34,9 @@ void main() {
     await t.drag(find.byType(Scrollable).first, const Offset(0, -300));
     await settle(t);
     await t.enterText(key('apply-bank'), 'Maybank');
+    // the keyboard shrinks the list, so the number field below is not built until the list scrolls again
+    await t.drag(find.byType(Scrollable).first, const Offset(0, -300));
+    await settle(t);
     await t.enterText(key('apply-number'), '1234564821');
     await t.pump();
     await t.tap(key('apply-submit'));

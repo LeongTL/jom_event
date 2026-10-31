@@ -98,11 +98,12 @@ class _BodyState extends ConsumerState<_Body> {
       final b = await repo.create(d.summary.id, _people, name, phone);
       if (mounted) setState(() => _held = b);
     } on BookingError catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _held = null;
           _error = e.message;
         });
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
