@@ -38,9 +38,12 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
+          profile: pixel_6
           script: |
             cd app && flutter pub get && flutter build apk --debug && flutter install --debug -d emulator-5554 && cd ..
             adb shell pm grant com.jom.jom android.permission.ACCESS_COARSE_LOCATION
+            # Home searches around the phone, and the emulator starts in California; the seed events are in Bangsar (lng, lat)
+            adb emu geo fix 101.671 3.129
             E2E_API_HOST=10.0.2.2 tools/e2e.sh emulator-5554
       - name: Edge function log
         if: failure()
