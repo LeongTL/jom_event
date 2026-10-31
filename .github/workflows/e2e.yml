@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Free disk space (the emulator needs 7.4 GB for its userdata partition, the runner has about 6 GB left after supabase start)
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost /usr/local/lib/node_modules "$AGENT_TOOLSDIRECTORY/CodeQL"
       - uses: supabase/setup-cli@v1
         with:
           version: latest
