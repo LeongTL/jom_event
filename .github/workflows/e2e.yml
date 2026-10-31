@@ -44,7 +44,7 @@ jobs:
             adb shell pm grant com.jom.jom android.permission.ACCESS_COARSE_LOCATION
             # Home searches around the phone, and the emulator starts in California; the seed events are in Bangsar (lng, lat)
             adb emu geo fix 101.671 3.129
-            E2E_API_HOST=10.0.2.2 tools/e2e.sh emulator-5554
+            E2E_TIMEOUT=420 E2E_API_HOST=10.0.2.2 tools/e2e.sh emulator-5554 || { adb logcat -d | tail -300; exit 1; }
       - name: Edge function log
         if: failure()
         run: cat "$RUNNER_TEMP/fn.log" || true
