@@ -228,7 +228,8 @@ Launch checklist: privacy policy and terms (the Profile rows); PDPA consent; in-
 | Task 20: reviews, host public page, Profile, Help, Terms and privacy, account deletion | Built, in its own PR; simulator walk not done yet |
 | Task 21: host mode (apply, dashboard, events, create, edit, delete) | Built, in its own PR; walked on the simulator against the local DB; no poster upload yet |
 | Task 22: host event details, QR scanner, check-in, completion, payouts | Built and merged (PR #33); real camera scan from a second phone not tested |
-| Task 23: end-to-end tests | Six journeys pass on the iOS simulator via `tools/e2e.sh`; the Android CI workflow is written but has not run |
+| Task 23: end-to-end tests | Built and merged (PR #34, CI fixes #35). Six journeys pass on the iOS simulator via `tools/e2e.sh` and on an Android emulator in CI (`e2e.yml`, a pixel_6 placed in Bangsar with camera and location granted) |
+| Task 24: load tests | k6 scripts in `tools/loadtest/` pass on the local backend (200-user last-seat race: 5 booked, 195 sold_out; Home reads p95 22 ms; 1,000 chat messages, 0 errors). Not yet run on staging; no index migration needed so far; the 50 fps device check is not done |
 | Tasks 24 to 25: load tests, closed beta | Not started |
 
 Known gaps: the real paid booking through the mock gateway has not been walked on a device; no Android device test; staging does not have the Calm backend yet; the support email and the legal texts are drafts until Task 25.

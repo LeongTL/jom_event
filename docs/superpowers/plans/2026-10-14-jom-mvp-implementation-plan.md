@@ -577,14 +577,14 @@ Not in the original 25. The prototype was redesigned to feel calmer and more tru
 - [x] **Step 2: Run** `flutter test integration_test -d <emulator>`. Expected: FAIL until wired.
 - [x] **Step 3: Implement** helpers (create users through the admin API, advance time by calling the SQL functions with explicit `p_now` where available or by updating event times in the seed) and the CI workflow (Android emulator job).
 - [x] **Step 4: Run** all six journeys. Expected: PASS.
-- [ ] **Step 5: Commit** `git commit -am "test: end-to-end journeys"`.
+- [x] **Step 5: Commit** `git commit -am "test: end-to-end journeys"`.
 
 ### Task 24: Load and device performance
 
 **Files:**
 - Create: `tools/loadtest/last_seat.js`, `feed.js`, `chat.js`, `tools/loadtest/README.md`
 
-- [ ] **Step 1: Write the k6 scripts with thresholds.** `last_seat.js`: 200 virtual users call `create_booking` on an event with 5 seats; assert exactly 5 succeed and the rest get `sold_out`. `feed.js`: 100 users call `events.feed` on the 87-event seed; `p95 < 400 ms`. `chat.js`: 50 users send 20 messages each; 0 errors.
+- [x] **Step 1: Write the k6 scripts with thresholds.** `last_seat.js`: 200 virtual users call `create_booking` on an event with 5 seats; assert exactly 5 succeed and the rest get `sold_out`. `feed.js`: 100 users call `events.feed` on the 87-event seed; `p95 < 400 ms`. `chat.js`: 50 users send 20 messages each; 0 errors.
 - [ ] **Step 2: Run** against the staging project. Expected: fail first if an index is missing.
 - [ ] **Step 3: Fix** any breach with indexes on `bookings(event_id, status)`, `events(status, starts_at)` and `chat.messages(thread_id, created_at)`; add the migration.
 - [ ] **Step 4: Run** again. Expected: all thresholds pass. On one low-end Android and one iPhone, check that scrolling Home (carousels and map card) and panning the map screen stay at 50 fps or better; if not, replace the live map preview on Home with a static image.
