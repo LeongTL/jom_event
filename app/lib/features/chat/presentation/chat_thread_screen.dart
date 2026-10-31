@@ -76,11 +76,13 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
     ref.listen(messagesProvider(widget.threadId), (prev, next) {
       final n = next.value?.length ?? 0;
       if (n > (prev?.value?.length ?? 0)) {
-        if (prev?.value != null)
+        if (prev?.value != null) {
           _markRead(); // a message came in while the thread is open
+        }
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_scroll.hasClients)
+          if (_scroll.hasClients) {
             _scroll.jumpTo(_scroll.position.maxScrollExtent);
+          }
         });
       }
     });

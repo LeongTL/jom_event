@@ -124,8 +124,9 @@ String durationLabel(Duration d) {
 /// "Happening now", "in 22 min", "in 3h 18m", "in 2h", "in 1 day", "in 3 days".
 String relativeStart(DateTime starts, DateTime ends, DateTime now) {
   final left = starts.difference(now);
-  if (left <= Duration.zero)
+  if (left <= Duration.zero) {
     return now.isBefore(ends) ? 'Happening now' : 'Ended';
+  }
   if (left < const Duration(minutes: 120)) return 'in ${left.inMinutes} min';
   if (left < const Duration(hours: 24)) {
     final m = left.inMinutes % 60;

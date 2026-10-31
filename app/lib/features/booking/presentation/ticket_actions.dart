@@ -66,13 +66,14 @@ class TicketActions extends ConsumerWidget {
                   final dest = e.lat != null && e.lng != null
                       ? '${e.lat},${e.lng}'
                       : [e.area].whereType<String>().join(' ');
-                  if (dest.isNotEmpty)
+                  if (dest.isNotEmpty) {
                     ref.read(launchUrlProvider)(
                       Uri.https('www.google.com', '/maps/dir/', {
                         'api': '1',
                         'destination': dest,
                       }),
                     );
+                  }
                 },
               ),
               const SizedBox(width: 10),
@@ -91,8 +92,9 @@ class TicketActions extends ConsumerWidget {
             GestureDetector(
               key: const Key('ticket-cancel'),
               onTap: () async {
-                if (await showCancelSheet(context, b) == true)
+                if (await showCancelSheet(context, b) == true) {
                   onCancelled?.call();
+                }
               },
               child: const Padding(
                 padding: EdgeInsets.fromLTRB(8, 12, 8, 0),

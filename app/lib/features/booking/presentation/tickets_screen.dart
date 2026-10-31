@@ -183,13 +183,14 @@ class _Previous extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (tickets.isEmpty)
+    if (tickets.isEmpty) {
       return const Padding(
         padding: EdgeInsets.only(top: 60),
         child: Center(
           child: Text('No previous tickets', style: TextStyle(color: Calm.mut)),
         ),
       );
+    }
     return Column(
       children: [
         for (final t in tickets) _PreviousRow(t),

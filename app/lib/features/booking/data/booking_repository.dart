@@ -92,8 +92,9 @@ class SupabaseBookingRepository implements BookingRepository {
                   .select()
                   .eq('id', bookingId)
               as List;
-      if (rows.isNotEmpty)
+      if (rows.isNotEmpty) {
         yield Booking.fromJson(rows.first as Map<String, dynamic>);
+      }
       await Future<void>.delayed(const Duration(seconds: 2));
     }
   }

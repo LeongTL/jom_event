@@ -75,8 +75,9 @@ class SupabaseAuthRepository implements AuthRepository {
   Future<void> signInWithGoogle() async {
     // Calling the Google plugin on iOS without its client ID can crash the app, so check first.
     if (googleWebClientId.isEmpty ||
-        (Platform.isIOS && googleIosClientId.isEmpty))
+        (Platform.isIOS && googleIosClientId.isEmpty)) {
       throw const GoogleNotConfigured();
+    }
     final google = GoogleSignIn.instance;
     if (!_googleReady) {
       await google.initialize(
@@ -94,8 +95,9 @@ class SupabaseAuthRepository implements AuthRepository {
         idToken: idToken,
       );
     } on GoogleSignInException catch (e) {
-      if (e.code == GoogleSignInExceptionCode.canceled)
+      if (e.code == GoogleSignInExceptionCode.canceled) {
         throw const GoogleCancelled();
+      }
       rethrow;
     }
   }
@@ -128,8 +130,9 @@ class SupabaseAuthRepository implements AuthRepository {
       await _client.functions.invoke('delete-account');
     } on FunctionException catch (e) {
       final body = e.details;
-      if (e.status == 409 && body is Map && body['error'] is String)
+      if (e.status == 409 && body is Map && body['error'] is String) {
         throw AccountDeleteRefused(body['error'] as String);
+      }
       rethrow;
     }
     await _auth.signOut(

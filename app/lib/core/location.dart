@@ -38,11 +38,13 @@ final deviceLocationProvider = Provider<Future<LatLng?> Function()>(
 Future<LatLng?> _geolocate() async {
   try {
     var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied)
+    if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
+    }
     if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever)
+        permission == LocationPermission.deniedForever) {
       return null;
+    }
     // The last fix is instant and good enough for a 1 km area; only ask for a fresh one when the phone has none.
     final p =
         await Geolocator.getLastKnownPosition() ??
