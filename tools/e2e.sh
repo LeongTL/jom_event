@@ -2,6 +2,7 @@
 # End-to-end journeys against the local Supabase, on a booted simulator or emulator.
 # Needs: `supabase start`, `supabase functions serve --no-verify-jwt --env-file <FLAVOR=dev + GATEWAY_WEBHOOK_SECRET>`.
 # Usage: tools/e2e.sh <device id> [journey file ...]   (default: every *_journey_test.dart)
+# E2E_TIMEOUT=<seconds> stops a journey that hangs (CI sets it; needs GNU timeout).
 # E2E_API_HOST=10.0.2.2 makes the app reach Supabase from an Android emulator (it cannot see the host's 127.0.0.1).
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -27,7 +28,7 @@ for f in "${files[@]}"; do
   docker exec -i "$db" psql -U postgres -v ON_ERROR_STOP=1 -q < tools/e2e_reset.sql
   # drive, not test: `flutter test` cannot start its debug service on the simulator; `--no-dds` with drive works
   out=$(mktemp)
-  (cd app && flutter drive --driver=test_driver/integration_test.dart --target="${f#app/}" -d "$device" --no-dds --keep-app-running --dart-define-from-file=env/e2e.json) 2>&1 | tee "$out"
+  (cd app && ${E2E_TIMEOUT:+timeout "$E2E_TIMEOUT"} flutter drive --driver=test_driver/integration_test.dart --target="${f#app/}" -d "$device" --no-dds --keep-app-running --dart-define-from-file=env/e2e.json) 2>&1 | tee "$out"
   # a compile error is only printed: drive then runs the app that was installed before, so fail on it here
   if grep -q 'Error output from Xcode build\|Gradle task .* failed' "$out"; then echo "build failed: $f" >&2; exit 1; fi
   grep -q 'All tests passed' "$out" || { echo "journey failed: $f" >&2; exit 1; }

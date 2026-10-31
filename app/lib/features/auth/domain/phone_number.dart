@@ -13,8 +13,9 @@ String normalizeMyPhone(String raw) {
   } else if (s.startsWith('0')) {
     s = s.substring(1);
   }
-  if (!RegExp(r'^1\d{8,9}$').hasMatch(s))
+  if (!RegExp(r'^1\d{8,9}$').hasMatch(s)) {
     throw const FormatException(_notMalaysian);
+  }
   return '+60$s';
 }
 

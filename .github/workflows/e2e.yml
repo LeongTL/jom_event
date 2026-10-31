@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Free disk space (the emulator needs 7.4 GB for its userdata partition, the runner has about 6 GB left after supabase start)
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost /usr/local/lib/node_modules "$AGENT_TOOLSDIRECTORY/CodeQL"
       - uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -36,11 +38,17 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
+          profile: pixel_6
+          cores: 4
+          ram-size: 4096M
           script: |
-            cd app && flutter pub get && flutter build apk --debug && flutter install -d emulator-5554 && cd ..
-            adb shell pm grant com.jom.jom android.permission.ACCESS_FINE_LOCATION
+            cd app && flutter pub get && flutter build apk --debug && flutter install --debug -d emulator-5554 && cd ..
             adb shell pm grant com.jom.jom android.permission.ACCESS_COARSE_LOCATION
-            E2E_API_HOST=10.0.2.2 tools/e2e.sh emulator-5554
+            # the scanner screen asks for the camera; a prompt left open covers the next journey's launch and it never draws
+            adb shell pm grant com.jom.jom android.permission.CAMERA || true
+            # Home searches around the phone, and the emulator starts in California; the seed events are in Bangsar (lng, lat)
+            adb emu geo fix 101.671 3.129
+            E2E_TIMEOUT=420 E2E_API_HOST=10.0.2.2 tools/e2e.sh emulator-5554 || { adb logcat -d | tail -300; exit 1; }
       - name: Edge function log
         if: failure()
         run: cat "$RUNNER_TEMP/fn.log" || true

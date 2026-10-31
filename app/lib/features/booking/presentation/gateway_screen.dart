@@ -65,14 +65,16 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       await ref
           .read(paymentGatewayClientProvider)
           .pay(_session!, _methods[_method].$1, simulate: _simulate);
-      if (mounted)
+      if (mounted) {
         context.pushReplacement('/booking/${widget.bookingId}/processing');
+      }
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _paying = false;
           _error = 'The payment could not be sent. Please try again.';
         });
+      }
     }
   }
 
