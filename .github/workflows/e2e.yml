@@ -39,6 +39,8 @@ jobs:
           api-level: 34
           arch: x86_64
           profile: pixel_6
+          cores: 4
+          ram-size: 4096M
           script: |
             cd app && flutter pub get && flutter build apk --debug && flutter install --debug -d emulator-5554 && cd ..
             adb shell pm grant com.jom.jom android.permission.ACCESS_COARSE_LOCATION
