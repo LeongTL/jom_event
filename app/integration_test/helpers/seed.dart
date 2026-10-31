@@ -160,10 +160,16 @@ Future<String> ticketToken(Person guest, String bookingId) async =>
 Future<void> eventually(
   Future<bool> Function() check, {
   Duration within = const Duration(seconds: 20),
+  String Function()?
+  describe, // what to print when it times out, e.g. what is on screen
 }) async {
   final end = DateTime.now().add(within);
   while (!await check()) {
-    if (DateTime.now().isAfter(end)) fail('condition not met within $within');
+    if (DateTime.now().isAfter(end)) {
+      fail(
+        'condition not met within $within${describe == null ? '' : '. ${describe()}'}',
+      );
+    }
     await Future<void>.delayed(const Duration(milliseconds: 400));
   }
 }
@@ -182,6 +188,13 @@ Future<void> launchApp(WidgetTester t) async {
 }
 
 /// Pumps until [finder] appears (network calls make the usual pumpAndSettle too short).
+/// The first 40 texts on screen, for failure messages.
+String onScreen(WidgetTester t) =>
+    [for (final w in t.widgetList<Text>(find.byType(Text))) w.data ?? '']
+        .where((x) => x.isNotEmpty)
+        .take(40)
+        .join(' | ');
+
 Future<void> see(
   WidgetTester t,
   Finder finder, {
@@ -190,10 +203,7 @@ Future<void> see(
   final end = DateTime.now().add(within);
   while (finder.evaluate().isEmpty) {
     if (DateTime.now().isAfter(end)) {
-      final texts = [
-        for (final w in t.widgetList<Text>(find.byType(Text))) w.data ?? '',
-      ].where((x) => x.isNotEmpty);
-      fail('never saw $finder. On screen: ${texts.take(40).join(' | ')}');
+      fail('never saw $finder. On screen: ${onScreen(t)}');
     }
     await t.pump(const Duration(milliseconds: 250));
   }

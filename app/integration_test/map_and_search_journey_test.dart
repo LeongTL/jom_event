@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -42,10 +42,14 @@ void main() {
         t,
         key('home-screen'),
       ); // the list has narrowed once Beta is gone
-      await eventually(() async {
-        await t.pump(const Duration(milliseconds: 300));
-        return label(beta).evaluate().isEmpty;
-      });
+      await eventually(
+        () async {
+          await t.pump(const Duration(milliseconds: 300));
+          return label(beta).evaluate().isEmpty;
+        },
+        describe: () =>
+            'search box: "${t.widget<TextField>(key('home-search')).controller?.text}". On screen: ${onScreen(t)}',
+      );
 
       // a category tile filters what is left: Move keeps Beta only
       await t.enterText(key('home-search'), word);
