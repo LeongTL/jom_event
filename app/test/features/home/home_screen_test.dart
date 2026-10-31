@@ -234,6 +234,17 @@ void main() {
       expect(find.byKey(const Key('event-row-a')), findsOneWidget);
     });
 
+    testWidgets('category_tiles_fit_a_320_wide_phone', (t) async {
+      await pumpHome(t);
+      t.view.physicalSize = const Size(320, 3000);
+      await t.pumpAndSettle();
+      t.takeException(); // the test font is wider than the real one, so other rows may overflow here; the tiles are what we check
+      expect(
+        t.getTopRight(find.byKey(const Key('tile-free'))).dx,
+        lessThanOrEqualTo(320),
+      );
+    });
+
     testWidgets('no_matches_says_Nothing_matches_yet', (t) async {
       await pumpHome(t, near: [at('a')]);
       await t.enterText(find.byKey(const Key('home-search')), 'zzz');

@@ -272,40 +272,46 @@ class _Tiles extends ConsumerWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         for (final (key, label, kind) in _tiles)
-          GestureDetector(
-            key: Key('tile-$key'),
-            behavior: HitTestBehavior.opaque,
-            onTap: () =>
-                ref.read(homeFilterProvider.notifier).toggleCategory(key),
-            child: SizedBox(
-              width: 76,
-              child: Column(
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: selected == key ? Calm.acc : Calm.line,
-                        width: 2,
+          // scales down on a 320-wide phone, where four 76 px tiles do not fit; unchanged on wider ones
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: GestureDetector(
+                key: Key('tile-$key'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () =>
+                    ref.read(homeFilterProvider.notifier).toggleCategory(key),
+                child: SizedBox(
+                  width: 76,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: selected == key ? Calm.acc : Calm.line,
+                            width: 2,
+                          ),
+                        ),
+                        child: CategoryArt(kind: kind),
                       ),
-                    ),
-                    child: CategoryArt(kind: kind),
+                      const SizedBox(height: 7),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: selected == key
+                              ? FontWeight.w600
+                              : FontWeight.w500,
+                          color: selected == key ? Calm.acc : Calm.ink,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 7),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: selected == key
-                          ? FontWeight.w600
-                          : FontWeight.w500,
-                      color: selected == key ? Calm.acc : Calm.ink,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
