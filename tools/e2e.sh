@@ -20,9 +20,9 @@ json.dump({"FLAVOR": "dev", "SUPABASE_URL": url, "SUPABASE_ANON_KEY": s["ANON_KE
 db=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
 if [ "$#" -gt 0 ]; then files=("$@"); else files=(app/integration_test/*_journey_test.dart); fi
 for f in "${files[@]}"; do
-  # iOS simulators: the location prompt would cover the app. The app stays installed between runs (--keep-app-running),
+  # iOS simulators: the location and camera prompts would cover the app. The app stays installed between runs (--keep-app-running),
   # so this grant sticks; on a brand-new simulator accept the prompt once by hand.
-  xcrun simctl privacy "$device" grant location com.jom.jom >/dev/null 2>&1 || true
+  for svc in location camera; do xcrun simctl privacy "$device" grant $svc com.jom.jom >/dev/null 2>&1 || true; done
   echo "== $(basename "$f")"
   docker exec -i "$db" psql -U postgres -v ON_ERROR_STOP=1 -q < tools/e2e_reset.sql
   # drive, not test: `flutter test` cannot start its debug service on the simulator; `--no-dds` with drive works
