@@ -36,6 +36,9 @@ void main() {
       await settle(t, const Duration(seconds: 1));
       await openTab(t, 'Explore');
       await openEventFromHome(t, title);
+      await t.ensureVisible(
+        key('message'),
+      ); // on a shorter screen the sticky Book bar covers it
       await t.tap(key('message'));
       await see(t, key('thread-screen'));
       await t.enterText(key('msg-field'), 'Hi, do I need to bring a mat?');
