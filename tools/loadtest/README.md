@@ -14,7 +14,7 @@ Install k6 (`brew install k6`), then:
 
 ```
 tools/loadtest/run.sh last_seat     # local backend: needs `supabase start`, keys come from `supabase status`
-TARGET=staging SERVICE_ROLE_KEY=... tools/loadtest/run.sh feed    # URL and anon key from app/env/staging.json
+TARGET=staging tools/loadtest/run.sh feed    # URL, anon key and SERVICE_ROLE_KEY from app/env/staging.json (git-ignored)
 ```
 
 The scripts create users, a host and an event with the admin API, so a run needs the service key. They never print keys.
