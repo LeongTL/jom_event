@@ -63,11 +63,12 @@ class SupabaseNotificationRepository implements NotificationRepository {
 
   @override
   Stream<int> unread() {
+    final db = _db; // held now: when the app closes the providers go before this stream is cancelled
     late final StreamController<int> out;
     RealtimeChannel? channel;
     Future<void> fetch() async {
       try {
-        out.add(await _db.schema('identity').rpc('unread_count') as int);
+        out.add(await db.schema('identity').rpc('unread_count') as int);
       } catch (_) {
         // offline: keep the last number
       }
@@ -92,7 +93,7 @@ class SupabaseNotificationRepository implements NotificationRepository {
         }
       },
       onCancel: () async {
-        if (channel != null) await _db.removeChannel(channel!);
+        if (channel != null) await db.removeChannel(channel!);
       },
     );
     return out.stream;
