@@ -19,14 +19,33 @@ final ticketTokenProvider = FutureProvider.autoDispose.family<String, String>(
 
 /// "You're booked" with the ticket under it; for a booking that is already over or cancelled it just says "Your
 /// ticket" and the status.
-class TicketScreen extends ConsumerWidget {
+class TicketScreen extends ConsumerStatefulWidget {
   const TicketScreen({super.key, required this.bookingId, this.fresh = false});
   final String bookingId;
   final bool fresh; // just booked: Done must not step back into the checkout still under this screen
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TicketScreen> createState() => _TicketScreenState();
+}
+
+class _TicketScreenState extends ConsumerState<TicketScreen> {
+  String get bookingId => widget.bookingId;
+
+  @override
+  void initState() {
+    super.initState();
+    // Home and the Tickets tab may already hold the list from before this booking existed
+    Future.microtask(() => ref.invalidate(ticketsProvider));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final booking = ref.watch(bookingProvider(bookingId));
+    ref.listen(bookingProvider(bookingId), (prev, next) {
+      if (next.hasValue && next.value!.status != prev?.value?.status) {
+        ref.invalidate(ticketsProvider);
+      }
+    });
     return Scaffold(
       key: const Key('ticket-screen'),
       backgroundColor: Calm.bg,
@@ -51,7 +70,7 @@ class TicketScreen extends ConsumerWidget {
                             : "This event isn't available",
                       ),
                     )
-                  : _Ticket(Ticket(b, d.summary), fresh: fresh),
+                  : _Ticket(Ticket(b, d.summary), fresh: widget.fresh),
             ),
       ),
     );
