@@ -44,6 +44,10 @@ void main() {
 
     // create and publish an event with the form
     final title = 'E2E Clay $word';
+    await see(
+      t,
+      key('new-event-button'),
+    ); // the dashboard draws the button a moment after the page itself
     await t.tap(key('new-event-button'));
     await see(t, key('form-title'));
     await t.enterText(key('form-title'), title);

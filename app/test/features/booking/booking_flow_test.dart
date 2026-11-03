@@ -11,6 +11,7 @@ import 'package:jom/features/booking/data/booking_repository.dart';
 import 'package:jom/features/booking/data/calendar.dart';
 import 'package:jom/features/booking/data/payment_gateway_client.dart';
 import 'package:jom/features/booking/domain/booking.dart';
+import 'package:jom/features/booking/domain/ticket.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/notifications/domain/bell_provider.dart';
@@ -770,6 +771,31 @@ void main() {
           reason: 'price x people only',
         );
         expect(find.textContaining('fee', findRichText: true), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'opening_a_ticket_refreshes_the_tickets_list_that_home_already_loaded',
+      (t) async {
+        await pumpApp(
+          t,
+          location: '/explore',
+          setup: (b) =>
+              b.byId['b1'] = bk('b1', event: 'e1', status: 'confirmed'),
+        );
+        // Home stays alive under the event page and loaded the list when the guest signed in, before this booking existed
+        final c = ProviderScope.containerOf(
+          t.element(find.byType(MaterialApp)),
+        );
+        c.listen(ticketsProvider(TicketScope.upcoming), (_, _) {});
+        await t.pump(const Duration(seconds: 1));
+        final before = bookings.mineCalls;
+
+        c.read(routerProvider).go('/booking/b1/ticket');
+        await t.pump(const Duration(seconds: 1));
+        await t.pump(const Duration(seconds: 1));
+
+        expect(bookings.mineCalls, greaterThan(before));
       },
     );
 
