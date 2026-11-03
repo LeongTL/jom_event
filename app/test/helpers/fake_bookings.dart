@@ -54,6 +54,7 @@ class FakeBookings implements BookingRepository {
   final cancelled = <String>[];
   final payments = <String>[];
   final tokenAsked = <String>[];
+  var mineCalls = 0; // how often the tickets list was fetched
   final _ctrls = <String, StreamController<Booking>>{};
   var _n = 0;
   Object? payError;
@@ -108,8 +109,10 @@ class FakeBookings implements BookingRepository {
   }
 
   @override
-  Future<List<Booking>> mine(String scope) async =>
-      scope == 'upcoming' ? upcoming : past;
+  Future<List<Booking>> mine(String scope) async {
+    mineCalls++;
+    return scope == 'upcoming' ? upcoming : past;
+  }
 
   @override
   Stream<Booking> watch(String bookingId) async* {
