@@ -229,6 +229,7 @@ Launch checklist: privacy policy and terms (the Profile rows); PDPA consent; in-
 | Task 21: host mode (apply, dashboard, events, create, edit, delete) | Built, in its own PR; walked on the simulator against the local DB; no poster upload yet |
 | Task 22: host event details, QR scanner, check-in, completion, payouts | Built and merged (PR #33); real camera scan from a second phone not tested |
 | Task 23: end-to-end tests | Built and merged (PR #34, CI fixes #35). Six journeys pass on the iOS simulator via `tools/e2e.sh` and on an Android emulator in CI (`e2e.yml`, a pixel_6 placed in Bangsar with camera and location granted) |
+| Task 25: release | `docs/release/checklist.md`, `release.yml` (signed Android bundle and iOS archive; not run yet, needs the secrets), Android release signing from `key.properties`, legal pages pinned by a test. Everything that needs accounts, keys or people is open in the checklist |
 | Task 24: load tests | k6 scripts in `tools/loadtest/` pass on the local backend (200-user last-seat race: 5 booked, 195 sold_out; Home reads p95 22 ms; 1,000 chat messages, 0 errors). Not yet run on staging; no index migration needed so far; the 50 fps device check is not done |
 | Tasks 24 to 25: load tests, closed beta | Not started |
 
