@@ -4,7 +4,16 @@ Status: brainstorming notes. Nothing here is an approved design yet; each item b
 
 ## Decided
 
-**Payment gateway: Fiuu.** The real gateway will be Fiuu (Malaysia). It replaces `MockProvider` behind the existing `PaymentProvider` interface (`supabase/functions/_shared/payment_provider.ts`: `createSession`, `parseWebhook`, `refund`). The webhook idempotency (`claim_webhook_delivery`, `apply_gateway_result`) stays as it is.
+**MVP payment model (decided 11 Nov 2026): manual bank transfer with proof upload. No gateway, no commission in the MVP.**
+- The guest holds a seat, sees the host's payment details (bank account or DuitNow QR) and an unique reference code, pays by themselves, uploads the transfer receipt, and the host confirms or rejects. Confirmed means ticket issued; rejected or timed out means the seat is released.
+- Hosts use the platform free during the MVP, to attract traffic. Platform commission is NOT collected. Whether to start charging a commission, or to integrate a gateway, is decided later, only if the market proves it wants the product.
+- Fiuu stays the intended gateway for after the MVP (see below). It is not built now.
+- Fits the existing design: reuse the `processing` booking state and add a manual-transfer implementation behind `PaymentProvider`; "host confirms" replaces the gateway webhook.
+- Changes needed (not yet designed): longer seat hold than 15 minutes, states and timeouts for "no proof uploaded" and "host never confirms", host payment details visible to guests (today only the host and an admin can read bank details), receipt image storage with access limited to that guest and host, a host confirm screen, refunds done by the host (platform holds no money).
+- Risks to design for: fake receipts (host should check their own bank account, not the image), hosts who confirm late, disputes without a platform transaction record, and getting hosts to accept a fee later after a free period (tell them up front that the MVP is free for a limited time).
+- Effect on other work: MVP fee maths, `fee_snapshots`, payouts, the Payouts screens, and the "platform fee" card in the back office wireframe are not needed in the MVP. Keep the code and tables, do not delete them.
+
+**Payment gateway after the MVP: Fiuu.** The real gateway will be Fiuu (Malaysia). It replaces `MockProvider` behind the existing `PaymentProvider` interface (`supabase/functions/_shared/payment_provider.ts`: `createSession`, `parseWebhook`, `refund`). The webhook idempotency (`claim_webhook_delivery`, `apply_gateway_result`) stays as it is.
 
 What we know (source: Fiuu pricing appendix dated 19 Apr 2024, about two years old; real contract rates may differ):
 
