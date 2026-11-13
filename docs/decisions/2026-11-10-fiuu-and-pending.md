@@ -48,7 +48,7 @@ Cash-flow note: Fiuu settles weekly, the MVP design pays hosts 3 working days af
 
 ## Under discussion (not decided)
 
-1. **Free events are Save-only** (no Join). Open: A pure listing, B listing plus saves count (recommended), C optional RSVP per event. Reverses the MVP rule "free events need only a sign-in to join".
+1. **Free events are Save-only, with a saves count for the host** (decided 13 Nov). No Join, no ticket, no seat limit or guest list for free events; the guest sees Save, Directions and the source link, the host sees how many people saved it. Reverses the MVP rule "free events need only a sign-in to join". Touches the free branch of `bookings.create_booking`, the free join screens and `free_join_journey_test`.
 2. ~~One app or two~~ Decided: one app for now (see "One app for now" above).
 3. **Host back office (web).** Lo-fi wireframe agreed in principle: Overview, Events, Event detail, Payouts, Host profile. Open: read-only (A, recommended first) or with event create and edit (B), and whether a platform admin view (C) is wanted. Was "not in MVP" in the MVP design.
 4. **Event sharing and deeplinks.** None exist today (no share button, no App Links or Universal Links, no domain, no landing page). Routes `/event/:id` and `/host/:id` are ready. Leaning: share button plus a landing page with preview card first (WhatsApp and Telegram), App Links second, Instagram Story image later. Open: WhatsApp/Telegram only (A), Instagram/TikTok (B), or both (C).
