@@ -50,6 +50,8 @@ Cash-flow note: Fiuu settles weekly, the MVP design pays hosts 3 working days af
 
 **Host back office scope (decided 13 Nov): hosts can also create and edit events on the web**, not only read. So the host side covers: overview, events (create, edit within the same lock rules as the app, delete with refunds), guests, a pending-payments page to confirm or reject receipts, reviews, and host profile. The business rules already live in the database functions (`events.save_draft`, `events.publish`, `events.update_event`, `events.delete_event`), so the web form reuses them; only the screens are built a second time. Open for the design spec: whether the web is Flutter web or a separate web app.
 
+**Sharing (decided 13 Nov): WhatsApp and Telegram first.** An event page gets a share button that sends one link with a preview card (title, poster, date, place). Instagram and TikTok (a generated poster image per event) come later. Needs a domain, a landing page that shows the event to people without the app, and deeplinks (Android App Links, iOS Universal Links) so the link opens the app when it is installed. The routes `/event/:id` and `/host/:id` already exist. Private events use the same link with an unguessable share code.
+
 ## Under discussion (not decided)
 
 1. **Free events are Save-only, with a saves count for the host** (decided 13 Nov). No Join, no ticket, no seat limit or guest list for free events; the guest sees Save, Directions and the source link, the host sees how many people saved it. Reverses the MVP rule "free events need only a sign-in to join". Touches the free branch of `bookings.create_booking`, the free join screens and `free_join_journey_test`.
