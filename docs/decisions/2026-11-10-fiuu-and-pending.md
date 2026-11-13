@@ -44,10 +44,12 @@ Cash-flow note: Fiuu settles weekly, the MVP design pays hosts 3 working days af
 
 **Security audit (later).** The user will tell us when. Then install `cloudflare/security-audit-skill`, read it first, and audit all access control (BAC, RBAC), RLS, `security definer` functions, webhook signatures, ticket HMAC, host bank details, and the new back office and share links.
 
+**One app for now, host entrance behind a flag (decided 13 Nov).** Audience and host stay in one app. In Settings (Profile) a signed-in user sees "Register as Event owner". After the platform approves them, Settings shows the entry to the host view instead; until then only the register button shows. The entrance is controlled by a feature flag so the flow can change later, for example if the host side is split into a second app. Today `identity.apply_host` sets `is_host = true` at once with no approval step (`verified_at` is only a badge set by hand), so a pending/approved state is new work. Open: how approval is done in the MVP (by hand in the Supabase dashboard, or a small admin screen).
+
 ## Under discussion (not decided)
 
 1. **Free events are Save-only** (no Join). Open: A pure listing, B listing plus saves count (recommended), C optional RSVP per event. Reverses the MVP rule "free events need only a sign-in to join".
-2. **One app or two.** Leaning one app; hosts do desk work on a web back office, phone app for scanning and chat.
+2. ~~One app or two~~ Decided: one app for now (see "One app for now" above).
 3. **Host back office (web).** Lo-fi wireframe agreed in principle: Overview, Events, Event detail, Payouts, Host profile. Open: read-only (A, recommended first) or with event create and edit (B), and whether a platform admin view (C) is wanted. Was "not in MVP" in the MVP design.
 4. **Event sharing and deeplinks.** None exist today (no share button, no App Links or Universal Links, no domain, no landing page). Routes `/event/:id` and `/host/:id` are ready. Leaning: share button plus a landing page with preview card first (WhatsApp and Telegram), App Links second, Instagram Story image later. Open: WhatsApp/Telegram only (A), Instagram/TikTok (B), or both (C).
 5. **1000 concurrent users.** Design is sound (booking race is handled in the database) but the largest test so far is 200 users on the last-seat race, 100 on Home, 50 on chat. Run the k6 scripts on staging at 1000, check the connection pool, consider caching Home.
