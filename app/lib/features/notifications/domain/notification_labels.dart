@@ -11,6 +11,7 @@ IconData notifIcon(String type) =>
       'event_cancelled': Icons.undo,
       'chat_message': Icons.chat_bubble_outline,
       'review_request': Icons.star_outline,
+      'follow': Icons.person_add_alt,
     }[type] ??
     Icons.notifications_none;
 
@@ -36,6 +37,7 @@ String? notifRoute(AppNotification n) {
     'booking' => '/booking/$id/ticket',
     'thread' => '/chats/$id',
     'event' => '/event/$id',
+    'user' => '/people/$id',
     _ => null,
   };
 }

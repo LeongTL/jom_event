@@ -152,4 +152,12 @@ void main() {
       false,
     );
   });
+
+  test('follow_notification_has_the_person_icon', () {
+    expect(notifIcon('follow'), Icons.person_add_alt);
+  });
+
+  test('follow_notification_opens_the_person_page', () {
+    expect(notifRoute(n('follow', refType: 'user', refId: 'u9')), '/people/u9');
+  });
 }
