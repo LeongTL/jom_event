@@ -25,6 +25,7 @@ abstract class HostRepository {
     String? title,
     String? description,
     int? capacity,
+    bool? isPrivate,
   });
 
   /// What guests have paid for the event so far, in sen (for the delete sheet).
@@ -164,6 +165,7 @@ class SupabaseHostRepository implements HostRepository {
     String? title,
     String? description,
     int? capacity,
+    bool? isPrivate,
   }) => _guard(
     () => _db
         .schema('events')
@@ -174,6 +176,9 @@ class SupabaseHostRepository implements HostRepository {
             'title': title,
             'description': description,
             'capacity': capacity,
+            'p_visibility': isPrivate == null
+                ? null
+                : (isPrivate ? 'private' : 'public'),
           },
         ),
   );

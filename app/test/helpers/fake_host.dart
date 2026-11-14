@@ -72,6 +72,7 @@ class FakeHost implements HostRepository {
   final saved = <(EventForm, String?)>[];
   final published = <String>[];
   final updated = <(String, String?, String?, int?)>[];
+  final visibilities = <(String, bool)>[];
   final deleted = <String>[];
   final scanned = <String>[];
   var guestCalls = 0;
@@ -125,9 +126,11 @@ class FakeHost implements HostRepository {
     String? title,
     String? description,
     int? capacity,
+    bool? isPrivate,
   }) async {
     if (saveError != null) throw saveError!;
     updated.add((id, title, description, capacity));
+    if (isPrivate != null) visibilities.add((id, isPrivate));
   }
 
   @override

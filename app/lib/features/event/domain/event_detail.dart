@@ -20,6 +20,7 @@ class EventDetail {
     required this.isBookable,
     required this.isEnded,
     required this.hostEventCount,
+    this.isPrivate = false,
   });
 
   final EventSummary summary;
@@ -32,7 +33,8 @@ class EventDetail {
   final String cancelPolicy; // 24h | 48h | 7d | none
   final bool isBookable; // takes bookings and costs money: the paid page; otherwise the free page
   final bool isEnded;
-  final int hostEventCount; // published and ended events the host has run
+  final int hostEventCount; // public events the host has run
+  final bool isPrivate; // hidden from every list; opened with the host's link
 
   factory EventDetail.fromJson(Map<String, dynamic> j) => EventDetail(
     summary: EventSummary.fromJson({
@@ -52,5 +54,6 @@ class EventDetail {
     isBookable: j['is_bookable'] as bool,
     isEnded: j['is_ended'] as bool,
     hostEventCount: (j['host_event_count'] as num).toInt(),
+    isPrivate: j['visibility'] == 'private',
   );
 }

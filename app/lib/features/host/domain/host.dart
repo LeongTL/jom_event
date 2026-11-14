@@ -78,6 +78,9 @@ class HostEventRow {
     this.acceptBookings = true,
     required this.status,
     this.seatsSold = 0,
+    this.saves,
+    this.isPrivate = false,
+    this.shareCode,
   });
 
   factory HostEventRow.fromJson(Map<String, dynamic> j) => HostEventRow(
@@ -99,15 +102,22 @@ class HostEventRow {
     acceptBookings: j['accept_bookings'] as bool,
     status: j['status'] as String,
     seatsSold: (j['seats_sold'] as num).toInt(),
+    saves: (j['saves'] as num?)?.toInt(),
+    isPrivate: j['visibility'] == 'private',
+    shareCode: j['share_code'] as String?,
   );
 
   final String id, title, status, cancelPolicy;
-  final String? description, area, venue;
+  final String? description, area, venue, shareCode;
   final List<String> categories;
   final DateTime? startsAt, endsAt;
   final int? capacity, priceSen;
   final bool acceptBookings;
   final int seatsSold;
+
+  /// How many people saved a free event (null for a paid one).
+  final int? saves;
+  final bool isPrivate;
 }
 
 class HostDashboard {

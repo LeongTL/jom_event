@@ -22,6 +22,7 @@ class EventForm {
     this.priceSen = 0,
     this.cancelPolicy = '24h',
     this.acceptBookings = true,
+    this.isPrivate = false,
   });
 
   factory EventForm.fromRow(HostEventRow r) => EventForm(
@@ -36,6 +37,7 @@ class EventForm {
     priceSen: r.priceSen ?? 0,
     cancelPolicy: r.cancelPolicy,
     acceptBookings: r.acceptBookings,
+    isPrivate: r.isPrivate,
   );
 
   final String title, description, venue, cancelPolicy;
@@ -43,7 +45,7 @@ class EventForm {
   final String? area;
   final DateTime? startsAt, endsAt;
   final int capacity, priceSen;
-  final bool acceptBookings;
+  final bool acceptBookings, isPrivate;
 
   EventForm copyWith({
     String? title,
@@ -57,6 +59,7 @@ class EventForm {
     int? priceSen,
     String? cancelPolicy,
     bool? acceptBookings,
+    bool? isPrivate,
   }) => EventForm(
     title: title ?? this.title,
     description: description ?? this.description,
@@ -69,6 +72,7 @@ class EventForm {
     priceSen: priceSen ?? this.priceSen,
     cancelPolicy: cancelPolicy ?? this.cancelPolicy,
     acceptBookings: acceptBookings ?? this.acceptBookings,
+    isPrivate: isPrivate ?? this.isPrivate,
   );
 
   /// Why this cannot be published yet, or null.
@@ -96,5 +100,6 @@ class EventForm {
     'price_sen': priceSen,
     'cancel_policy': cancelPolicy,
     'accept_bookings': acceptBookings,
+    'visibility': isPrivate ? 'private' : 'public',
   };
 }

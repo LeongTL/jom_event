@@ -74,9 +74,13 @@ class FakeEvents implements EventRepository {
     Set<String>? hearts,
     this.saveDelay = Duration.zero,
     this.savedList = const [],
+    this.codes = const {},
   }) : hearts = hearts ?? {};
   final List<EventSummary> all, savedList;
   final Map<String, EventDetail> details;
+
+  /// Share code -> the event it opens.
+  final Map<String, EventDetail> codes;
   final Set<String> hearts;
   final Duration saveDelay;
   final toggles = <String>[];
@@ -102,6 +106,8 @@ class FakeEvents implements EventRepository {
   ];
   @override
   Future<EventDetail?> detail(String id, LatLng at) async => details[id];
+  @override
+  Future<EventDetail?> byCode(String code, LatLng at) async => codes[code];
   @override
   Future<Set<String>> savedIds() async => {...hearts};
   @override
