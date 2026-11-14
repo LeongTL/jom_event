@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 
 import 'app.dart';
 import 'core/config/app_config.dart';
 import 'core/supabase_client.dart';
 
-Future<void> main() async {
+/// [overrides] let the end-to-end tests swap native pieces (the photo picker); `flutter run` passes none.
+Future<void> main({List<Override> overrides = const []}) async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     // These come from the build: flutter run --dart-define-from-file=env/staging.json
@@ -22,6 +24,7 @@ Future<void> main() async {
         overrides: [
           appConfigProvider.overrideWithValue(config),
           paymentModeProvider.overrideWithValue(config.paymentMode),
+          ...overrides,
         ],
         child: const JomApp(),
       ),
