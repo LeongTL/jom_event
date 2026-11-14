@@ -427,3 +427,6 @@ verify_jwt = true
 # Called by the database and receipt-reminders with a service_role token; same rule as receipt-email.
 [functions.send-push]
 verify_jwt = true
+
+[functions.receipt-purge]
+verify_jwt = true

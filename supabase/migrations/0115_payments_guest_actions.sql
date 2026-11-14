@@ -106,8 +106,9 @@ begin
   end if;
 
   update payments.receipts x set status = 'replaced' where x.booking_id = b.id and x.status = 'pending';
-  insert into payments.receipts (booking_id, image_path, status)
-  values (b.id, p_image_path, case when b.status = 'expired' then 'late' else 'pending' end)
+  insert into payments.receipts (booking_id, image_path, status, push_count)
+  values (b.id, p_image_path, case when b.status = 'expired' then 'late' else 'pending' end,
+          case when b.status = 'expired' then 0 else 1 end)  -- the push at upload is the first of three
   returning * into r;
   if b.status = 'held' then
     update bookings.bookings x set status = 'processing', hold_expires_at = null where x.id = b.id;
