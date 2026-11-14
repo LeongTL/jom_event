@@ -76,6 +76,7 @@ begin
   update payments.receipts x set status = 'accepted', decided_by = auth.uid(), decided_at = now() where x.id = r.id;
   select x.* into b from bookings.bookings x where x.id = r.booking_id;
   perform identity.notify(b.attendee_id, 'receipt_accepted', 'booking', b.id, 'Payment confirmed', 'Your ticket is ready');
+  perform shared.send_push(b.attendee_id, 'Payment confirmed', 'Your ticket is ready', 'booking', b.id);
   perform shared.send_receipt(b.id);
 end
 $$;
@@ -110,6 +111,7 @@ begin
    where x.id = b.id;
   perform chat.post_system_message(chat.ensure_thread(b.attendee_id, ev.host_id, ev.id), ev.host_id, note);
   perform identity.notify(b.attendee_id, 'receipt_requested', 'booking', b.id, 'Please upload your receipt again', note);
+  perform shared.send_push(b.attendee_id, 'Please upload your receipt again', note, 'booking', b.id);
 end
 $$;
 
@@ -184,6 +186,7 @@ begin
        and exists (select 1 from bookings.bookings o where o.id = x.booking_id and o.attendee_id = p_user_id);
   end if;
   perform identity.notify(p_user_id, 'seat_assigned', 'booking', b.id, 'You have a seat', ev.title);
+  perform shared.send_push(p_user_id, 'You have a seat', ev.title, 'booking', b.id);
   perform shared.send_receipt(b.id);
   return b.id;
 end

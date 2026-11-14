@@ -55,7 +55,7 @@ as $$
    where b.id = p_booking_id and b.attendee_id = auth.uid() and b.status in ('held', 'processing', 'expired');
 $$;
 
--- Tells the host a receipt is waiting (in-app; push is added with the push sender).
+-- Tells the host a receipt is waiting (in-app and push).
 create function shared.notify_host_receipt(p_receipt_id uuid) returns void
 language plpgsql security definer set search_path = ''
 as $$
@@ -71,6 +71,8 @@ begin
     'receipt', r.id,
     case when r.status = 'late' then 'Late receipt' else 'New receipt' end,
     who || ' uploaded a payment receipt');
+  perform shared.send_push(host, case when r.status = 'late' then 'Late receipt' else 'New receipt' end,
+    who || ' uploaded a payment receipt', 'receipt', r.id);
 end
 $$;
 revoke all on function shared.notify_host_receipt(uuid) from public, anon, authenticated;
