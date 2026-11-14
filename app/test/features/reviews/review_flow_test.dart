@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jom/features/people/domain/person.dart';
 import 'package:jom/features/reviews/domain/review.dart';
 
+import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_bookings.dart';
 import '../../helpers/fake_events.dart';
+import '../../helpers/fake_people.dart';
 import '../../helpers/fake_reviews.dart';
 import '../../helpers/pump_app.dart';
 
@@ -257,4 +260,94 @@ void main() {
       expect(find.text('This host page is not available.'), findsOneWidget);
     });
   });
+
+  group('following a host', () {
+    const mei = Person(
+      userId: 'h1',
+      name: 'Mei Studio',
+      username: 'mei.studio',
+      isHost: true,
+    );
+    const fan = Person(
+      userId: 'g1',
+      name: 'Bob Lim',
+      username: 'bob.lim',
+      isHost: false,
+    );
+    FakePeople people() => FakePeople(
+      people: [mei],
+      followersOf: {
+        'h1': [fan],
+      },
+    );
+
+    testWidgets('host_page_shows_username_follow_button_and_counts', (t) async {
+      await pumpApp(
+        t,
+        location: '/host/h1',
+        reviews: FakeReviews(hosts: {'h1': host()}),
+        people: people(),
+      );
+      expect(find.text('@mei.studio'), findsOneWidget);
+      expect(find.text('Follow'), findsOneWidget);
+      expect(find.text('1 Followers'), findsOneWidget);
+      expect(find.text('0 Following'), findsOneWidget);
+    });
+
+    testWidgets('follow_updates_the_follower_count_on_the_host_page', (
+      t,
+    ) async {
+      final p = people();
+      await pumpApp(
+        t,
+        location: '/host/h1',
+        reviews: FakeReviews(hosts: {'h1': host()}),
+        people: p,
+      );
+      await t.tap(key('follow-button'));
+      await t.pumpAndSettle();
+      expect(p.followed, ['h1']);
+      expect(find.text('Following'), findsOneWidget);
+      expect(find.text('2 Followers'), findsOneWidget);
+    });
+
+    testWidgets('signed_out_follow_asks_to_sign_in_but_the_page_still_shows', (
+      t,
+    ) async {
+      final p = people();
+      await pumpApp(
+        t,
+        location: '/host/h1',
+        auth: FakeAuthRepository(),
+        reviews: FakeReviews(hosts: {'h1': host()}),
+        people: p,
+      );
+      expect(key('host-name'), findsOneWidget);
+      await t.tap(key('follow-button'));
+      await t.pumpAndSettle();
+      expect(find.text('Sign in to follow'), findsOneWidget);
+      expect(p.followed, isEmpty);
+    });
+
+    testWidgets('host_page_still_renders_when_the_people_calls_fail', (
+      t,
+    ) async {
+      await pumpApp(
+        t,
+        location: '/host/h1',
+        reviews: FakeReviews(hosts: {'h1': host()}),
+        people: _BrokenPeople(),
+      );
+      expect(key('host-name'), findsOneWidget);
+      expect(find.text('Coming up'), findsOneWidget);
+      expect(find.textContaining('@'), findsNothing);
+    });
+  });
+}
+
+class _BrokenPeople extends FakePeople {
+  @override
+  Future<Person?> person(String id) async => throw Exception('down');
+  @override
+  Future<FollowCounts> counts(String id) async => throw Exception('down');
 }

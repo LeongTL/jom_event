@@ -8,6 +8,9 @@ import '../../../shared/widgets/screen_parts.dart';
 import '../../../shared/widgets/skeleton.dart';
 import '../../../shared/widgets/verified_badge.dart';
 import '../../event/presentation/event_cards.dart';
+import '../../people/data/people_repository.dart';
+import '../../people/presentation/follow_button.dart';
+import '../../people/presentation/follow_stats.dart';
 import '../data/review_repository.dart';
 import '../domain/review.dart';
 
@@ -58,14 +61,15 @@ class _Note extends StatelessWidget {
   );
 }
 
-class _Page extends StatelessWidget {
+class _Page extends ConsumerWidget {
   const _Page(this.h, this.hostId, this.top);
   final HostPublic h;
   final String hostId;
   final double top;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final username = ref.watch(personProvider(hostId)).value?.username;
     final sub = [
       if (h.area != null) h.area!,
       'hosting since ${h.since.year}',
@@ -161,6 +165,19 @@ class _Page extends StatelessWidget {
               Text(
                 sub,
                 style: const TextStyle(color: Calm.mut, fontSize: 13.5),
+              ),
+              if (username != null)
+                Text(
+                  '@$username',
+                  key: const Key('host-username'),
+                  style: const TextStyle(color: Calm.mut, fontSize: 13.5),
+                ),
+              const SizedBox(height: 12),
+              FollowButton(userId: hostId),
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: FollowStats(userId: hostId, idPrefix: 'host'),
               ),
             ],
           ),

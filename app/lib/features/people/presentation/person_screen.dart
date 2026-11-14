@@ -8,6 +8,7 @@ import '../../../shared/widgets/skeleton.dart';
 import '../data/people_repository.dart';
 import '../domain/person.dart';
 import 'follow_button.dart';
+import 'follow_stats.dart';
 import 'person_row.dart';
 
 /// A guest's small public page: who they are, Follow, and the follower counts. A host id goes to the host page.
@@ -52,58 +53,29 @@ class PersonScreen extends ConsumerWidget {
   );
 }
 
-class _Page extends ConsumerWidget {
+class _Page extends StatelessWidget {
   const _Page(this.p);
   final Person p;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final counts = ref.watch(followCountsProvider(p.userId)).value;
-    Widget count(String id, String label, int? n, String path) => Expanded(
-      child: GestureDetector(
-        key: Key(id),
-        onTap: () => context.push('/people/${p.userId}/$path'),
-        child: Text(
-          '${n ?? 0} $label',
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontWeight: FontWeight.w600),
+  Widget build(BuildContext context) => Column(
+    children: [
+      const SizedBox(height: 10),
+      PersonAvatar(p, size: 84),
+      const SizedBox(height: 10),
+      Text(
+        p.name,
+        style: const TextStyle(
+          fontFamily: Calm.serif,
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
         ),
       ),
-    );
-    return Column(
-      children: [
-        const SizedBox(height: 10),
-        PersonAvatar(p, size: 84),
-        const SizedBox(height: 10),
-        Text(
-          p.name,
-          style: const TextStyle(
-            fontFamily: Calm.serif,
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        Text('@${p.username}', style: const TextStyle(color: Calm.mut)),
-        const SizedBox(height: 16),
-        FollowButton(userId: p.userId),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            count(
-              'person-followers',
-              'Followers',
-              counts?.followers,
-              'followers',
-            ),
-            count(
-              'person-following',
-              'Following',
-              counts?.following,
-              'following',
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+      Text('@${p.username}', style: const TextStyle(color: Calm.mut)),
+      const SizedBox(height: 16),
+      FollowButton(userId: p.userId),
+      const SizedBox(height: 16),
+      FollowStats(userId: p.userId, idPrefix: 'person'),
+    ],
+  );
 }
