@@ -12,6 +12,12 @@ IconData notifIcon(String type) =>
       'chat_message': Icons.chat_bubble_outline,
       'review_request': Icons.star_outline,
       'follow': Icons.person_add_alt,
+      'receipt_submitted': Icons.receipt_long_outlined,
+      'receipt_reminder': Icons.alarm,
+      'late_receipt': Icons.schedule_send_outlined,
+      'receipt_accepted': Icons.check_circle_outline,
+      'receipt_requested': Icons.upload_file_outlined,
+      'seat_assigned': Icons.event_seat_outlined,
     }[type] ??
     Icons.notifications_none;
 
@@ -33,7 +39,9 @@ String? notifRoute(AppNotification n) {
   final id = n.refId;
   if (n.type == 'payout' || n.refType == 'payout') return '/host-mode/payouts';
   if (id == null) return null;
+  if (n.type == 'receipt_requested') return '/booking/$id/pay';
   return switch (n.refType) {
+    'receipt' => '/host-mode/receipts/$id',
     'booking' => '/booking/$id/ticket',
     'thread' => '/chats/$id',
     'event' => '/event/$id',

@@ -17,6 +17,45 @@ AppNotification n(String type, {String? refType, String? refId = 'x1'}) =>
     );
 
 void main() {
+  group('manual payment notices', () {
+    test('six_new_notification_types_have_icons_and_routes', () {
+      for (final t in [
+        'receipt_submitted',
+        'receipt_reminder',
+        'late_receipt',
+        'receipt_accepted',
+        'receipt_requested',
+        'seat_assigned',
+      ]) {
+        expect(notifIcon(t), isNot(Icons.notifications_none), reason: t);
+      }
+      expect(
+        notifRoute(n('receipt_submitted', refType: 'receipt')),
+        '/host-mode/receipts/x1',
+      );
+      expect(
+        notifRoute(n('receipt_reminder', refType: 'receipt')),
+        '/host-mode/receipts/x1',
+      );
+      expect(
+        notifRoute(n('late_receipt', refType: 'receipt')),
+        '/host-mode/receipts/x1',
+      );
+      expect(
+        notifRoute(n('receipt_requested', refType: 'booking')),
+        '/booking/x1/pay',
+      );
+      expect(
+        notifRoute(n('receipt_accepted', refType: 'booking')),
+        '/booking/x1/ticket',
+      );
+      expect(
+        notifRoute(n('seat_assigned', refType: 'booking')),
+        '/booking/x1/ticket',
+      );
+    });
+  });
+
   group('notifWhen', () {
     test(
       'says how long ago for today, then Yesterday, the weekday, the date',
