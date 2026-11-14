@@ -63,7 +63,7 @@ void main() {
       final soonId = await publishEvent(
         host,
         title: soon,
-        priceSen: 0,
+        priceSen: 3000,
         startsIn: const Duration(seconds: 25),
         lasts: const Duration(seconds: 5),
       );
