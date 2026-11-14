@@ -7,6 +7,7 @@ import '../../../shared/widgets/screen_parts.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/domain/phone_number.dart';
 import '../../host/data/host_repository.dart';
+import '../../people/data/people_repository.dart';
 
 /// Who I am and the places to go from here. Signed-out visitors never see it (the tab shows the sign-in prompt).
 class ProfileScreen extends ConsumerWidget {
@@ -137,6 +138,12 @@ class ProfileScreen extends ConsumerWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+                if (ref.watch(myUsernameProvider).value case final u?)
+                  Text(
+                    '@$u',
+                    key: const Key('profile-username'),
+                    style: const TextStyle(color: Calm.mut),
+                  ),
                 if (phone != null && phone.isNotEmpty)
                   Text(
                     prettyMyPhone(phone.startsWith('+') ? phone : '+$phone'),
@@ -146,6 +153,8 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
+          row('Edit username', () => context.push('/edit-username')),
+          row('Find people', () => context.push('/people')),
           row('My reviews', () => context.push('/my-reviews')),
           row('Notifications', () => context.push('/notifications')),
           row('Help & support', () => context.push('/help')),

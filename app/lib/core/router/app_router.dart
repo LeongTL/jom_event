@@ -17,6 +17,10 @@ import '../../features/event/presentation/event_screen.dart';
 import '../../features/event/presentation/saved_screen.dart';
 import '../../features/event/presentation/view_all_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/people/presentation/edit_username_screen.dart';
+import '../../features/people/presentation/find_people_screen.dart';
+import '../../features/people/presentation/follow_list_screen.dart';
+import '../../features/people/presentation/person_screen.dart';
 import '../../features/home/presentation/map_screen.dart';
 import '../../features/host/presentation/apply_host_screen.dart';
 import '../../features/host/presentation/checkin_screen.dart';
@@ -163,6 +167,33 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
     GoRoute(
       path: '/my-reviews',
       builder: (context, state) => const MyReviewsScreen(),
+    ),
+    GoRoute(
+      path: '/edit-username',
+      builder: (context, state) => const EditUsernameScreen(),
+    ),
+    GoRoute(
+      path: '/people',
+      builder: (context, state) => const FindPeopleScreen(),
+    ),
+    GoRoute(
+      path: '/people/:id',
+      builder: (context, state) =>
+          PersonScreen(userId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/people/:id/followers',
+      builder: (context, state) => FollowListScreen(
+        userId: state.pathParameters['id']!,
+        followers: true,
+      ),
+    ),
+    GoRoute(
+      path: '/people/:id/following',
+      builder: (context, state) => FollowListScreen(
+        userId: state.pathParameters['id']!,
+        followers: false,
+      ),
     ),
     GoRoute(path: '/help', builder: (context, state) => const HelpScreen()),
     GoRoute(path: '/legal', builder: (context, state) => const LegalScreen()),

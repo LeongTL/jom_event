@@ -12,8 +12,8 @@ class AppNotification {
   });
 
   final String id;
-  final String type; // payment, booking, payout, event_cancelled, chat_message, review_request
-  final String? refType; // what refId points at: booking, thread or event
+  final String type; // payment, booking, payout, event_cancelled, chat_message, review_request, follow
+  final String? refType; // what refId points at: booking, thread, event or user
   final String? refId;
   final String title;
   final String? body;

@@ -37,6 +37,10 @@ const _copy = {
     'Sign in to chat',
     'Chat is between you and the host, so we need to know who you are.',
   ),
+  AuthReason.follow: (
+    'Sign in to follow',
+    'Follow people to keep up with what they host and join.',
+  ),
 };
 
 enum _Step { choose, phone, otp, name }
