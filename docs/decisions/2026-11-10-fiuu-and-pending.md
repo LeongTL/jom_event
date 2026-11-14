@@ -62,7 +62,9 @@ Cash-flow note: Fiuu settles weekly, the MVP design pays hosts 3 working days af
 
 **Sharing (decided 13 Nov): WhatsApp and Telegram first.** An event page gets a share button that sends one link with a preview card (title, poster, date, place). Instagram and TikTok (a generated poster image per event) come later. Needs a domain, a landing page that shows the event to people without the app, and deeplinks (Android App Links, iOS Universal Links) so the link opens the app when it is installed. The routes `/event/:id` and `/host/:id` already exist. Private events use the same link with an unguessable share code.
 
-**Usernames and user connections (planned 14 Nov, details still open).** Every guest and host gets a unique username shown under their name, for example @feederfeedz. People find each other by searching this username. Users, not only hosts and guests, can also connect with each other to socialise (交流). The host's manual seat assignment depends on this search. Details not decided yet: how a username is chosen and whether it can change, what "connect" means (follow, friend request, direct messages), privacy and blocking, and the in-app chat filter, which today rejects handles and would need to allow in-app @usernames.
+**Usernames and following (decided 14 Nov).** Every guest and host gets a unique username shown under their name, for example @feederfeedz. People find each other by searching name, ID or @username. A username can be changed at any time as long as no one else has it. "Connect" means following a guest or host, so users can get close to each other (交流); it is not direct messaging. The host's manual seat assignment uses the same search. The in-app chat filter must allow in-app @usernames while still blocking outside handles.
+
+**MVP scope and focus (decided 14 Nov).** The MVP includes as many features as possible; the only thing left out is the real payment gateway. Work focuses on the mobile app first; the web back office comes after the app. Until the web admin exists, host approval is done by hand in the Supabase dashboard. Admins work with hosts directly.
 
 ## Under discussion (not decided)
 
