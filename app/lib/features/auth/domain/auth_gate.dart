@@ -7,9 +7,9 @@ import '../presentation/sign_in_sheet.dart';
 import '../../../shared/widgets/skeleton.dart';
 
 /// Why the app is asking someone to sign in: it decides what the sheet says.
-enum AuthReason { join, save, chat }
+enum AuthReason { join, save, chat, follow }
 
-/// Call this before anything that needs an account (Join, the heart, Message). Returns true at once when the
+/// Call this before anything that needs an account (Join, the heart, Message, Follow). Returns true at once when the
 /// user is signed in. Otherwise it opens the sign-in sheet and, once they have signed in, returns true so the
 /// caller can carry on with what they were doing; it returns false if they close the sheet.
 Future<bool> requireAuth(

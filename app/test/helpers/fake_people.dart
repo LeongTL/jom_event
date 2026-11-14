@@ -10,6 +10,7 @@ class FakePeople implements PeopleRepository {
     this.followersOf = const {},
     this.followingOf = const {},
     this.setError,
+    this.followDelay = Duration.zero,
     Set<String> iFollow = const {},
   }) : _iFollow = {...iFollow};
 
@@ -18,6 +19,7 @@ class FakePeople implements PeopleRepository {
   final List<Person> people;
   final Map<String, List<Person>> followersOf, followingOf;
   final UsernameError? setError;
+  final Duration followDelay; // makes a double tap possible in tests
   final Set<String> _iFollow;
   final followed = <String>[];
   final unfollowed = <String>[];
@@ -64,6 +66,7 @@ class FakePeople implements PeopleRepository {
 
   @override
   Future<void> follow(String id) async {
+    if (followDelay > Duration.zero) await Future<void>.delayed(followDelay);
     followed.add(id);
     _iFollow.add(id);
   }
