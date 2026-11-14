@@ -62,6 +62,8 @@ Cash-flow note: Fiuu settles weekly, the MVP design pays hosts 3 working days af
 
 **Sharing (decided 13 Nov): WhatsApp and Telegram first.** An event page gets a share button that sends one link with a preview card (title, poster, date, place). Instagram and TikTok (a generated poster image per event) come later. Needs a domain, a landing page that shows the event to people without the app, and deeplinks (Android App Links, iOS Universal Links) so the link opens the app when it is installed. The routes `/event/:id` and `/host/:id` already exist. Private events use the same link with an unguessable share code.
 
+**Usernames and user connections (planned 14 Nov, details still open).** Every guest and host gets a unique username shown under their name, for example @feederfeedz. People find each other by searching this username. Users, not only hosts and guests, can also connect with each other to socialise (交流). The host's manual seat assignment depends on this search. Details not decided yet: how a username is chosen and whether it can change, what "connect" means (follow, friend request, direct messages), privacy and blocking, and the in-app chat filter, which today rejects handles and would need to allow in-app @usernames.
+
 ## Under discussion (not decided)
 
 1. **Free events are Save-only, with a saves count for the host** (decided 13 Nov). No Join, no ticket, no seat limit or guest list for free events; the guest sees Save, Directions and the source link, the host sees how many people saved it. Reverses the MVP rule "free events need only a sign-in to join". Touches the free branch of `bookings.create_booking`, the free join screens and `free_join_journey_test`.
