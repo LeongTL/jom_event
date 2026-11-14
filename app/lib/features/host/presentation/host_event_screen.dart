@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/clock.dart';
@@ -8,6 +9,7 @@ import '../../../shared/widgets/category_art.dart';
 import '../../../shared/widgets/jom_button.dart';
 import '../../../shared/widgets/screen_parts.dart';
 import '../../event/domain/event_labels.dart';
+import '../../event/domain/share_link.dart';
 import '../data/host_repository.dart';
 import '../domain/host.dart';
 import 'complete_sheet.dart';
@@ -258,6 +260,48 @@ class _Body extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  if (!isEnded && e.shareCode != null)
+                    CardBox(
+                      key: const Key('share-card'),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  e.isPrivate
+                                      ? 'Share link (private event)'
+                                      : 'Share link',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  shareLink(e.shareCode!),
+                                  style: const TextStyle(
+                                    color: Calm.mut,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            key: const Key('copy-share-link'),
+                            icon: const Icon(Icons.copy, size: 18),
+                            onPressed: () {
+                              Clipboard.setData(
+                                ClipboardData(text: shareLink(e.shareCode!)),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Link copied')),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                   CardBox(
                     onTap: () => context.go('/host-mode/chats'),
                     child: const Row(

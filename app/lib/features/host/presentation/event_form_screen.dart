@@ -331,6 +331,17 @@ class _EventFormState extends ConsumerState<_EventForm> {
                   ),
                 ),
               ),
+              CardCols(
+                label: 'Private event',
+                note: 'Private events are hidden from Explore and search. Only people with your link can open them.',
+                trailing: KeyedSubtree(
+                  key: const Key('form-visibility'),
+                  child: JomSwitch(
+                    value: _f.isPrivate,
+                    onChanged: (v) => _set(_f.copyWith(isPrivate: v)),
+                  ),
+                ),
+              ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -465,6 +476,7 @@ class _EventFormState extends ConsumerState<_EventForm> {
                                         title: _f.title.trim(),
                                         description: _f.description.trim(),
                                         capacity: _f.capacity,
+                                        isPrivate: _f.isPrivate,
                                       ),
                                 ),
                         ),

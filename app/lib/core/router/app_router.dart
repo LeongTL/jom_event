@@ -13,6 +13,7 @@ import '../../features/booking/presentation/gateway_screen.dart';
 import '../../features/booking/presentation/processing_screen.dart';
 import '../../features/booking/presentation/ticket_screen.dart';
 import '../../features/booking/domain/booking.dart';
+import '../../features/event/presentation/event_by_code_screen.dart';
 import '../../features/event/presentation/event_screen.dart';
 import '../../features/event/presentation/saved_screen.dart';
 import '../../features/event/presentation/view_all_screen.dart';
@@ -72,8 +73,16 @@ StatefulShellBranch _account(
 
 /// Every route in the plan. The screens are placeholders until their own task builds them. A path nobody
 /// recognises goes to Explore.
+/// A link from outside the app (`jom://e/<code>`) becomes the in-app path (`/e/<code>`); anything else is left alone.
+String? deepLinkRedirect(Uri uri) {
+  if (uri.scheme != 'jom') return null;
+  final path = '/${uri.host}${uri.path}';
+  return path.endsWith('/') ? path.substring(0, path.length - 1) : path;
+}
+
 GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
   initialLocation: initialLocation,
+  redirect: (context, state) => deepLinkRedirect(state.uri),
   onException: (context, state, router) => router.go('/explore'),
   routes: [
     StatefulShellRoute.indexedStack(
@@ -124,6 +133,11 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
     GoRoute(
       path: '/event/:id',
       builder: (context, state) => EventScreen(id: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/e/:code',
+      builder: (context, state) =>
+          EventByCodeScreen(code: state.pathParameters['code']!),
     ),
     GoRoute(
       path: '/event/:id/checkout',
