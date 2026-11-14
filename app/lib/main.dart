@@ -14,11 +14,15 @@ Future<void> main() async {
       'SUPABASE_URL': const String.fromEnvironment('SUPABASE_URL'),
       'SUPABASE_ANON_KEY': const String.fromEnvironment('SUPABASE_ANON_KEY'),
       'MAP_TILE_URL': const String.fromEnvironment('MAP_TILE_URL'),
+      'PAYMENT_MODE': const String.fromEnvironment('PAYMENT_MODE'),
     });
     await initSupabase(config);
     runApp(
       ProviderScope(
-        overrides: [appConfigProvider.overrideWithValue(config)],
+        overrides: [
+          appConfigProvider.overrideWithValue(config),
+          paymentModeProvider.overrideWithValue(config.paymentMode),
+        ],
         child: const JomApp(),
       ),
     );
