@@ -12,6 +12,7 @@ import '../../features/booking/presentation/failed_screen.dart';
 import '../../features/booking/presentation/gateway_screen.dart';
 import '../../features/booking/presentation/pay_screen.dart';
 import '../../features/host/presentation/assign_seat_screen.dart';
+import '../../features/host/presentation/payment_details_screen.dart';
 import '../../features/host/presentation/pending_receipts_screen.dart';
 import '../../features/host/presentation/receipt_detail_screen.dart';
 import '../../features/booking/presentation/processing_screen.dart';
@@ -301,6 +302,10 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
     GoRoute(
       path: '/host-mode/apply',
       builder: (context, state) => const ApplyHostScreen(),
+    ),
+    GoRoute(
+      path: '/host-mode/payment-details',
+      builder: (context, state) => const PaymentDetailsScreen(),
     ),
     GoRoute(
       path: '/host-mode/payout-account',

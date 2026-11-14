@@ -94,6 +94,7 @@ class HostProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 20),
                   row('Payout account', '/host-mode/payout-account'),
+                  row('Payment details', '/host-mode/payment-details'),
                   row('View public profile', '/host/${me.id}'),
                 ],
                 const SizedBox(height: 6),

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -64,6 +66,16 @@ abstract class HostRepository {
 
   /// Records a refund I made outside the app: the booking is cancelled and the seat freed.
   Future<void> recordRefund(String bookingId, String note);
+
+  /// What guests see when they book: a DuitNow QR image, bank details, or both. Uploads [qr] when given, otherwise keeps
+  /// [keepQrPath].
+  Future<void> savePaymentDetails({
+    String? holder,
+    String? bank,
+    String? number,
+    Uint8List? qr,
+    String? keepQrPath,
+  });
 }
 
 class SupabaseHostRepository implements HostRepository {
@@ -110,6 +122,7 @@ class SupabaseHostRepository implements HostRepository {
       holder: (a?['account_holder'] as String?) ?? '',
       bank: (a?['bank'] as String?) ?? '',
       accountNumber: (a?['account_number'] as String?) ?? '',
+      qrPath: a?['duitnow_qr_path'] as String?,
       ratingAvg: (r?['average'] as num?)?.toDouble(),
       ratingCount: (r?['count'] as num?)?.toInt() ?? 0,
       verifiedAt: h['verified_at'] == null
@@ -390,6 +403,43 @@ class SupabaseHostRepository implements HostRepository {
           params: {'p_booking_id': bookingId, 'p_note': note},
         ),
   );
+
+  @override
+  Future<void> savePaymentDetails({
+    String? holder,
+    String? bank,
+    String? number,
+    Uint8List? qr,
+    String? keepQrPath,
+  }) => _guard(() async {
+    var qrPath = keepQrPath;
+    if (qr != null) {
+      qrPath = '${_db.auth.currentUser!.id}/qr.jpg';
+      await _db.storage
+          .from('payment-qr')
+          .uploadBinary(
+            qrPath,
+            qr,
+            fileOptions: FileOptions(
+              upsert: true,
+              contentType: qr.length > 1 && qr[0] == 0xFF
+                  ? 'image/jpeg'
+                  : 'image/png',
+            ),
+          );
+    }
+    await _db
+        .schema('identity')
+        .rpc(
+          'save_payment_details',
+          params: {
+            'p_holder': holder,
+            'p_bank': bank,
+            'p_number': number,
+            'p_qr_path': qrPath,
+          },
+        );
+  });
 }
 
 final hostRepositoryProvider = Provider<HostRepository>(

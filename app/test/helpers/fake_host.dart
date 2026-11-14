@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:jom/features/host/data/host_repository.dart';
 import 'package:jom/features/host/domain/event_form_state.dart';
 import 'package:jom/features/host/domain/host.dart';
@@ -66,6 +68,17 @@ class FakeHost implements HostRepository {
   HostError? askError;
   final assigned = <(String, String, int, String?, bool)>[];
   final refunded = <(String, String)>[];
+  final savedDetails = <(String, String, String, bool)>[];
+
+  @override
+  Future<void> savePaymentDetails({
+    String? holder,
+    String? bank,
+    String? number,
+    Uint8List? qr,
+    String? keepQrPath,
+  }) async =>
+      savedDetails.add((holder ?? '', bank ?? '', number ?? '', qr != null));
 
   @override
   Future<String> assignSeat({

@@ -16,6 +16,8 @@ class HostError implements Exception {
       'Fill in every detail except the business registration.',
     'bookings_closed' => 'The event starts in less than an hour, so the guest cannot get a new hold. Message them instead.',
     'event_not_available' => 'This event is no longer available.',
+    'payment_details_required' =>
+      'Add a DuitNow QR image, or the bank, account holder and account number.',
     'event_full' =>
       'This event is full. Switch on "Allow over capacity" to add them anyway.',
     'user_not_found' => 'That person could not be found.',
@@ -55,8 +57,12 @@ class HostProfile {
     this.ratingAvg,
     this.ratingCount = 0,
     this.verifiedAt,
+    this.qrPath,
   });
   final String id, name, area, holder, bank, accountNumber;
+
+  /// The DuitNow QR image in the payment-qr bucket, when the host added one.
+  final String? qrPath;
 
   /// Set by hand after the payout account holder is checked.
   final DateTime? verifiedAt;
