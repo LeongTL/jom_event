@@ -89,9 +89,11 @@ void main() {
     expect(path.contains(const Offset(1, 60)), isTrue);
   });
 
-  testWidgets('a_processing_ticket_says_Processing_in_the_chip', (t) async {
+  testWidgets('a_processing_ticket_says_Waiting_for_host_in_the_chip', (
+    t,
+  ) async {
     final tk = ticket('Yoga', 'Mei');
     await pumpTile(t, Ticket(bk('b1', status: 'processing'), tk.event));
-    expect(find.text('Processing'), findsOneWidget);
+    expect(find.text('Waiting for host'), findsOneWidget);
   });
 }

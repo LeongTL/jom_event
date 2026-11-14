@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:jom/features/booking/data/booking_repository.dart';
 import 'package:jom/features/booking/data/payment_gateway_client.dart';
 import 'package:jom/features/booking/domain/booking.dart';
+import 'package:jom/features/booking/domain/pay_instructions.dart';
 
 Booking bk(
   String id, {
@@ -59,6 +61,30 @@ class FakeBookings implements BookingRepository {
   var _n = 0;
   Object? payError;
   Object? cancelFails;
+  Object? uploadError;
+  final receipts = <(String, Uint8List)>[];
+  PayInstructions?
+  instructions; // null = a held RM30 booking with a QR and bank details
+
+  @override
+  Future<PayInstructions> payInstructions(String bookingId) async =>
+      instructions ??
+      PayInstructions(
+        amountSen: 3000,
+        reference: 'KLS-4821',
+        qrUrl: 'https://example.invalid/qr.png',
+        bank: 'Maybank',
+        holder: 'Mei Ling',
+        number: '1122334455',
+        holdExpiresAt: now().add(const Duration(hours: 1)),
+        status: 'held',
+      );
+
+  @override
+  Future<void> uploadReceipt(String bookingId, Uint8List bytes) async {
+    if (uploadError != null) throw uploadError!;
+    receipts.add((bookingId, bytes));
+  }
 
   StreamController<Booking> _c(String id) =>
       _ctrls.putIfAbsent(id, () => StreamController<Booking>.broadcast());

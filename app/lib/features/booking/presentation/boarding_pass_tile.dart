@@ -30,7 +30,7 @@ class BoardingPassTile extends StatelessWidget {
     final color = ticketColor(primaryCategory(e.categories));
     final today = dayLabel(e.startsAt, now) == 'Today';
     final chip = ticket.processing
-        ? 'Processing'
+        ? 'Waiting for host'
         : relativeStart(e.startsAt, e.endsAt, now);
     final host = [
       if (e.hostName != null) e.hostName!,

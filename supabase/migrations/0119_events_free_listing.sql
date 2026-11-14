@@ -27,6 +27,7 @@ declare
   paid boolean;
   b bookings.bookings;
   tries int := 0;
+  cool int;
 begin
   if uid is null then
     raise exception 'login_required' using errcode = '28000';
@@ -52,6 +53,21 @@ begin
   if paid and not ev.accept_bookings then
     raise exception 'bookings_closed';
   end if;
+  if paid and now() > ev.starts_at - interval '1 hour' then
+    raise exception 'bookings_closed';
+  end if;
+  if paid then
+    -- cooldown: a hold of theirs ran out with no receipt in the last 30 minutes
+    select greatest(extract(epoch from x.hold_expires_at + interval '30 minutes' - now())::int, 1) into cool
+      from bookings.bookings x
+     where x.event_id = p_event_id and x.attendee_id = uid and x.status = 'expired'
+       and x.hold_expires_at > now() - interval '30 minutes'
+       and not exists (select 1 from payments.receipts r where r.booking_id = x.id)
+     order by x.hold_expires_at desc limit 1;
+    if cool is not null then
+      raise exception 'cooldown_active' using hint = cool::text;
+    end if;
+  end if;
   if bookings.seats_taken(p_event_id) + p_people > ev.capacity then
     raise exception 'sold_out';
   end if;
@@ -63,7 +79,7 @@ begin
                                      contact_name, contact_phone, cancel_cutoff_at, amount_sen)
       values (p_event_id, uid, p_people,
               case when paid then 'held' else 'confirmed' end,
-              case when paid then now() + interval '15 minutes' end,
+              case when paid then now() + greatest(interval '15 minutes', least(interval '1 hour', ev.starts_at - interval '30 minutes' - now())) end,
               'KLS-' || lpad(floor(random() * 100000)::int::text, 5, '0'),
               btrim(p_name), btrim(p_phone),
               case when paid then events.cancel_cutoff(p_event_id) else ev.starts_at end,
@@ -76,6 +92,9 @@ begin
       end if;
     end;
   end loop;
+  if not paid then
+    perform shared.send_receipt(b.id);  -- free: confirmed already, so the receipt goes now
+  end if;
   return b;
 end
 $$;
