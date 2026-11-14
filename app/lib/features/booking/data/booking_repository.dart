@@ -49,7 +49,10 @@ class SupabaseBookingRepository implements BookingRepository {
     try {
       return await _db.schema(schema).rpc(fn, params: params) as T;
     } on PostgrestException catch (e) {
-      throw BookingError(e.message);
+      throw BookingError(
+        e.message,
+        cooldownSeconds: int.tryParse(e.hint ?? ''),
+      );
     }
   }
 

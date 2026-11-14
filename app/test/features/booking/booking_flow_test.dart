@@ -493,6 +493,83 @@ void main() {
     });
   });
 
+  group('ticket states for manual payment', () {
+    final soon = clock.add(const Duration(days: 3));
+    Future<void> openTab(WidgetTester t, List<Booking> upcoming) =>
+        pumpApp(t, location: '/tickets', upcoming: upcoming);
+
+    testWidgets('held_card_says_pay_now_and_opens_pay_screen', (t) async {
+      await openTab(t, [
+        bk(
+          'h1',
+          status: 'held',
+          event: 'e1',
+          starts: soon,
+          hold: clock.add(const Duration(minutes: 40)),
+        ),
+      ]);
+      expect(key('ticket-state-held'), findsOneWidget);
+      expect(find.text('Pay now'), findsWidgets);
+      expect(find.byType(QrImageView), findsNothing);
+      await t.ensureVisible(key('ticket-pay'));
+      await t.tap(key('ticket-pay'));
+      await t.pumpAndSettle();
+      expect(key('pay-screen'), findsOneWidget);
+    });
+
+    testWidgets('processing_card_says_waiting_for_host', (t) async {
+      await openTab(t, [
+        bk('p1', status: 'processing', event: 'e1', starts: soon),
+      ]);
+      expect(key('ticket-state-processing'), findsOneWidget);
+      expect(find.text('Waiting for host'), findsOneWidget);
+    });
+
+    testWidgets('confirmed_card_still_shows_the_qr', (t) async {
+      await openTab(t, [
+        bk('c1', status: 'confirmed', event: 'e1', starts: soon),
+      ]);
+      expect(find.byType(QrImageView), findsOneWidget);
+      expect(key('ticket-state-held'), findsNothing);
+    });
+
+    testWidgets('expired_card_offers_upload_late_and_chat_with_host', (
+      t,
+    ) async {
+      await openTab(t, [
+        bk('x1', status: 'expired', event: 'e1', starts: soon),
+      ]);
+      expect(key('ticket-state-expired'), findsOneWidget);
+      expect(find.text('Expired'), findsOneWidget);
+      await t.ensureVisible(key('ticket-late'));
+      expect(key('ticket-chat'), findsOneWidget);
+      await t.tap(key('ticket-late'));
+      await t.pumpAndSettle();
+      expect(key('pay-screen'), findsOneWidget);
+    });
+
+    testWidgets('cooldown_error_shows_minutes_left', (t) async {
+      await pumpApp(
+        t,
+        location: '/event/e1/checkout',
+        createError: BookingError('cooldown_active', cooldownSeconds: 601),
+      );
+      expect(
+        find.text('You can book this event again in 11 minutes.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('bookings_closed_shows_bookings_closed', (t) async {
+      await pumpApp(
+        t,
+        location: '/event/e1/checkout',
+        createError: BookingError('bookings_closed'),
+      );
+      expect(find.text('Bookings are closed for this event.'), findsOneWidget);
+    });
+  });
+
   group('payment', () {
     testWidgets(
       'paid_pay_goes_to_gateway_then_processing_until_stream_confirms',
@@ -971,10 +1048,12 @@ void main() {
           t,
           upcoming: [bk('p1', status: 'processing', event: 'e1', starts: soon)],
         );
-        expect(find.text('Processing'), findsOneWidget);
+        expect(find.text('Waiting for host'), findsOneWidget);
         expect(find.byType(QrImageView), findsNothing);
         expect(
-          find.text('Your QR code appears here as soon as the payment clears.'),
+          find.text(
+            'Your QR code appears here once the host confirms your payment.',
+          ),
           findsOneWidget,
         );
       },
