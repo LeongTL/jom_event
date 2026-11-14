@@ -1,6 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jom/features/booking/data/receipt_picker.dart';
 import 'package:jom/main.dart' as app;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -102,6 +105,14 @@ Future<String> publishEvent(
   return id;
 }
 
+/// Pulls an event's start to [startsIn] from now, as the clock would have: paid bookings close an hour before the
+/// start, so a journey books early and then calls this to get to the door (the function is in tools/e2e_reset.sql).
+Future<void> startEventIn(String eventId, Duration startsIn) =>
+    SupabaseClient(_url, _service).rpc(
+      'e2e_start_event_in',
+      params: {'p_event_id': eventId, 'p_seconds': startsIn.inSeconds},
+    );
+
 /// What a guest does in the app: hold the seat, then pay at the mock gateway. Returns the booking id once the
 /// gateway's webhook has confirmed it (a free event is confirmed straight away).
 Future<String> bookAndPay(
@@ -123,22 +134,114 @@ Future<String> bookAndPay(
               )
           as Map<String, dynamic>;
   final id = b['id'] as String;
-  if (b['status'] != 'confirmed') {
-    final session =
-        (await guest.db
-                        .schema('payments')
-                        .rpc('start_payment', params: {'p_booking_id': id})
-                    as List)
-                .first
-            as Map<String, dynamic>;
-    await guest.db.functions.invoke(
-      'mock-gateway-pay',
-      body: {'attemptId': session['attempt_id'], 'method': 'FPX'},
-    );
-    await eventually(() async => await bookingStatus(guest, id) == 'confirmed');
-  }
+  if (b['status'] != 'confirmed') await payAtGateway(guest, id);
   return id;
 }
+
+/// Pays a held booking at the mock gateway (the old payment path) and waits for the webhook to confirm it.
+Future<void> payAtGateway(Person guest, String bookingId) async {
+  final session =
+      (await guest.db
+                      .schema('payments')
+                      .rpc('start_payment', params: {'p_booking_id': bookingId})
+                  as List)
+              .first
+          as Map<String, dynamic>;
+  await guest.db.functions.invoke(
+    'mock-gateway-pay',
+    body: {'attemptId': session['attempt_id'], 'method': 'FPX'},
+  );
+  await eventually(
+    () async => await bookingStatus(guest, bookingId) == 'confirmed',
+  );
+}
+
+/// The host sees the guest's receipt for [eventId] in their pending list and accepts it.
+Future<void> hostAcceptsReceipt(Person host, String eventId) async {
+  late String receiptId;
+  await eventually(() async {
+    final rows =
+        await host.db
+                .schema('payments')
+                .rpc('pending_receipts', params: {'p_event_id': eventId})
+            as List;
+    if (rows.isEmpty) return false;
+    receiptId = (rows.first as Map)['receipt_id'] as String;
+    return true;
+  });
+  await host.db
+      .schema('payments')
+      .rpc('accept_receipt', params: {'p_receipt_id': receiptId});
+}
+
+// A 1x1 PNG: the native photo picker cannot be driven from a test, so the app is started with this as the "photo".
+final _receiptPhoto = Uint8List.fromList(const [
+  0x89,
+  0x50,
+  0x4e,
+  0x47,
+  0x0d,
+  0x0a,
+  0x1a,
+  0x0a,
+  0x00,
+  0x00,
+  0x00,
+  0x0d,
+  0x49,
+  0x48,
+  0x44,
+  0x52, //
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x08,
+  0x06,
+  0x00,
+  0x00,
+  0x00,
+  0x1f,
+  0x15,
+  0xc4, //
+  0x89,
+  0x00,
+  0x00,
+  0x00,
+  0x0d,
+  0x49,
+  0x44,
+  0x41,
+  0x54,
+  0x78,
+  0x9c,
+  0x63,
+  0xf8,
+  0xff,
+  0xff,
+  0x3f, //
+  0x00,
+  0x05,
+  0xfe,
+  0x02,
+  0xfe,
+  0xa7,
+  0x35,
+  0x81,
+  0x84,
+  0x00,
+  0x00,
+  0x00,
+  0x00,
+  0x49,
+  0x45,
+  0x4e, //
+  0x44, 0xae, 0x42, 0x60, 0x82,
+]);
 
 Future<String> bookingStatus(Person who, String bookingId) async =>
     (await who.db
@@ -176,7 +279,11 @@ Future<void> eventually(
 
 /// Starts the real app and waits for Home.
 Future<void> launchApp(WidgetTester t) async {
-  await app.main();
+  await app.main(
+    overrides: [
+      receiptPickerProvider.overrideWithValue((_) async => _receiptPhoto),
+    ],
+  );
   // the app stays installed between runs and keeps its last login; every journey starts signed out
   // the stored session is restored in the background, so sign out until it is really gone
   final auth = Supabase.instance.client.auth;

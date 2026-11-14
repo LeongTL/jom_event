@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/clock.dart';
 import '../../../core/money.dart';
+import '../../../core/supabase_client.dart' show paymentModeProvider;
 import '../../../core/theme/calm.dart';
 import '../../../shared/widgets/category_art.dart';
 import '../../../shared/widgets/jom_button.dart';
@@ -137,6 +138,12 @@ class _BodyState extends ConsumerState<_Body> {
   }
 
   Future<void> _pay() async {
+    if (ref.read(paymentModeProvider) == 'manual') {
+      context.push(
+        '/booking/${_held!.id}/pay',
+      ); // no gateway session: pay the host directly
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;

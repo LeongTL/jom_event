@@ -11,6 +11,7 @@ Mock payments and the test phone login are on here. Neither may ever exist on pr
 | Tables, functions, cron jobs | `supabase db push` applied all 23 migrations in `supabase/migrations/` |
 | Edge functions | `supabase functions deploy`: `payment-webhook`, `mock-gateway-pay`, `receipt-email`, `delete-account` |
 | Edge function secrets | `supabase secrets set FLAVOR=staging GATEWAY_WEBHOOK_SECRET=<random>` |
+| Manual payment (not deployed yet) | Deploy `send-push` and `receipt-purge`; set `FCM_SERVICE_ACCOUNT` when a Firebase project exists (until then push is only logged). Build the app with `PAYMENT_MODE=manual` (default) or `gateway` |
 | Demo data: 20 hosts, 87 events | `supabase db query --linked -f supabase/seed.sql` (by hand, once; never a migration, never on prod) |
 | API schemas, test phone login | `supabase config push` from a minimal config holding only those settings (see below) |
 

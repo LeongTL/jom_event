@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:jom/core/config/app_config.dart';
 
 void main() {
+  paymentModeTests();
   test('reads_flavor_and_keys', () {
     final c = AppConfig.fromMap({
       'FLAVOR': 'staging',
@@ -45,6 +46,29 @@ void main() {
         'MAP_TILE_URL': 'https://t.example/{z}/{x}/{y}.png',
       }).mapTileUrl,
       'https://t.example/{z}/{x}/{y}.png',
+    );
+  });
+}
+
+void paymentModeTests() {
+  const base = {
+    'FLAVOR': 'dev',
+    'SUPABASE_URL': 'https://x.supabase.co',
+    'SUPABASE_ANON_KEY': 'anon',
+  };
+  test('payment_mode_defaults_to_manual', () {
+    expect(AppConfig.fromMap(base).paymentMode, 'manual');
+  });
+  test('payment_mode_gateway_is_read', () {
+    expect(
+      AppConfig.fromMap({...base, 'PAYMENT_MODE': 'gateway'}).paymentMode,
+      'gateway',
+    );
+  });
+  test('unknown_payment_mode_throws', () {
+    expect(
+      () => AppConfig.fromMap({...base, 'PAYMENT_MODE': 'cash'}),
+      throwsStateError,
     );
   });
 }

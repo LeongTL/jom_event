@@ -13,6 +13,7 @@ import '../domain/host.dart';
 import 'complete_sheet.dart';
 import 'delete_sheet.dart';
 import 'host_parts.dart';
+import 'pending_receipts_card.dart';
 
 /// Host mode: one event (/host-mode/events/:id). Numbers, scan and guest list, details, complete and delete.
 class HostEventScreen extends ConsumerWidget {
@@ -127,6 +128,7 @@ class _Body extends ConsumerWidget {
                       style: const TextStyle(color: Calm.mut, height: 1.4),
                     ),
                   const SizedBox(height: 14),
+                  PendingReceiptsCard(eventId: e.id),
                   FillBar((e.seatsSold / cap).clamp(0, 1).toDouble()),
                   const SizedBox(height: 6),
                   Text(
@@ -193,6 +195,19 @@ class _Body extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  if (!isEnded) ...[
+                    const SizedBox(height: 10),
+                    KeyedSubtree(
+                      key: const Key('assign-seat-button'),
+                      child: JomButton(
+                        label: 'Assign a seat',
+                        primary: false,
+                        onPressed: () => context.push(
+                          '/host-mode/assign-seat?eventId=${e.id}',
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 14),
                   CardBox(
                     child: Column(

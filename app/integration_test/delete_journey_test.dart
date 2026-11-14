@@ -13,23 +13,23 @@ void main() {
     final title = 'E2E Doomed ${uniqueWord()}';
     final eventId = await publishEvent(host, title: title, priceSen: 3000);
 
-    // the guest pays in the app
+    // the guest opens the checkout in the app
     await launchApp(t);
     await openEventFromHome(t, title);
     await t.tap(key('join'));
     await see(t, find.text('Continue with phone number'));
     await signInWithPhone(t);
     await see(t, key('checkout-screen'));
-    await t.tap(key('pay'));
-    await see(t, key('gateway-screen'));
-    await t.tap(key('gateway-pay'));
-    await see(t, key('ticket-screen'), within: const Duration(seconds: 40));
-    final booking = (await me().db
-        .schema('bookings')
-        .from('bookings')
-        .select('id')
-        .eq('event_id', eventId)
-        .single())['id'];
+    // this journey is about the gateway refund when an event is deleted, so the held booking is paid at the gateway
+    final booking =
+        (await me().db
+                .schema('bookings')
+                .from('bookings')
+                .select('id')
+                .eq('event_id', eventId)
+                .single())['id']
+            as String;
+    await payAtGateway(me(), booking);
 
     // the host deletes the event
     await host.db

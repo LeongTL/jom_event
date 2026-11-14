@@ -23,7 +23,7 @@ void main() {
       await signInWithPhone(t);
       await see(t, key('heart-on:$eventId'));
 
-      // join and pay at the mock gateway
+      // join, pay by bank transfer, upload the receipt, and the host accepts it
       await t.tap(key('join'));
       await see(t, key('checkout-screen'));
       await see(
@@ -31,9 +31,12 @@ void main() {
         key('pay'),
       ); // the button appears once the checkout has loaded
       await t.tap(key('pay'));
-      await see(t, key('gateway-screen'));
-      await see(t, key('gateway-pay'));
-      await t.tap(key('gateway-pay'));
+      await see(t, key('pay-screen'));
+      await t.tap(key('upload-receipt'));
+      await see(t, key('pick-gallery'));
+      await t.tap(key('pick-gallery'));
+      await see(t, key('waiting-screen'));
+      await hostAcceptsReceipt(host, eventId);
       await see(t, key('ticket-screen'), within: const Duration(seconds: 40));
       await see(t, key('qr'));
 

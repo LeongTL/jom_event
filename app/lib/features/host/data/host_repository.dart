@@ -1,9 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/supabase_client.dart';
 import '../domain/event_form_state.dart';
 import '../domain/host.dart';
+import '../domain/receipt.dart';
 import '../domain/scan_controller.dart';
 
 /// What the host screens read and write. Tests replace it; [SupabaseHostRepository] is the real one. Writes throw [HostError].
@@ -40,6 +43,39 @@ abstract class HostRepository {
   Future<void> complete(String eventId);
   Future<Earnings> earnings(String eventId);
   Future<Payouts> payouts();
+
+  /// Receipts waiting for me (pending and late), for one event or all.
+  Future<List<PendingReceipt>> pendingReceipts({String? eventId});
+
+  /// A link that shows the receipt image for a short while.
+  Future<String> receiptImageUrl(String path);
+  Future<void> acceptReceipt(String receiptId);
+
+  /// Gives the guest a fresh hold and sends [note] in chat.
+  Future<void> askNewReceipt(String bookingId, String note);
+
+  /// Gives [userId] a confirmed seat on one of my events, no order needed. Returns the booking id.
+  /// [allowOverCapacity] lets a full event take one more. [receiptId] links a late receipt.
+  Future<String> assignSeat({
+    required String eventId,
+    required String userId,
+    required int people,
+    String? receiptId,
+    required bool allowOverCapacity,
+  });
+
+  /// Records a refund I made outside the app: the booking is cancelled and the seat freed.
+  Future<void> recordRefund(String bookingId, String note);
+
+  /// What guests see when they book: a DuitNow QR image, bank details, or both. Uploads [qr] when given, otherwise keeps
+  /// [keepQrPath].
+  Future<void> savePaymentDetails({
+    String? holder,
+    String? bank,
+    String? number,
+    Uint8List? qr,
+    String? keepQrPath,
+  });
 }
 
 class SupabaseHostRepository implements HostRepository {
@@ -86,6 +122,7 @@ class SupabaseHostRepository implements HostRepository {
       holder: (a?['account_holder'] as String?) ?? '',
       bank: (a?['bank'] as String?) ?? '',
       accountNumber: (a?['account_number'] as String?) ?? '',
+      qrPath: a?['duitnow_qr_path'] as String?,
       ratingAvg: (r?['average'] as num?)?.toDouble(),
       ratingCount: (r?['count'] as num?)?.toInt() ?? 0,
       verifiedAt: h['verified_at'] == null
@@ -299,6 +336,110 @@ class SupabaseHostRepository implements HostRepository {
       rows: rows,
     );
   }
+
+  @override
+  Future<List<PendingReceipt>> pendingReceipts({String? eventId}) => _guard(
+    () async => [
+      for (final r
+          in await _db
+                  .schema('payments')
+                  .rpc('pending_receipts', params: {'p_event_id': eventId})
+              as List)
+        PendingReceipt.fromJson(r as Map<String, dynamic>),
+    ],
+  );
+
+  @override
+  Future<String> receiptImageUrl(String path) =>
+      _db.storage.from('receipts').createSignedUrl(path, 600);
+
+  @override
+  Future<void> acceptReceipt(String receiptId) => _guard(
+    () => _db
+        .schema('payments')
+        .rpc('accept_receipt', params: {'p_receipt_id': receiptId}),
+  );
+
+  @override
+  Future<void> askNewReceipt(String bookingId, String note) => _guard(
+    () => _db
+        .schema('payments')
+        .rpc(
+          'request_new_receipt',
+          params: {'p_booking_id': bookingId, 'p_note': note},
+        ),
+  );
+
+  @override
+  Future<String> assignSeat({
+    required String eventId,
+    required String userId,
+    required int people,
+    String? receiptId,
+    required bool allowOverCapacity,
+  }) => _guard(
+    () async =>
+        await _db
+                .schema('payments')
+                .rpc(
+                  'assign_seat',
+                  params: {
+                    'p_event_id': eventId,
+                    'p_user_id': userId,
+                    'p_people': people,
+                    'p_receipt_id': receiptId,
+                    'p_allow_over_capacity': allowOverCapacity,
+                  },
+                )
+            as String,
+  );
+
+  @override
+  Future<void> recordRefund(String bookingId, String note) => _guard(
+    () => _db
+        .schema('payments')
+        .rpc(
+          'record_refund',
+          params: {'p_booking_id': bookingId, 'p_note': note},
+        ),
+  );
+
+  @override
+  Future<void> savePaymentDetails({
+    String? holder,
+    String? bank,
+    String? number,
+    Uint8List? qr,
+    String? keepQrPath,
+  }) => _guard(() async {
+    var qrPath = keepQrPath;
+    if (qr != null) {
+      qrPath = '${_db.auth.currentUser!.id}/qr.jpg';
+      await _db.storage
+          .from('payment-qr')
+          .uploadBinary(
+            qrPath,
+            qr,
+            fileOptions: FileOptions(
+              upsert: true,
+              contentType: qr.length > 1 && qr[0] == 0xFF
+                  ? 'image/jpeg'
+                  : 'image/png',
+            ),
+          );
+    }
+    await _db
+        .schema('identity')
+        .rpc(
+          'save_payment_details',
+          params: {
+            'p_holder': holder,
+            'p_bank': bank,
+            'p_number': number,
+            'p_qr_path': qrPath,
+          },
+        );
+  });
 }
 
 final hostRepositoryProvider = Provider<HostRepository>(
@@ -330,3 +471,14 @@ final hostEarningsProvider = FutureProvider.autoDispose
 final hostPayoutsProvider = FutureProvider.autoDispose<Payouts>(
   (ref) => ref.watch(hostRepositoryProvider).payouts(),
 );
+
+final pendingReceiptsProvider = FutureProvider.autoDispose
+    .family<List<PendingReceipt>, String?>(
+      (ref, eventId) =>
+          ref.watch(hostRepositoryProvider).pendingReceipts(eventId: eventId),
+    );
+
+final receiptImageUrlProvider = FutureProvider.autoDispose
+    .family<String, String>(
+      (ref, path) => ref.watch(hostRepositoryProvider).receiptImageUrl(path),
+    );
