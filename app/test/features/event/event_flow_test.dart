@@ -452,17 +452,58 @@ void main() {
           details: {'b': detailOf(b, bookable: false, policy: 'none')},
         ),
       );
-      expect(find.text('Join for free'), findsOneWidget);
       expect(find.text('Entry'), findsOneWidget);
       expect(find.text('Free'), findsOneWidget);
-      for (final key in ['join', 'host-row', 'going-card', 'policy-card']) {
-        expect(
-          find.byKey(Key(key)),
-          findsOneWidget,
-          reason: '$key is on the free page too',
-        );
-      }
+      expect(find.byKey(const Key('host-row')), findsOneWidget);
     });
+
+    testWidgets('a free event is a listing: Save, Directions and no Join', (
+      t,
+    ) async {
+      await pumpApp(
+        t,
+        location: '/event/b',
+        repo: FakeEvents(
+          details: {
+            'b': detailOf(b, bookable: false, source: 'https://x.test/p'),
+          },
+        ),
+      );
+      expect(find.byKey(const Key('join')), findsNothing);
+      expect(find.text('Join for free'), findsNothing);
+      expect(
+        find.byKey(const Key('going-card')),
+        findsNothing,
+        reason: 'no seat counts',
+      );
+      expect(
+        find.byKey(const Key('policy-card')),
+        findsNothing,
+        reason: 'no ticket, no refund',
+      );
+      expect(find.byKey(const Key('hero-heart')), findsOneWidget);
+      expect(find.byKey(const Key('directions-cta')), findsOneWidget);
+      expect(find.byKey(const Key('source-card')), findsOneWidget);
+    });
+
+    testWidgets(
+      'a private event shows a Private event tag, a public one does not',
+      (t) async {
+        await pumpApp(
+          t,
+          location: '/event/a',
+          repo: FakeEvents(details: {'a': detailOf(a, isPrivate: true)}),
+        );
+        expect(find.byKey(const Key('private-tag')), findsOneWidget);
+        expect(find.text('Private event'), findsOneWidget);
+        await pumpApp(
+          t,
+          location: '/event/a',
+          repo: FakeEvents(details: {'a': detailOf(a)}),
+        );
+        expect(find.byKey(const Key('private-tag')), findsNothing);
+      },
+    );
 
     testWidgets('policy_card_text_per_policy', (t) async {
       for (final (policy, text) in [
@@ -493,11 +534,9 @@ void main() {
         ),
       );
       expect(
-        find.descendant(
-          of: find.byKey(const Key('policy-card')),
-          matching: find.text('Free event'),
-        ),
-        findsOneWidget,
+        find.byKey(const Key('policy-card')),
+        findsNothing,
+        reason: 'a free listing has no refund card',
       );
     });
 

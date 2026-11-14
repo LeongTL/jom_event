@@ -57,6 +57,8 @@ class _Body extends ConsumerWidget {
     final over = e.endsAt != null && !now.isBefore(e.endsAt!);
     final started = e.startsAt != null && !now.isBefore(e.startsAt!);
     final free = (e.priceSen ?? 0) == 0;
+    // a free event, or one that takes no bookings, is a listing: guests Save it, there is nothing to scan or count
+    final listing = free || !e.acceptBookings;
     final noShows = guests.where((g) => !g.checkedIn).length;
     return Stack(
       children: [
@@ -105,7 +107,9 @@ class _Body extends ConsumerWidget {
                         Calm.ok,
                       ),
                       _Pill(
-                        '${e.seatsSold} / $cap ${free ? 'joined' : 'paid'}',
+                        listing
+                            ? '${e.saves ?? 0} saves'
+                            : '${e.seatsSold} / $cap paid',
                         Calm.chip,
                         Calm.mut,
                       ),
@@ -127,72 +131,82 @@ class _Body extends ConsumerWidget {
                       style: const TextStyle(color: Calm.mut, height: 1.4),
                     ),
                   const SizedBox(height: 14),
-                  FillBar((e.seatsSold / cap).clamp(0, 1).toDouble()),
-                  const SizedBox(height: 6),
-                  Text(
-                    e.seatsSold >= cap
-                        ? 'Full'
-                        : '${cap - e.seatsSold} spots left',
-                    style: const TextStyle(color: Calm.mut, fontSize: 13),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: StatTile(
-                          const Key('tile-joined'),
-                          '${e.seatsSold}',
-                          'joined',
-                          compact: true,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: StatTile(
-                          const Key('tile-checked'),
-                          '$checked',
-                          'checked in',
-                          compact: true,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: StatTile(
-                          const Key('tile-gross'),
-                          rm(earnings?.gross ?? 0),
-                          'gross',
-                          compact: true,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      if (!isEnded) ...[
+                  if (listing)
+                    StatTile(
+                      const Key('tile-saves'),
+                      '${e.saves ?? 0}',
+                      'saves',
+                      compact: true,
+                    )
+                  else ...[
+                    FillBar((e.seatsSold / cap).clamp(0, 1).toDouble()),
+                    const SizedBox(height: 6),
+                    Text(
+                      e.seatsSold >= cap
+                          ? 'Full'
+                          : '${cap - e.seatsSold} spots left',
+                      style: const TextStyle(color: Calm.mut, fontSize: 13),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
                         Expanded(
-                          child: KeyedSubtree(
-                            key: const Key('scan-button'),
-                            child: JomButton(
-                              label: 'Scan tickets',
-                              onPressed: () => context.push(
-                                '/host-mode/events/${e.id}/scan',
-                              ),
-                            ),
+                          child: StatTile(
+                            const Key('tile-joined'),
+                            '${e.seatsSold}',
+                            'joined',
+                            compact: true,
                           ),
                         ),
                         const SizedBox(width: 10),
-                      ],
-                      Expanded(
-                        child: JomButton(
-                          label: 'Guest list',
-                          primary: false,
-                          onPressed: () =>
-                              context.push('/host-mode/events/${e.id}/guests'),
+                        Expanded(
+                          child: StatTile(
+                            const Key('tile-checked'),
+                            '$checked',
+                            'checked in',
+                            compact: true,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: StatTile(
+                            const Key('tile-gross'),
+                            rm(earnings?.gross ?? 0),
+                            'gross',
+                            compact: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        if (!isEnded) ...[
+                          Expanded(
+                            child: KeyedSubtree(
+                              key: const Key('scan-button'),
+                              child: JomButton(
+                                label: 'Scan tickets',
+                                onPressed: () => context.push(
+                                  '/host-mode/events/${e.id}/scan',
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        Expanded(
+                          child: JomButton(
+                            label: 'Guest list',
+                            primary: false,
+                            onPressed: () => context.push(
+                              '/host-mode/events/${e.id}/guests',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 14),
                   CardBox(
                     child: Column(
@@ -231,14 +245,16 @@ class _Body extends ConsumerWidget {
                           'Price',
                           free ? 'Free' : '${rm(e.priceSen!)} per person',
                         ),
-                        MoneyLine('Refunds', _refund(e.cancelPolicy)),
-                        KeyedSubtree(
-                          key: const Key('payout-line'),
-                          child: MoneyLine(
-                            'Payout',
-                            '${rm(earnings?.receives ?? 0)} · 3 days after',
+                        if (!listing) ...[
+                          MoneyLine('Refunds', _refund(e.cancelPolicy)),
+                          KeyedSubtree(
+                            key: const Key('payout-line'),
+                            child: MoneyLine(
+                              'Payout',
+                              '${rm(earnings?.receives ?? 0)} · 3 days after',
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),

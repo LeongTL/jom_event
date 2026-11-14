@@ -50,6 +50,7 @@ EventDetail detailOf(
   bool bookable = true,
   bool ended = false,
   String? host = 'Mei Studio',
+  bool isPrivate = false,
 }) => EventDetail(
   summary: s,
   hostId: 'h1',
@@ -65,6 +66,7 @@ EventDetail detailOf(
   isBookable: bookable,
   isEnded: ended,
   hostEventCount: 38,
+  isPrivate: isPrivate,
 );
 
 class FakeEvents implements EventRepository {

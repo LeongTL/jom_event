@@ -12,6 +12,9 @@ HostEventRow hostEvent(
   int cap = 12,
   DateTime? starts,
   int price = 3000,
+  int? saves,
+  bool isPrivate = false,
+  String? shareCode,
 }) {
   final s = starts ?? clock.add(const Duration(days: 3));
   return HostEventRow(
@@ -27,6 +30,9 @@ HostEventRow hostEvent(
     priceSen: price,
     status: status,
     seatsSold: sold,
+    saves: saves,
+    isPrivate: isPrivate,
+    shareCode: shareCode,
   );
 }
 

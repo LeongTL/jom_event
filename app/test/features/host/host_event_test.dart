@@ -92,6 +92,35 @@ Future<void> scan(WidgetTester t, FakeCamera cam, String code) async {
 void main() {
   group('event details', () {
     testWidgets(
+      'a free event shows how many saved it, no joined, checked in or gross',
+      (t) async {
+        await pumpApp(
+          t,
+          location: '/host-mode/events/e1',
+          host: FakeHost(
+            profile: hostMe(),
+            events: [hostEvent('e1', sold: 0, price: 0, saves: 7)],
+          ),
+        );
+        expect(
+          find.descendant(of: key('tile-saves'), matching: find.text('7')),
+          findsOneWidget,
+        );
+        expect(find.text('saves'), findsOneWidget);
+        for (final k in [
+          'tile-joined',
+          'tile-checked',
+          'tile-gross',
+          'scan-button',
+        ]) {
+          expect(key(k), findsNothing, reason: k);
+        }
+        expect(find.text('Guest list'), findsNothing);
+        expect(find.text('0 / 12 joined'), findsNothing);
+      },
+    );
+
+    testWidgets(
       'event_details_shows_fill_bar_tiles_and_expected_payout_RM318_60_for_12_paid',
       (t) async {
         await pumpApp(
