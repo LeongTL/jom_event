@@ -64,6 +64,28 @@ class FakeHost implements HostRepository {
   final accepted = <String>[];
   final asked = <(String, String)>[];
   HostError? askError;
+  final assigned = <(String, String, int, String?, bool)>[];
+  final refunded = <(String, String)>[];
+
+  @override
+  Future<String> assignSeat({
+    required String eventId,
+    required String userId,
+    required int people,
+    String? receiptId,
+    required bool allowOverCapacity,
+  }) async {
+    final e = rows.firstWhere((r) => r.id == eventId);
+    if (!allowOverCapacity && e.seatsSold + people > (e.capacity ?? 0)) {
+      throw const HostError('event_full');
+    }
+    assigned.add((eventId, userId, people, receiptId, allowOverCapacity));
+    return 'b-new';
+  }
+
+  @override
+  Future<void> recordRefund(String bookingId, String note) async =>
+      refunded.add((bookingId, note));
 
   @override
   Future<List<PendingReceipt>> pendingReceipts({String? eventId}) async => [

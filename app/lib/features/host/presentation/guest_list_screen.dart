@@ -4,13 +4,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/calm.dart';
 import '../../../shared/widgets/screen_parts.dart';
 import '../data/host_repository.dart';
+import '../domain/host.dart';
 import 'host_parts.dart';
+import 'refund_sheet.dart';
 import 'pending_receipts_card.dart';
 
 /// Host mode: who has paid (/host-mode/events/:id/guests).
 class GuestListScreen extends ConsumerWidget {
   const GuestListScreen({super.key, required this.id});
   final String id;
+
+  Future<void> _refund(
+    BuildContext context,
+    WidgetRef ref,
+    String bookingId,
+  ) async {
+    final note = await askRefundNote(context);
+    if (note == null) return;
+    try {
+      await ref.read(hostRepositoryProvider).recordRefund(bookingId, note);
+      ref.invalidate(hostGuestsProvider(id));
+      ref.invalidate(hostEventsProvider);
+    } on HostError catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.text)));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -75,6 +96,13 @@ class GuestListScreen extends ConsumerWidget {
                           ),
                         ),
                         _Chip(g.checkedIn ? 'Checked in' : 'Paid', g.checkedIn),
+                        if (!g.checkedIn)
+                          IconButton(
+                            key: Key('refund-${g.bookingId}'),
+                            tooltip: 'Refund by hand',
+                            icon: const Icon(Icons.undo, size: 18),
+                            onPressed: () => _refund(context, ref, g.bookingId),
+                          ),
                       ],
                     ),
                   ),

@@ -16,6 +16,10 @@ class HostError implements Exception {
       'Fill in every detail except the business registration.',
     'bookings_closed' => 'The event starts in less than an hour, so the guest cannot get a new hold. Message them instead.',
     'event_not_available' => 'This event is no longer available.',
+    'event_full' =>
+      'This event is full. Switch on "Allow over capacity" to add them anyway.',
+    'user_not_found' => 'That person could not be found.',
+    'not_refundable' => 'This booking cannot be refunded any more.',
     'not_pending' => 'This receipt was already handled.',
     _ => 'Something went wrong. Check your connection and try again.',
   };

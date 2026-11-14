@@ -195,6 +195,19 @@ class _Body extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  if (!isEnded) ...[
+                    const SizedBox(height: 10),
+                    KeyedSubtree(
+                      key: const Key('assign-seat-button'),
+                      child: JomButton(
+                        label: 'Assign a seat',
+                        primary: false,
+                        onPressed: () => context.push(
+                          '/host-mode/assign-seat?eventId=${e.id}',
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 14),
                   CardBox(
                     child: Column(

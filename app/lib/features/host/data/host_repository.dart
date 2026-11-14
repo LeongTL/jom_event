@@ -51,6 +51,19 @@ abstract class HostRepository {
 
   /// Gives the guest a fresh hold and sends [note] in chat.
   Future<void> askNewReceipt(String bookingId, String note);
+
+  /// Gives [userId] a confirmed seat on one of my events, no order needed. Returns the booking id.
+  /// [allowOverCapacity] lets a full event take one more. [receiptId] links a late receipt.
+  Future<String> assignSeat({
+    required String eventId,
+    required String userId,
+    required int people,
+    String? receiptId,
+    required bool allowOverCapacity,
+  });
+
+  /// Records a refund I made outside the app: the booking is cancelled and the seat freed.
+  Future<void> recordRefund(String bookingId, String note);
 }
 
 class SupabaseHostRepository implements HostRepository {
@@ -340,6 +353,40 @@ class SupabaseHostRepository implements HostRepository {
         .schema('payments')
         .rpc(
           'request_new_receipt',
+          params: {'p_booking_id': bookingId, 'p_note': note},
+        ),
+  );
+
+  @override
+  Future<String> assignSeat({
+    required String eventId,
+    required String userId,
+    required int people,
+    String? receiptId,
+    required bool allowOverCapacity,
+  }) => _guard(
+    () async =>
+        await _db
+                .schema('payments')
+                .rpc(
+                  'assign_seat',
+                  params: {
+                    'p_event_id': eventId,
+                    'p_user_id': userId,
+                    'p_people': people,
+                    'p_receipt_id': receiptId,
+                    'p_allow_over_capacity': allowOverCapacity,
+                  },
+                )
+            as String,
+  );
+
+  @override
+  Future<void> recordRefund(String bookingId, String note) => _guard(
+    () => _db
+        .schema('payments')
+        .rpc(
+          'record_refund',
           params: {'p_booking_id': bookingId, 'p_note': note},
         ),
   );
