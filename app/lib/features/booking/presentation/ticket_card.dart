@@ -20,7 +20,7 @@ String paymentLabel(String? method, int amountSen) => switch (method) {
   'card' => 'Card',
   'ewallet' => 'E-wallet',
   'duitnow' => 'DuitNow',
-  _ => amountSen == 0 ? 'Free' : 'Paid online',
+  _ => amountSen == 0 ? 'Free' : 'Bank transfer',
 };
 
 /// The full ticket: a coloured header with the times, a tear line, the QR, then the booking details. The colour
@@ -85,7 +85,7 @@ class TicketCard extends ConsumerWidget {
                 left: paymentLabel(b.paymentMethod, b.amountSen),
                 leftLabel: 'Payment method',
                 right: b.amountSen == 0 ? 'Free' : formatMoney(b.amountSen),
-                rightLabel: 'Price paid',
+                rightLabel: ticket.processing ? 'Price' : 'Price paid',
                 last: true,
               ),
             ],

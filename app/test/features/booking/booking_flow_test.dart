@@ -545,6 +545,15 @@ void main() {
       expect(find.text('Waiting for host'), findsOneWidget);
     });
 
+    testWidgets('processing_card_does_not_claim_paid_online', (t) async {
+      await openTab(t, [
+        bk('p1', status: 'processing', event: 'e1', starts: soon),
+      ]);
+      expect(find.text('Paid online'), findsNothing);
+      expect(find.text('Price paid'), findsNothing);
+      expect(find.text('Bank transfer'), findsOneWidget);
+    });
+
     testWidgets('confirmed_card_still_shows_the_qr', (t) async {
       await openTab(t, [
         bk('c1', status: 'confirmed', event: 'e1', starts: soon),
