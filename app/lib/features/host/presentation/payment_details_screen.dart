@@ -57,8 +57,9 @@ class _FormState extends ConsumerState<_Form> {
       final bytes = await ref.read(receiptPickerProvider)(false);
       if (bytes != null && mounted) setState(() => _qr = bytes);
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() => _error = 'That image is too big or could not be read.');
+      }
     }
   }
 
@@ -80,8 +81,9 @@ class _FormState extends ConsumerState<_Form> {
             keepQrPath: widget.me?.qrPath,
           );
       ref.invalidate(hostMeProvider);
-      if (mounted)
+      if (mounted) {
         context.canPop() ? context.pop() : context.go('/host-mode/profile');
+      }
     } on HostError catch (e) {
       if (mounted) setState(() => _error = e.text);
     } finally {
