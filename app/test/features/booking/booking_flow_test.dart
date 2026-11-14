@@ -406,6 +406,26 @@ void main() {
       expect(key('hold-countdown'), findsNothing);
     });
 
+    testWidgets('upload_refreshes_the_tickets_list_that_home_already_loaded', (
+      t,
+    ) async {
+      await pumpApp(
+        t,
+        location: '/booking/b9/pay',
+        mode: 'manual',
+        picked: photo,
+      );
+      final c = ProviderScope.containerOf(t.element(find.byType(MaterialApp)));
+      c.listen(ticketsProvider(TicketScope.upcoming), (_, _) {});
+      await t.pump(const Duration(seconds: 1));
+      final before = bookings.mineCalls;
+      await t.tap(key('upload-receipt'));
+      await t.pumpAndSettle();
+      await t.tap(key('pick-gallery'));
+      await t.pumpAndSettle();
+      expect(bookings.mineCalls, greaterThan(before));
+    });
+
     testWidgets('upload_error_shows_message_and_stays', (t) async {
       await pumpApp(
         t,

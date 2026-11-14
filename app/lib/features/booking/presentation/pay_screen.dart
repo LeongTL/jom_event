@@ -46,6 +46,7 @@ class _PayScreenState extends ConsumerState<PayScreen> {
       await ref
           .read(bookingRepositoryProvider)
           .uploadReceipt(widget.bookingId, bytes);
+      ref.invalidate(ticketsProvider);
       if (mounted) {
         context.pushReplacement('/booking/${widget.bookingId}/waiting');
       }
