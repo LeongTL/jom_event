@@ -105,6 +105,14 @@ Future<String> publishEvent(
   return id;
 }
 
+/// Pulls an event's start to [startsIn] from now, as the clock would have: paid bookings close an hour before the
+/// start, so a journey books early and then calls this to get to the door (the function is in tools/e2e_reset.sql).
+Future<void> startEventIn(String eventId, Duration startsIn) =>
+    SupabaseClient(_url, _service).rpc(
+      'e2e_start_event_in',
+      params: {'p_event_id': eventId, 'p_seconds': startsIn.inSeconds},
+    );
+
 /// What a guest does in the app: hold the seat, then pay at the mock gateway. Returns the booking id once the
 /// gateway's webhook has confirmed it (a free event is confirmed straight away).
 Future<String> bookAndPay(

@@ -71,11 +71,11 @@ void main() {
       me(),
       title: 'E2E Soon $word',
       priceSen: 3000,
-      startsIn: const Duration(seconds: 25),
-      lasts: const Duration(seconds: 5),
+      startsIn: const Duration(hours: 2),
     );
     final guest = await newPerson();
     final token = await ticketToken(guest, await bookAndPay(guest, soonId));
+    await startEventIn(soonId, const Duration(seconds: 25));
 
     // scan the guest's ticket at the door
     await goTo(t, '/host-mode/events/$soonId/scan');

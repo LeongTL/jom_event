@@ -26,8 +26,12 @@ void main() {
       await signInWithPhone(t);
       await see(t, key('checkout-screen'));
       await t.tap(key('pay'));
-      await see(t, key('gateway-screen'));
-      await t.tap(key('gateway-pay'));
+      await see(t, key('pay-screen'));
+      await t.tap(key('upload-receipt'));
+      await see(t, key('pick-gallery'));
+      await t.tap(key('pick-gallery'));
+      await see(t, key('waiting-screen'));
+      await hostAcceptsReceipt(host, eventId);
       await see(t, key('ticket-screen'), within: const Duration(seconds: 40));
       final booking = (await me().db
           .schema('bookings')
