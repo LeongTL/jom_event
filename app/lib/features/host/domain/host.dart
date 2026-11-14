@@ -14,6 +14,9 @@ class HostError implements Exception {
       'This event has already started, so it cannot be deleted.',
     'details_required' =>
       'Fill in every detail except the business registration.',
+    'bookings_closed' => 'The event starts in less than an hour, so the guest cannot get a new hold. Message them instead.',
+    'event_not_available' => 'This event is no longer available.',
+    'not_pending' => 'This receipt was already handled.',
     _ => 'Something went wrong. Check your connection and try again.',
   };
 

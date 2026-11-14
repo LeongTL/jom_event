@@ -5,6 +5,7 @@ import '../../../core/theme/calm.dart';
 import '../../../shared/widgets/screen_parts.dart';
 import '../data/host_repository.dart';
 import 'host_parts.dart';
+import 'pending_receipts_card.dart';
 
 /// Host mode: who has paid (/host-mode/events/:id/guests).
 class GuestListScreen extends ConsumerWidget {
@@ -42,6 +43,7 @@ class GuestListScreen extends ConsumerWidget {
                     style: const TextStyle(color: Calm.mut),
                   ),
                 ),
+                PendingReceiptsCard(eventId: id),
                 if (guests.isEmpty)
                   const Text(
                     'No guests yet.',

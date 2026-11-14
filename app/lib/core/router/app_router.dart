@@ -11,6 +11,8 @@ import '../../features/booking/presentation/checkout_screen.dart';
 import '../../features/booking/presentation/failed_screen.dart';
 import '../../features/booking/presentation/gateway_screen.dart';
 import '../../features/booking/presentation/pay_screen.dart';
+import '../../features/host/presentation/pending_receipts_screen.dart';
+import '../../features/host/presentation/receipt_detail_screen.dart';
 import '../../features/booking/presentation/processing_screen.dart';
 import '../../features/booking/presentation/waiting_screen.dart';
 import '../../features/booking/presentation/ticket_screen.dart';
@@ -248,6 +250,16 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
           screen: const HostProfileScreen(),
         ),
       ],
+    ),
+    GoRoute(
+      path: '/host-mode/receipts',
+      builder: (context, state) =>
+          PendingReceiptsScreen(eventId: state.uri.queryParameters['event']),
+    ),
+    GoRoute(
+      path: '/host-mode/receipts/:id',
+      builder: (context, state) =>
+          ReceiptDetailScreen(id: state.pathParameters['id']!),
     ),
     GoRoute(
       path: '/host-mode/events/:id',

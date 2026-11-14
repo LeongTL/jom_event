@@ -12,6 +12,7 @@ import '../../event/domain/event_labels.dart';
 import '../data/host_repository.dart';
 import '../domain/host.dart';
 import 'host_parts.dart';
+import 'pending_receipts_card.dart';
 
 /// Host mode, Home tab: payout card, the next event with its fill bar, and two numbers.
 class HostHomeScreen extends ConsumerWidget {
@@ -91,6 +92,7 @@ class HostHomeScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
+                    const PendingReceiptsCard(),
                     _PayoutCard(d),
                     _NextEvent(d.next),
                     Row(

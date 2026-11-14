@@ -1,6 +1,7 @@
 import 'package:jom/features/host/data/host_repository.dart';
 import 'package:jom/features/host/domain/event_form_state.dart';
 import 'package:jom/features/host/domain/host.dart';
+import 'package:jom/features/host/domain/receipt.dart';
 import 'package:jom/features/host/domain/scan_controller.dart';
 
 import 'fake_events.dart';
@@ -54,9 +55,39 @@ class FakeHost implements HostRepository {
     this.earn = const Earnings(gross: 0, gateway: 0, platform: 0, receives: 0),
     this.payoutsView = const Payouts(upcomingSen: 0, paidSen: 0, rows: []),
     this.scanReplies = const [],
-  }) : guestRows = guestRows ?? [],
+    List<PendingReceipt>? receipts,
+  }) : receiptRows = receipts ?? [],
+       guestRows = guestRows ?? [],
        rows = events ?? [];
   HostProfile? profile;
+  final List<PendingReceipt> receiptRows;
+  final accepted = <String>[];
+  final asked = <(String, String)>[];
+  HostError? askError;
+
+  @override
+  Future<List<PendingReceipt>> pendingReceipts({String? eventId}) async => [
+    for (final r in receiptRows)
+      if (eventId == null || r.eventId == eventId) r,
+  ];
+
+  @override
+  Future<String> receiptImageUrl(String path) async =>
+      'https://example.invalid/$path';
+
+  @override
+  Future<void> acceptReceipt(String receiptId) async {
+    accepted.add(receiptId);
+    receiptRows.removeWhere((r) => r.id == receiptId);
+  }
+
+  @override
+  Future<void> askNewReceipt(String bookingId, String note) async {
+    if (askError != null) throw askError!;
+    asked.add((bookingId, note));
+    receiptRows.removeWhere((r) => r.bookingId == bookingId);
+  }
+
   final List<HostEventRow> rows;
   final HostDashboard? dash;
   final HostError? saveError;

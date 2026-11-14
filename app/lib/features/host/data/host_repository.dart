@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/supabase_client.dart';
 import '../domain/event_form_state.dart';
 import '../domain/host.dart';
+import '../domain/receipt.dart';
 import '../domain/scan_controller.dart';
 
 /// What the host screens read and write. Tests replace it; [SupabaseHostRepository] is the real one. Writes throw [HostError].
@@ -40,6 +41,16 @@ abstract class HostRepository {
   Future<void> complete(String eventId);
   Future<Earnings> earnings(String eventId);
   Future<Payouts> payouts();
+
+  /// Receipts waiting for me (pending and late), for one event or all.
+  Future<List<PendingReceipt>> pendingReceipts({String? eventId});
+
+  /// A link that shows the receipt image for a short while.
+  Future<String> receiptImageUrl(String path);
+  Future<void> acceptReceipt(String receiptId);
+
+  /// Gives the guest a fresh hold and sends [note] in chat.
+  Future<void> askNewReceipt(String bookingId, String note);
 }
 
 class SupabaseHostRepository implements HostRepository {
@@ -299,6 +310,39 @@ class SupabaseHostRepository implements HostRepository {
       rows: rows,
     );
   }
+
+  @override
+  Future<List<PendingReceipt>> pendingReceipts({String? eventId}) => _guard(
+    () async => [
+      for (final r
+          in await _db
+                  .schema('payments')
+                  .rpc('pending_receipts', params: {'p_event_id': eventId})
+              as List)
+        PendingReceipt.fromJson(r as Map<String, dynamic>),
+    ],
+  );
+
+  @override
+  Future<String> receiptImageUrl(String path) =>
+      _db.storage.from('receipts').createSignedUrl(path, 600);
+
+  @override
+  Future<void> acceptReceipt(String receiptId) => _guard(
+    () => _db
+        .schema('payments')
+        .rpc('accept_receipt', params: {'p_receipt_id': receiptId}),
+  );
+
+  @override
+  Future<void> askNewReceipt(String bookingId, String note) => _guard(
+    () => _db
+        .schema('payments')
+        .rpc(
+          'request_new_receipt',
+          params: {'p_booking_id': bookingId, 'p_note': note},
+        ),
+  );
 }
 
 final hostRepositoryProvider = Provider<HostRepository>(
@@ -330,3 +374,14 @@ final hostEarningsProvider = FutureProvider.autoDispose
 final hostPayoutsProvider = FutureProvider.autoDispose<Payouts>(
   (ref) => ref.watch(hostRepositoryProvider).payouts(),
 );
+
+final pendingReceiptsProvider = FutureProvider.autoDispose
+    .family<List<PendingReceipt>, String?>(
+      (ref, eventId) =>
+          ref.watch(hostRepositoryProvider).pendingReceipts(eventId: eventId),
+    );
+
+final receiptImageUrlProvider = FutureProvider.autoDispose
+    .family<String, String>(
+      (ref, path) => ref.watch(hostRepositoryProvider).receiptImageUrl(path),
+    );
