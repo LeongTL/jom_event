@@ -10,7 +10,9 @@ import '../../features/chat/presentation/chat_thread_screen.dart';
 import '../../features/booking/presentation/checkout_screen.dart';
 import '../../features/booking/presentation/failed_screen.dart';
 import '../../features/booking/presentation/gateway_screen.dart';
+import '../../features/booking/presentation/pay_screen.dart';
 import '../../features/booking/presentation/processing_screen.dart';
+import '../../features/booking/presentation/waiting_screen.dart';
 import '../../features/booking/presentation/ticket_screen.dart';
 import '../../features/booking/domain/booking.dart';
 import '../../features/event/presentation/event_screen.dart';
@@ -136,6 +138,16 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
         bookingId: state.pathParameters['id']!,
         session: state.extra as PaymentSession?,
       ),
+    ),
+    GoRoute(
+      path: '/booking/:id/pay',
+      builder: (context, state) =>
+          PayScreen(bookingId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/booking/:id/waiting',
+      builder: (context, state) =>
+          WaitingScreen(bookingId: state.pathParameters['id']!),
     ),
     GoRoute(
       path: '/booking/:id/processing',

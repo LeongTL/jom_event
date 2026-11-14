@@ -103,6 +103,10 @@ class BookingError implements Exception {
     'bookings_closed' => 'The host has closed bookings for this event.',
     'hold_expired' => 'Your spot was released because the time ran out.',
     'cancel_not_allowed' => 'The free cancellation window has passed.',
+    'not_payable' => 'This booking can no longer be paid.',
+    'upload_failed' =>
+      'The photo did not upload. Check your connection and try again.',
+    'receipt_too_big' => 'That photo is too big. Pick a smaller one.',
     _ => 'Something went wrong. Please try again.',
   };
 

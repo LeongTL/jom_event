@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,10 +8,13 @@ import 'package:jom/core/clock.dart';
 import 'package:jom/core/launcher.dart';
 import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
+import 'package:jom/core/supabase_client.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
 import 'package:jom/features/booking/data/booking_repository.dart';
 import 'package:jom/features/booking/data/calendar.dart';
 import 'package:jom/features/booking/data/payment_gateway_client.dart';
+import 'package:jom/features/booking/data/receipt_picker.dart';
+import 'package:jom/features/booking/domain/pay_instructions.dart';
 import 'package:jom/features/booking/domain/booking.dart';
 import 'package:jom/features/booking/domain/ticket.dart';
 import 'package:jom/features/event/data/event_repository.dart';
@@ -45,6 +50,9 @@ Future<void> pumpApp(
   List<Booking> past = const [],
   String policy = '48h',
   int spotsLeft = 7,
+  String mode =
+      'gateway', // the older tests below were written for the gateway flow
+  Uint8List? picked,
   void Function(FakeBookings)? setup,
 }) async {
   // wider than a phone on purpose: the test font's letters are so wide that tab names would wrap
@@ -95,6 +103,8 @@ Future<void> pumpApp(
         ),
         bookingRepositoryProvider.overrideWithValue(bookings),
         paymentGatewayClientProvider.overrideWithValue(gateway),
+        paymentModeProvider.overrideWithValue(mode),
+        receiptPickerProvider.overrideWithValue((_) async => picked),
         nowProvider.overrideWithValue(now),
         launchUrlProvider.overrideWithValue((u) async {
           launched.add(u);
@@ -325,6 +335,161 @@ void main() {
       );
       expect(find.text('Sorry, that just sold out.'), findsOneWidget);
       expect(key('pay'), findsNothing);
+    });
+  });
+
+  group('manual payment', () {
+    final photo = Uint8List.fromList([1, 2, 3]);
+    testWidgets('checkout_in_manual_mode_opens_pay_screen_not_gateway', (
+      t,
+    ) async {
+      await pumpApp(t, location: '/event/e1/checkout', mode: 'manual');
+      await t.tap(key('pay'));
+      await t.pumpAndSettle();
+      expect(key('pay-screen'), findsOneWidget);
+      expect(key('gateway-screen'), findsNothing);
+      expect(bookings.payments, isEmpty);
+    });
+
+    testWidgets(
+      'pay_screen_shows_amount_reference_qr_and_bank_with_copy_buttons',
+      (t) async {
+        await pumpApp(t, location: '/booking/b9/pay', mode: 'manual');
+        expect(t.widget<Text>(key('pay-amount')).data, 'RM 30');
+        expect(t.widget<Text>(key('pay-reference')).data, 'KLS-4821');
+        expect(key('pay-qr'), findsOneWidget);
+        expect(find.text('Maybank'), findsOneWidget);
+        expect(find.text('Mei Ling'), findsOneWidget);
+        expect(find.text('1122334455'), findsOneWidget);
+        expect(key('copy-account'), findsOneWidget);
+        expect(key('copy-reference'), findsOneWidget);
+      },
+    );
+
+    testWidgets('pay_screen_hides_missing_qr_or_bank_section', (t) async {
+      await pumpApp(
+        t,
+        location: '/booking/b9/pay',
+        mode: 'manual',
+        setup: (b) {
+          b.instructions = const PayInstructions(
+            amountSen: 3000,
+            reference: 'KLS-4821',
+            status: 'held',
+          );
+        },
+      );
+      expect(key('pay-qr'), findsNothing);
+      expect(key('copy-account'), findsNothing);
+      expect(key('pay-amount'), findsOneWidget);
+    });
+
+    testWidgets('pay_screen_counts_down_the_hold', (t) async {
+      await pumpApp(t, location: '/booking/b9/pay', mode: 'manual');
+      expect(find.textContaining('Spot held for 59:'), findsOneWidget);
+    });
+
+    testWidgets('upload_picks_image_submits_then_shows_waiting', (t) async {
+      await pumpApp(
+        t,
+        location: '/booking/b9/pay',
+        mode: 'manual',
+        picked: photo,
+      );
+      await t.tap(key('upload-receipt'));
+      await t.pumpAndSettle();
+      await t.tap(key('pick-gallery'));
+      await t.pumpAndSettle();
+      expect(bookings.receipts, [('b9', photo)]);
+      expect(key('waiting-screen'), findsOneWidget);
+      expect(find.text('Waiting for host to confirm'), findsOneWidget);
+      expect(key('hold-countdown'), findsNothing);
+    });
+
+    testWidgets('upload_error_shows_message_and_stays', (t) async {
+      await pumpApp(
+        t,
+        location: '/booking/b9/pay',
+        mode: 'manual',
+        picked: photo,
+        setup: (b) {
+          b.uploadError = BookingError('event_started');
+        },
+      );
+      await t.tap(key('upload-receipt'));
+      await t.pumpAndSettle();
+      await t.tap(key('pick-gallery'));
+      await t.pumpAndSettle();
+      expect(find.text('This event has already started.'), findsOneWidget);
+      expect(key('pay-screen'), findsOneWidget);
+    });
+
+    testWidgets('cancelling_the_picker_changes_nothing', (t) async {
+      await pumpApp(t, location: '/booking/b9/pay', mode: 'manual');
+      await t.tap(key('upload-receipt'));
+      await t.pumpAndSettle();
+      await t.tap(key('pick-gallery'));
+      await t.pumpAndSettle();
+      expect(bookings.receipts, isEmpty);
+      expect(key('pay-screen'), findsOneWidget);
+    });
+
+    testWidgets('waiting_screen_goes_to_the_ticket_once_the_host_accepts', (
+      t,
+    ) async {
+      await pumpApp(
+        t,
+        location: '/booking/b1/waiting',
+        mode: 'manual',
+        setup: (b) {
+          b.byId['b1'] = bk('b1', status: 'processing');
+        },
+      );
+      expect(key('waiting-screen'), findsOneWidget);
+      bookings.setStatus('b1', 'confirmed');
+      await t.pumpAndSettle();
+      expect(key('ticket-screen'), findsOneWidget);
+    });
+
+    testWidgets('waiting_screen_returns_to_pay_when_the_host_asks_again', (
+      t,
+    ) async {
+      await pumpApp(
+        t,
+        location: '/booking/b1/waiting',
+        mode: 'manual',
+        setup: (b) {
+          b.byId['b1'] = bk('b1', status: 'processing');
+        },
+      );
+      bookings.setStatus(
+        'b1',
+        'held',
+        hold: clock.add(const Duration(hours: 1)),
+      );
+      await t.pumpAndSettle();
+      expect(key('pay-screen'), findsOneWidget);
+    });
+
+    testWidgets('expired_hold_shows_late_upload_option', (t) async {
+      await pumpApp(
+        t,
+        location: '/booking/b9/pay',
+        mode: 'manual',
+        setup: (b) {
+          b.instructions = const PayInstructions(
+            amountSen: 3000,
+            reference: 'KLS-4821',
+            status: 'expired',
+            bank: 'Maybank',
+            holder: 'Mei Ling',
+            number: '1122334455',
+          );
+        },
+      );
+      expect(find.textContaining('Your hold ran out'), findsOneWidget);
+      expect(key('hold-countdown'), findsNothing);
+      expect(key('upload-receipt'), findsOneWidget);
     });
   });
 

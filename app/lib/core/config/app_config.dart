@@ -31,7 +31,10 @@ class AppConfig {
     final flavor = need('FLAVOR');
     final tiles = env['MAP_TILE_URL'];
     final mode = env['PAYMENT_MODE'];
-    if (mode != null && mode.isNotEmpty && mode != 'manual' && mode != 'gateway') {
+    if (mode != null &&
+        mode.isNotEmpty &&
+        mode != 'manual' &&
+        mode != 'gateway') {
       throw StateError('PAYMENT_MODE must be manual or gateway, not $mode');
     }
     return AppConfig(
