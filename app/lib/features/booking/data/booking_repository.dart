@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -6,6 +8,7 @@ import '../../../core/location.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../event/data/event_repository.dart';
 import '../domain/booking.dart';
+import '../domain/pay_instructions.dart';
 import '../domain/ticket.dart';
 
 /// What the booking screens read and change. Tests replace it; [SupabaseBookingRepository] is the real one.
@@ -26,6 +29,12 @@ abstract class BookingRepository {
 
   /// What the ticket's QR holds.
   Future<String> ticketToken(String bookingId);
+
+  /// How to pay the host by transfer. Throws [BookingError] when the booking cannot be paid.
+  Future<PayInstructions> payInstructions(String bookingId);
+
+  /// Sends the receipt photo; the booking then waits for the host. Throws [BookingError].
+  Future<void> uploadReceipt(String bookingId, Uint8List bytes);
 }
 
 class SupabaseBookingRepository implements BookingRepository {
@@ -40,7 +49,10 @@ class SupabaseBookingRepository implements BookingRepository {
     try {
       return await _db.schema(schema).rpc(fn, params: params) as T;
     } on PostgrestException catch (e) {
-      throw BookingError(e.message);
+      throw BookingError(
+        e.message,
+        cooldownSeconds: int.tryParse(e.hint ?? ''),
+      );
     }
   }
 
@@ -102,6 +114,52 @@ class SupabaseBookingRepository implements BookingRepository {
   @override
   Future<String> ticketToken(String bookingId) =>
       _rpc<String>('bookings', 'ticket_token', {'p_booking_id': bookingId});
+
+  @override
+  Future<PayInstructions> payInstructions(String bookingId) async {
+    final rows = await _rpc<List>('payments', 'pay_instructions', {
+      'p_booking_id': bookingId,
+    });
+    if (rows.isEmpty) throw BookingError('not_payable');
+    final row = rows.first as Map<String, dynamic>;
+    final qr = row['qr_path'] as String?;
+    try {
+      return PayInstructions.fromJson(
+        row,
+        qrUrl: qr == null
+            ? null
+            : await _db.storage.from('payment-qr').createSignedUrl(qr, 3600),
+      );
+    } on StorageException {
+      return PayInstructions.fromJson(
+        row,
+      ); // no QR is better than no instructions
+    }
+  }
+
+  @override
+  Future<void> uploadReceipt(String bookingId, Uint8List bytes) async {
+    final path = '$bookingId/${DateTime.now().microsecondsSinceEpoch}.jpg';
+    try {
+      await _db.storage
+          .from('receipts')
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(
+              contentType: bytes.length > 1 && bytes[0] == 0xFF
+                  ? 'image/jpeg'
+                  : 'image/png',
+            ),
+          );
+    } on StorageException {
+      throw BookingError('upload_failed');
+    }
+    await _rpc<void>('payments', 'submit_receipt', {
+      'p_booking_id': bookingId,
+      'p_image_path': path,
+    });
+  }
 }
 
 final bookingRepositoryProvider = Provider<BookingRepository>(

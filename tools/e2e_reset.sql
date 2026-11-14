@@ -12,3 +12,15 @@ begin
   end loop;
 end
 $$;
+
+-- Test scaffolding, never a migration: paid bookings close an hour before the start, so a journey books early and
+-- then pulls the event to the door with this (service role only).
+create or replace function public.e2e_start_event_in(p_event_id uuid, p_seconds int)
+returns void language sql security definer set search_path = '' as $$
+  update events.events
+     set starts_at = now() + make_interval(secs => p_seconds),
+         ends_at = now() + make_interval(secs => p_seconds + 5)
+   where id = p_event_id;
+$$;
+revoke all on function public.e2e_start_event_in(uuid, int) from public, anon, authenticated;
+grant execute on function public.e2e_start_event_in(uuid, int) to service_role;

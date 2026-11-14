@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../core/money.dart';
 import '../../../core/theme/calm.dart';
+import '../../../shared/widgets/jom_button.dart';
 import '../../../shared/widgets/verified_badge.dart';
+import '../../event/data/event_repository.dart';
 import '../../event/domain/event_labels.dart';
 import '../domain/ticket.dart';
 import 'dashed_line.dart';
@@ -17,7 +20,7 @@ String paymentLabel(String? method, int amountSen) => switch (method) {
   'card' => 'Card',
   'ewallet' => 'E-wallet',
   'duitnow' => 'DuitNow',
-  _ => amountSen == 0 ? 'Free' : 'Paid online',
+  _ => amountSen == 0 ? 'Free' : 'Bank transfer',
 };
 
 /// The full ticket: a coloured header with the times, a tear line, the QR, then the booking details. The colour
@@ -53,47 +56,7 @@ class TicketCard extends ConsumerWidget {
               _Header(ticket: ticket, color: color),
               Padding(
                 padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
-                child:
-                    ticket.booking.status != 'confirmed' && !ticket.processing
-                    ? const SizedBox.shrink()
-                    : ticket.processing
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(
-                          vertical: 34,
-                          horizontal: 10,
-                        ),
-                        child: Text(
-                          'Your QR code appears here as soon as the payment clears.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Calm.mut, fontSize: 13),
-                        ),
-                      )
-                    : Column(
-                        children: [
-                          ref
-                              .watch(ticketTokenProvider(b.id))
-                              .when(
-                                loading: () => Skeleton.box(150),
-                                error: (_, _) => const SizedBox(
-                                  width: 150,
-                                  height: 150,
-                                  child: Center(child: Text('QR unavailable')),
-                                ),
-                                data: (token) => QrImageView(
-                                  key: const Key('qr'),
-                                  data: token,
-                                  size: 150,
-                                  padding: EdgeInsets.zero,
-                                  semanticsLabel: 'Ticket QR code',
-                                ),
-                              ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            'Show this at the entrance',
-                            style: TextStyle(color: Calm.mut, fontSize: 13),
-                          ),
-                        ],
-                      ),
+                child: _Body(ticket: ticket),
               ),
               _Row(
                 key: const Key('row-date'),
@@ -122,7 +85,7 @@ class TicketCard extends ConsumerWidget {
                 left: paymentLabel(b.paymentMethod, b.amountSen),
                 leftLabel: 'Payment method',
                 right: b.amountSen == 0 ? 'Free' : formatMoney(b.amountSen),
-                rightLabel: 'Price paid',
+                rightLabel: ticket.processing ? 'Price' : 'Price paid',
                 last: true,
               ),
             ],
@@ -151,7 +114,9 @@ class TicketCard extends ConsumerWidget {
 
 String _chip(Ticket t) => switch (t.booking.status) {
   'confirmed' => '✓ Confirmed',
-  'processing' => 'Processing',
+  'held' => 'Pay now',
+  'expired' => 'Expired',
+  'processing' => 'Waiting for host',
   'attended' => 'Attended',
   'cancelled' => 'Cancelled',
   'no_show' => 'No-show',
@@ -211,7 +176,7 @@ class _Header extends ConsumerWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: ticket.processing
+                        color: ticket.needsAction
                             ? Calm.warnSoft
                             : Colors.white.withValues(alpha: .2),
                         borderRadius: BorderRadius.circular(8),
@@ -221,7 +186,7 @@ class _Header extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,
-                          color: ticket.processing ? Calm.warn : Colors.white,
+                          color: ticket.needsAction ? Calm.warn : Colors.white,
                         ),
                       ),
                     ),
@@ -392,5 +357,116 @@ class _Row extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Under the header: the QR once confirmed; otherwise what the guest can do next about the payment.
+class _Body extends ConsumerWidget {
+  const _Body({required this.ticket});
+  final Ticket ticket;
+
+  Future<void> _chat(BuildContext context, WidgetRef ref) async {
+    final id = ticket.event.id;
+    final d = await ref.read(eventDetailProvider(id).future);
+    final hostId = d?.hostId;
+    if (hostId == null || !context.mounted) return;
+    final thread = await ref
+        .read(eventRepositoryProvider)
+        .openThread(hostId, id);
+    if (context.mounted) context.push('/chats/$thread');
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final b = ticket.booking;
+    Widget action(
+      String key,
+      String label,
+      VoidCallback onTap, {
+      bool primary = true,
+    }) => Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: KeyedSubtree(
+        key: Key(key),
+        child: JomButton(label: label, primary: primary, onPressed: onTap),
+      ),
+    );
+    const hint = TextStyle(color: Calm.mut, fontSize: 13);
+    switch (b.status) {
+      case 'confirmed':
+        return Column(
+          children: [
+            ref
+                .watch(ticketTokenProvider(b.id))
+                .when(
+                  loading: () => Skeleton.box(150),
+                  error: (_, _) => const SizedBox(
+                    width: 150,
+                    height: 150,
+                    child: Center(child: Text('QR unavailable')),
+                  ),
+                  data: (token) => QrImageView(
+                    key: const Key('qr'),
+                    data: token,
+                    size: 150,
+                    padding: EdgeInsets.zero,
+                    semanticsLabel: 'Ticket QR code',
+                  ),
+                ),
+            const SizedBox(height: 6),
+            const Text('Show this at the entrance', style: hint),
+          ],
+        );
+      case 'processing':
+        return const Padding(
+          key: Key('ticket-state-processing'),
+          padding: EdgeInsets.symmetric(vertical: 34, horizontal: 10),
+          child: Text(
+            'Your QR code appears here once the host confirms your payment.',
+            textAlign: TextAlign.center,
+            style: hint,
+          ),
+        );
+      case 'held':
+        return Column(
+          key: const Key('ticket-state-held'),
+          children: [
+            const Text(
+              'Your seat is held. Pay the host and upload your receipt.',
+              textAlign: TextAlign.center,
+              style: hint,
+            ),
+            action(
+              'ticket-pay',
+              'Pay now',
+              () => context.push('/booking/${b.id}/pay'),
+            ),
+          ],
+        );
+      case 'expired':
+        return Column(
+          key: const Key('ticket-state-expired'),
+          children: [
+            const Text(
+              'Your hold ran out. Already paid? Send the receipt and the host can find you a seat.',
+              textAlign: TextAlign.center,
+              style: hint,
+            ),
+            action(
+              'ticket-late',
+              'Upload receipt late',
+              () => context.push('/booking/${b.id}/pay'),
+            ),
+            action(
+              'ticket-chat',
+              'Chat with host',
+              () => _chat(context, ref),
+              primary: false,
+            ),
+          ],
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }

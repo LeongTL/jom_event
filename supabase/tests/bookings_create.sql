@@ -31,8 +31,8 @@ reset role;
 
 select results_eq(
   $$select status, people, amount_sen, hold_expires_at, contact_name, contact_phone, attendee_id from bookings.bookings where id = current_setting('t.bob')::uuid$$,
-  $$values ('held', 1, 3000, now() + interval '15 minutes', 'Bob', '60111111111', 'bbbbbbbb-0000-0000-0000-000000000002'::uuid)$$,
-  'paid_booking_is_held_for_15_minutes');
+  $$values ('held', 1, 3000, now() + interval '1 hour', 'Bob', '60111111111', 'bbbbbbbb-0000-0000-0000-000000000002'::uuid)$$,
+  'paid_booking_is_held_for_1_hour');
 select is((select cancel_cutoff_at from bookings.bookings where id = current_setting('t.bob')::uuid),
   '2030-01-08 20:00+08'::timestamptz, 'a paid booking copies the host cancellation cutoff (48h before)');
 select results_eq(

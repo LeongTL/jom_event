@@ -93,16 +93,25 @@ class PaymentSession {
 
 /// A refusal from the database ("sold_out", "hold_expired"...) with a sentence a person can read.
 class BookingError implements Exception {
-  BookingError(this.code);
+  BookingError(this.code, {this.cooldownSeconds});
   final String code;
+
+  /// Seconds until the guest may book the same event again (cooldown_active only).
+  final int? cooldownSeconds;
 
   String get message => switch (code) {
     'sold_out' => 'Sorry, that just sold out.',
     'event_started' => 'This event has already started.',
     'event_not_available' => 'This event is no longer available.',
-    'bookings_closed' => 'The host has closed bookings for this event.',
+    'bookings_closed' => 'Bookings are closed for this event.',
+    'cooldown_active' =>
+      'You can book this event again in ${((cooldownSeconds ?? 60) / 60).ceil()} minutes.',
     'hold_expired' => 'Your spot was released because the time ran out.',
     'cancel_not_allowed' => 'The free cancellation window has passed.',
+    'not_payable' => 'This booking can no longer be paid.',
+    'upload_failed' =>
+      'The photo did not upload. Check your connection and try again.',
+    'receipt_too_big' => 'That photo is too big. Pick a smaller one.',
     _ => 'Something went wrong. Please try again.',
   };
 

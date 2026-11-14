@@ -1,6 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:jom/features/host/data/host_repository.dart';
 import 'package:jom/features/host/domain/event_form_state.dart';
 import 'package:jom/features/host/domain/host.dart';
+import 'package:jom/features/host/domain/receipt.dart';
 import 'package:jom/features/host/domain/scan_controller.dart';
 
 import 'fake_events.dart';
@@ -54,9 +57,72 @@ class FakeHost implements HostRepository {
     this.earn = const Earnings(gross: 0, gateway: 0, platform: 0, receives: 0),
     this.payoutsView = const Payouts(upcomingSen: 0, paidSen: 0, rows: []),
     this.scanReplies = const [],
-  }) : guestRows = guestRows ?? [],
+    List<PendingReceipt>? receipts,
+  }) : receiptRows = receipts ?? [],
+       guestRows = guestRows ?? [],
        rows = events ?? [];
   HostProfile? profile;
+  final List<PendingReceipt> receiptRows;
+  final accepted = <String>[];
+  final asked = <(String, String)>[];
+  HostError? askError;
+  final assigned = <(String, String, int, String?, bool)>[];
+  final refunded = <(String, String)>[];
+  final savedDetails = <(String, String, String, bool)>[];
+
+  @override
+  Future<void> savePaymentDetails({
+    String? holder,
+    String? bank,
+    String? number,
+    Uint8List? qr,
+    String? keepQrPath,
+  }) async =>
+      savedDetails.add((holder ?? '', bank ?? '', number ?? '', qr != null));
+
+  @override
+  Future<String> assignSeat({
+    required String eventId,
+    required String userId,
+    required int people,
+    String? receiptId,
+    required bool allowOverCapacity,
+  }) async {
+    final e = rows.firstWhere((r) => r.id == eventId);
+    if (!allowOverCapacity && e.seatsSold + people > (e.capacity ?? 0)) {
+      throw const HostError('event_full');
+    }
+    assigned.add((eventId, userId, people, receiptId, allowOverCapacity));
+    return 'b-new';
+  }
+
+  @override
+  Future<void> recordRefund(String bookingId, String note) async =>
+      refunded.add((bookingId, note));
+
+  @override
+  Future<List<PendingReceipt>> pendingReceipts({String? eventId}) async => [
+    for (final r in receiptRows)
+      if (eventId == null || r.eventId == eventId) r,
+  ];
+
+  @override
+  Future<String> receiptImageUrl(String path) async =>
+      'https://example.invalid/$path';
+
+  @override
+  Future<void> acceptReceipt(String receiptId) async {
+    accepted.add(receiptId);
+    receiptRows.removeWhere((r) => r.id == receiptId);
+  }
+
+  @override
+  Future<void> askNewReceipt(String bookingId, String note) async {
+    if (askError != null) throw askError!;
+    asked.add((bookingId, note));
+    receiptRows.removeWhere((r) => r.bookingId == bookingId);
+  }
+
   final List<HostEventRow> rows;
   final HostDashboard? dash;
   final HostError? saveError;

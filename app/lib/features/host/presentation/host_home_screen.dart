@@ -11,7 +11,9 @@ import '../../../shared/widgets/screen_parts.dart';
 import '../../event/domain/event_labels.dart';
 import '../data/host_repository.dart';
 import '../domain/host.dart';
+import '../../../core/push/push_service.dart';
 import 'host_parts.dart';
+import 'pending_receipts_card.dart';
 
 /// Host mode, Home tab: payout card, the next event with its fill bar, and two numbers.
 class HostHomeScreen extends ConsumerWidget {
@@ -91,6 +93,21 @@ class HostHomeScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
+                    if (ref.watch(pushSetupProvider).value == PushStatus.denied)
+                      Container(
+                        key: const Key('push-banner'),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Calm.soft,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Text(
+                          'Notifications are off, so receipt reminders only show inside the app. You can turn them on in your phone settings.',
+                          style: TextStyle(color: Calm.mut),
+                        ),
+                      ),
+                    const PendingReceiptsCard(),
                     _PayoutCard(d),
                     _NextEvent(d.next),
                     Row(

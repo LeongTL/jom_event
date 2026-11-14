@@ -7,6 +7,9 @@ class AppConfig {
   final String supabaseAnonKey;
   final String mapTileUrl;
 
+  /// 'manual' = guests pay the host by transfer and upload a receipt; 'gateway' = a payment provider (later).
+  final String paymentMode;
+
   /// Tells the tile server which app is asking (the bundle id).
   final String mapUserAgentPackage = 'com.jom.jom';
 
@@ -15,6 +18,7 @@ class AppConfig {
     required this.supabaseUrl,
     required this.supabaseAnonKey,
     this.mapTileUrl = osmTileUrl,
+    this.paymentMode = 'manual',
   });
 
   factory AppConfig.fromMap(Map<String, String> env) {
@@ -26,10 +30,18 @@ class AppConfig {
 
     final flavor = need('FLAVOR');
     final tiles = env['MAP_TILE_URL'];
+    final mode = env['PAYMENT_MODE'];
+    if (mode != null &&
+        mode.isNotEmpty &&
+        mode != 'manual' &&
+        mode != 'gateway') {
+      throw StateError('PAYMENT_MODE must be manual or gateway, not $mode');
+    }
     return AppConfig(
       flavor: flavor,
       supabaseUrl: need('SUPABASE_URL'),
       supabaseAnonKey: need('SUPABASE_ANON_KEY'),
+      paymentMode: mode == null || mode.isEmpty ? 'manual' : mode,
       mapTileUrl: tiles != null && tiles.isNotEmpty
           ? tiles
           : (flavor == 'prod' ? need('MAP_TILE_URL') : osmTileUrl),

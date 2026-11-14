@@ -16,6 +16,10 @@ class Ticket {
   String get id => booking.id;
   bool get processing => booking.status == 'processing';
 
+  /// Waiting on a person: the guest to pay, or the host to confirm.
+  bool get needsAction =>
+      const {'held', 'expired', 'processing'}.contains(booking.status);
+
   /// The ticket of a booking whose event the cards query no longer returns (cancelled or removed by the host).
   // shortcut: no host, categories or end time are known then, so the ticket shows the neutral colour and a 2 hour
   // slot; only a cancelled booking in Previous can end up here.

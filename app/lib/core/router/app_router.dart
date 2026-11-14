@@ -10,7 +10,13 @@ import '../../features/chat/presentation/chat_thread_screen.dart';
 import '../../features/booking/presentation/checkout_screen.dart';
 import '../../features/booking/presentation/failed_screen.dart';
 import '../../features/booking/presentation/gateway_screen.dart';
+import '../../features/booking/presentation/pay_screen.dart';
+import '../../features/host/presentation/assign_seat_screen.dart';
+import '../../features/host/presentation/payment_details_screen.dart';
+import '../../features/host/presentation/pending_receipts_screen.dart';
+import '../../features/host/presentation/receipt_detail_screen.dart';
 import '../../features/booking/presentation/processing_screen.dart';
+import '../../features/booking/presentation/waiting_screen.dart';
 import '../../features/booking/presentation/ticket_screen.dart';
 import '../../features/booking/domain/booking.dart';
 import '../../features/event/presentation/event_screen.dart';
@@ -138,6 +144,16 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
       ),
     ),
     GoRoute(
+      path: '/booking/:id/pay',
+      builder: (context, state) =>
+          PayScreen(bookingId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/booking/:id/waiting',
+      builder: (context, state) =>
+          WaitingScreen(bookingId: state.pathParameters['id']!),
+    ),
+    GoRoute(
       path: '/booking/:id/processing',
       builder: (context, state) =>
           ProcessingScreen(bookingId: state.pathParameters['id']!),
@@ -238,6 +254,24 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
       ],
     ),
     GoRoute(
+      path: '/host-mode/assign-seat',
+      builder: (context, state) => AssignSeatScreen(
+        eventId: state.uri.queryParameters['eventId'],
+        userId: state.uri.queryParameters['userId'],
+        receiptId: state.uri.queryParameters['receiptId'],
+      ),
+    ),
+    GoRoute(
+      path: '/host-mode/receipts',
+      builder: (context, state) =>
+          PendingReceiptsScreen(eventId: state.uri.queryParameters['event']),
+    ),
+    GoRoute(
+      path: '/host-mode/receipts/:id',
+      builder: (context, state) =>
+          ReceiptDetailScreen(id: state.pathParameters['id']!),
+    ),
+    GoRoute(
       path: '/host-mode/events/:id',
       builder: (context, state) =>
           HostEventScreen(id: state.pathParameters['id']!),
@@ -268,6 +302,10 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
     GoRoute(
       path: '/host-mode/apply',
       builder: (context, state) => const ApplyHostScreen(),
+    ),
+    GoRoute(
+      path: '/host-mode/payment-details',
+      builder: (context, state) => const PaymentDetailsScreen(),
     ),
     GoRoute(
       path: '/host-mode/payout-account',

@@ -19,3 +19,6 @@ Future<void> initSupabase(AppConfig config) => Supabase.initialize(
   url: config.supabaseUrl,
   publishableKey: config.supabaseAnonKey,
 );
+
+/// 'manual' or 'gateway' (see AppConfig.paymentMode). Defaults to manual so tests need no config.
+final paymentModeProvider = Provider<String>((ref) => 'manual');
