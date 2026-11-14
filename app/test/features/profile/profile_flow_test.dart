@@ -149,4 +149,24 @@ void main() {
     expect(find.text('Help & support'), findsOneWidget);
     expect(find.text('How do refunds work?'), findsOneWidget);
   });
+
+  testWidgets('profile_shows_the_username_under_the_name', (t) async {
+    await pumpApp(t, location: '/profile');
+    expect(key('profile-username'), findsOneWidget);
+    expect(find.text('@meitan1234'), findsOneWidget);
+  });
+
+  testWidgets('profile_rows_open_edit_username_and_find_people', (t) async {
+    final router = await pumpApp(t, location: '/profile');
+    for (final (label, path) in [
+      ('Edit username', '/edit-username'),
+      ('Find people', '/people'),
+    ]) {
+      await t.tap(find.text(label));
+      await t.pumpAndSettle();
+      expect(where(router), path);
+      router.pop();
+      await t.pumpAndSettle();
+    }
+  });
 }

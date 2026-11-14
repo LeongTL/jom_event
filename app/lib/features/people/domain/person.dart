@@ -46,15 +46,15 @@ class UsernameError implements Exception {
   final String code;
 
   factory UsernameError.fromMessage(String m) => UsernameError(
-    const {'username_invalid', 'username_reserved', 'username_taken'}.firstWhere(
-      m.contains,
-      orElse: () => 'other',
-    ),
+    const {
+      'username_invalid',
+      'username_reserved',
+      'username_taken',
+    }.firstWhere(m.contains, orElse: () => 'other'),
   );
 
   String get message => switch (code) {
-    'username_invalid' =>
-      'Use 3 to 20 letters, numbers, _ or . (not at the start or end, never two dots in a row).',
+    'username_invalid' => 'Use 3 to 20 letters, numbers, _ or . (not at the start or end, never two dots in a row).',
     'username_reserved' => 'That username is not available.',
     'username_taken' => 'Someone already has that username.',
     _ => 'Could not save. Try again.',
