@@ -157,6 +157,11 @@ void main() {
       find.text('Sign out'),
       200,
     ); // below the fold in the test window
+    await t.drag(
+      find.byType(Scrollable).first,
+      const Offset(0, -300),
+    ); // clear of the dock
+    await t.pumpAndSettle();
     await t.tap(find.text('Sign out'));
     await t.pumpAndSettle();
     expect(repo.signOutCalls, 1);
