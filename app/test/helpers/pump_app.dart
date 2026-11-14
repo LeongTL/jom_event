@@ -14,6 +14,7 @@ import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/host/data/host_repository.dart';
 import 'package:jom/features/notifications/data/notification_repository.dart';
+import 'package:jom/features/people/data/people_repository.dart';
 import 'package:jom/features/reviews/data/review_repository.dart';
 import 'package:jom/shared/models/event_summary.dart';
 
@@ -23,6 +24,7 @@ import 'fake_chat.dart';
 import 'fake_events.dart';
 import 'fake_host.dart';
 import 'fake_notifications.dart';
+import 'fake_people.dart';
 import 'fake_reviews.dart';
 
 Finder key(String k) => find.byKey(Key(k));
@@ -41,6 +43,7 @@ Future<GoRouter> pumpApp(
   FakeBookings? bookings,
   FakeEvents? events,
   FakeHost? host,
+  FakePeople? people,
   List<Override> overrides = const [],
 }) async {
   t.view.physicalSize = const Size(800, 2400);
@@ -61,6 +64,7 @@ Future<GoRouter> pumpApp(
         hostRepositoryProvider.overrideWithValue(
           host ?? FakeHost(profile: hostMe()),
         ),
+        peopleRepositoryProvider.overrideWithValue(people ?? FakePeople()),
         chatRepositoryProvider.overrideWithValue(FakeChat()),
         bookingRepositoryProvider.overrideWithValue(bookings ?? FakeBookings()),
         nowProvider.overrideWithValue(
