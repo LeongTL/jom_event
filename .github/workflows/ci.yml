@@ -17,6 +17,7 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
+      - run: flutter build web -t lib/main_web.dart
 
   database:
     runs-on: ubuntu-latest
