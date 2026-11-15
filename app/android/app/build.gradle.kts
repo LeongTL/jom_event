@@ -27,6 +27,10 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // The host of the https share links (SHARE_BASE_URL's host). Set SHARE_HOST in the build's environment, or
+        // -PshareHost=..., once the domain exists; until then a placeholder that can never resolve.
+        manifestPlaceholders["shareHost"] =
+            System.getenv("SHARE_HOST") ?: (findProperty("shareHost") as String?) ?: "share.example.invalid"
     }
 
     buildTypes {

@@ -1,1 +1,4 @@
 #include "Generated.xcconfig"
+// The host of the https share links (SHARE_BASE_URL's host): applinks:$(SHARE_HOST) in Runner.entitlements.
+// A placeholder that can never resolve until the domain exists.
+SHARE_HOST=share.example.invalid

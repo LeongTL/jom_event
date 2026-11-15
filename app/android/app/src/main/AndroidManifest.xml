@@ -32,6 +32,17 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="jom" android:host="e"/>
+                <data android:scheme="jom" android:host="u"/>
+            </intent-filter>
+            <!-- the https share links: https://<share host>/e/<code> and /u/<username>. autoVerify checks the host's
+                 /.well-known/assetlinks.json (served by the share-page function), so these open the app, not a browser -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="${shareHost}"/>
+                <data android:pathPrefix="/e/"/>
+                <data android:pathPrefix="/u/"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

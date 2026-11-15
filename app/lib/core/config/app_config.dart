@@ -7,6 +7,10 @@ class AppConfig {
   final String supabaseAnonKey;
   final String mapTileUrl;
 
+  /// The public address share links are built on (`<base>/e/<code>`). Empty until the domain exists: links then use
+  /// the app's own `jom://` scheme.
+  final String shareBaseUrl;
+
   /// 'manual' = guests pay the host by transfer and upload a receipt; 'gateway' = a payment provider (later).
   final String paymentMode;
 
@@ -18,6 +22,7 @@ class AppConfig {
     required this.supabaseUrl,
     required this.supabaseAnonKey,
     this.mapTileUrl = osmTileUrl,
+    this.shareBaseUrl = '',
     this.paymentMode = 'manual',
   });
 
@@ -41,6 +46,7 @@ class AppConfig {
       flavor: flavor,
       supabaseUrl: need('SUPABASE_URL'),
       supabaseAnonKey: need('SUPABASE_ANON_KEY'),
+      shareBaseUrl: env['SHARE_BASE_URL'] ?? '',
       paymentMode: mode == null || mode.isEmpty ? 'manual' : mode,
       mapTileUrl: tiles != null && tiles.isNotEmpty
           ? tiles

@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/calm.dart';
 import '../../../shared/widgets/screen_parts.dart';
 import '../../../shared/widgets/skeleton.dart';
+import '../../../shared/share_sheet.dart';
+import '../../event/domain/share_link.dart';
 import '../data/people_repository.dart';
 import '../domain/person.dart';
 import 'follow_button.dart';
@@ -17,40 +19,59 @@ class PersonScreen extends ConsumerWidget {
   final String userId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    key: const Key('person-screen'),
-    backgroundColor: Calm.bg,
-    body: ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      children: [
-        const BookingNav(title: 'Profile'),
-        ref
-            .watch(personProvider(userId))
-            .when(
-              loading: () => Skeleton.rows(2),
-              error: (_, _) => const Text(
-                'Could not load this profile. Check your connection.',
-                style: TextStyle(color: Calm.mut),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final person = ref.watch(personProvider(userId)).value;
+    return Scaffold(
+      key: const Key('person-screen'),
+      backgroundColor: Calm.bg,
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        children: [
+          BookingNav(
+            title: 'Profile',
+            action: person == null
+                ? null
+                : KeyedSubtree(
+                    key: const Key('person-share'),
+                    child: ShareButton(
+                      message: shareMessage(
+                        personShareText(person.name, person.username),
+                        personLink(
+                          ref.watch(shareBaseUrlProvider),
+                          person.username,
+                        ),
+                      ),
+                    ),
+                  ),
+          ),
+          ref
+              .watch(personProvider(userId))
+              .when(
+                loading: () => Skeleton.rows(2),
+                error: (_, _) => const Text(
+                  'Could not load this profile. Check your connection.',
+                  style: TextStyle(color: Calm.mut),
+                ),
+                data: (p) {
+                  if (p == null) {
+                    return const Text(
+                      'This profile is not available.',
+                      style: TextStyle(color: Calm.mut),
+                    );
+                  }
+                  if (p.isHost) {
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (_) => context.pushReplacement('/host/$userId'),
+                    );
+                    return const SizedBox.shrink();
+                  }
+                  return _Page(p);
+                },
               ),
-              data: (p) {
-                if (p == null) {
-                  return const Text(
-                    'This profile is not available.',
-                    style: TextStyle(color: Calm.mut),
-                  );
-                }
-                if (p.isHost) {
-                  WidgetsBinding.instance.addPostFrameCallback(
-                    (_) => context.pushReplacement('/host/$userId'),
-                  );
-                  return const SizedBox.shrink();
-                }
-                return _Page(p);
-              },
-            ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }
 
 class _Page extends StatelessWidget {

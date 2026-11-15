@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/calm.dart';
+import '../../../shared/share_sheet.dart';
 import '../../../shared/widgets/category_art.dart';
 import '../../../shared/widgets/screen_parts.dart';
 import '../../../shared/widgets/skeleton.dart';
 import '../../../shared/widgets/verified_badge.dart';
+import '../../event/domain/share_link.dart';
 import '../../event/presentation/event_cards.dart';
 import '../../people/data/people_repository.dart';
 import '../../people/presentation/follow_button.dart';
@@ -112,6 +114,20 @@ class _Page extends ConsumerWidget {
                   ),
                 ),
               ),
+              if (username != null)
+                Positioned(
+                  right: 20,
+                  top: top,
+                  child: KeyedSubtree(
+                    key: const Key('host-share'),
+                    child: ShareButton(
+                      message: shareMessage(
+                        personShareText(h.name, username),
+                        personLink(ref.watch(shareBaseUrlProvider), username),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

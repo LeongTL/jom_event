@@ -16,6 +16,9 @@ abstract class PeopleRepository {
 
   /// Null when [userId] has no public page (not a host and I am signed out, or an erased account).
   Future<Person?> person(String userId);
+
+  /// The id behind a username (for a shared `/u/<username>` link), or null when there is no such public profile.
+  Future<String?> idByUsername(String username);
   Future<FollowCounts> counts(String userId);
   Future<void> follow(String userId);
   Future<void> unfollow(String userId);
@@ -75,6 +78,10 @@ class SupabasePeopleRepository implements PeopleRepository {
   }
 
   @override
+  Future<String?> idByUsername(String username) async =>
+      await _rpc('user_id_by_username', {'p_username': username}) as String?;
+
+  @override
   Future<FollowCounts> counts(String userId) async {
     final rows = await _rpc('follow_counts', {'p_user_id': userId}) as List;
     return FollowCounts.fromJson(rows.first as Map<String, dynamic>);
@@ -118,6 +125,12 @@ final peopleRepositoryProvider = Provider<PeopleRepository>(
 final myUsernameProvider = FutureProvider.autoDispose<String?>(
   (ref) => ref.watch(peopleRepositoryProvider).myUsername(),
 );
+
+final personIdByUsernameProvider = FutureProvider.autoDispose
+    .family<String?, String>(
+      (ref, username) =>
+          ref.watch(peopleRepositoryProvider).idByUsername(username),
+    );
 
 final personProvider = FutureProvider.autoDispose.family<Person?, String>(
   (ref, id) => ref.watch(peopleRepositoryProvider).person(id),

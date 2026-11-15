@@ -71,4 +71,26 @@ void paymentModeTests() {
       throwsStateError,
     );
   });
+
+  group('SHARE_BASE_URL', () {
+    const base = {
+      'FLAVOR': 'dev',
+      'SUPABASE_URL': 'http://x',
+      'SUPABASE_ANON_KEY': 'k',
+    };
+
+    test('is read from the build', () {
+      expect(
+        AppConfig.fromMap({
+          ...base,
+          'SHARE_BASE_URL': 'https://share.example.invalid',
+        }).shareBaseUrl,
+        'https://share.example.invalid',
+      );
+    });
+
+    test('is empty when not set, so links fall back to the app scheme', () {
+      expect(AppConfig.fromMap(base).shareBaseUrl, '');
+    });
+  });
 }
