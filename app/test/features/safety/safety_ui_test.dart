@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jom/features/chat/domain/chat.dart';
 import 'package:jom/features/people/domain/person.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'package:jom/features/safety/data/safety_repository.dart';
 import 'package:jom/features/safety/domain/safety.dart';
 
@@ -216,5 +217,17 @@ void main() {
     );
     expect(find.text('You have not blocked anyone.'), findsOneWidget);
     expect(_none, isEmpty);
+  });
+  testWidgets('messaging_a_blocked_host_says_why_instead_of_doing_nothing', (
+    t,
+  ) async {
+    final events = FakeEvents(details: {'e1': detailOf(sum('e1'))})
+      ..openThreadError = const PostgrestException(message: 'blocked');
+    final router = await pumpApp(t, location: '/event/e1', events: events);
+    await t.ensureVisible(key('message'));
+    await t.tap(key('message'));
+    await t.pumpAndSettle();
+    expect(find.text(safetyMessage('blocked')), findsOneWidget);
+    expect(where(router), '/event/e1');
   });
 }

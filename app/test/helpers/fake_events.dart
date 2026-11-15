@@ -86,6 +86,9 @@ class FakeEvents implements EventRepository {
   /// Share code -> the event it opens.
   final Map<String, EventDetail> codes;
   final Set<String> hearts;
+
+  /// Makes openThread fail, as the database does for a blocked host.
+  Object? openThreadError;
   final Duration saveDelay;
   final toggles = <String>[];
   final threads = <(String, String)>[];
@@ -125,6 +128,7 @@ class FakeEvents implements EventRepository {
 
   @override
   Future<String> openThread(String hostId, String eventId) async {
+    if (openThreadError != null) throw openThreadError!;
     threads.add((hostId, eventId));
     return 't1';
   }
