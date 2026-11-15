@@ -22,7 +22,7 @@ select throws_ok($$insert into identity.admins (user_id) values ('c0000000-0000-
 select throws_ok($$insert into identity.admin_actions (admin_id, action, target_user_id) values ('c0000000-0000-0000-0000-000000000001', 'approve', 'c0000000-0000-0000-0000-000000000001')$$, '42501', null, 'nobody writes the log');
 
 -- an admin
-select set_config('request.jwt.claims', '{"sub":"a0000000-0000-0000-0000-000000000001","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"sub":"a0000000-0000-0000-0000-000000000001","role":"authenticated","aal":"aal2"}', true);
 select is(identity.is_admin(), true, 'an admin is an admin');
 select is((select count(*)::int from identity.pending_hosts()), 1, 'one application is waiting');
 select results_eq($$select host_name, ssm_number, account_holder, status from identity.host_application('b0000000-0000-0000-0000-000000000001')$$,
@@ -41,7 +41,7 @@ select is((select count(*)::int from identity.notifications where user_id = 'b00
 select set_config('request.jwt.claims', '{"sub":"b0000000-0000-0000-0000-000000000001","role":"authenticated"}', true);
 set local role authenticated;
 do $$ begin perform identity.apply_host('Mei', 'Bangsar', 'bio', 'Mei', 'Maybank', '1'); end $$;
-select set_config('request.jwt.claims', '{"sub":"a0000000-0000-0000-0000-000000000002","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"sub":"a0000000-0000-0000-0000-000000000002","role":"authenticated","aal":"aal2"}', true);
 select identity.admin_review_host('b0000000-0000-0000-0000-000000000001', 'approve', null);
 reset role;
 select results_eq($$select h.status, p.is_host, h.reviewed_by from identity.hosts h join identity.profiles p using (user_id) where h.user_id = 'b0000000-0000-0000-0000-000000000001'$$,
@@ -50,12 +50,12 @@ select is((select count(*)::int from identity.notifications where user_id = 'b00
 select is((select count(*)::int from identity.notifications where user_id = 'b0000000-0000-0000-0000-000000000001' and (body like '%a0000000%' or body like '%admin%')), 0, 'the notice does not name the admin');
 
 -- suspend blocks creating events, unsuspend restores
-select set_config('request.jwt.claims', '{"sub":"a0000000-0000-0000-0000-000000000001","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"sub":"a0000000-0000-0000-0000-000000000001","role":"authenticated","aal":"aal2"}', true);
 set local role authenticated;
 select identity.admin_review_host('b0000000-0000-0000-0000-000000000001', 'suspend', 'Complaint');
 reset role;
 select is(identity.is_host('b0000000-0000-0000-0000-000000000001'), false, 'suspend removes is_host');
-select identity.admin_review_host('b0000000-0000-0000-0000-000000000001', 'unsuspend', null) from (select set_config('request.jwt.claims', '{"sub":"a0000000-0000-0000-0000-000000000001","role":"authenticated"}', true)) x;
+select identity.admin_review_host('b0000000-0000-0000-0000-000000000001', 'unsuspend', null) from (select set_config('request.jwt.claims', '{"sub":"a0000000-0000-0000-0000-000000000001","role":"authenticated","aal":"aal2"}', true)) x;
 select is(identity.is_host('b0000000-0000-0000-0000-000000000001'), true, 'unsuspend restores is_host');
 
 -- the log: who, what, when; nobody edits it

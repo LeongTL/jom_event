@@ -22,10 +22,10 @@ tools/loadtest/run.sh last_seat     # local backend: needs `supabase start`, key
 TARGET=staging SERVICE_ROLE_KEY=... tools/loadtest/run.sh feed    # URL and anon key from app/env/staging.json
 ```
 
-The scripts create users, a host and an event with the admin API, so a run needs the service key. A host now needs approval:
-locally the scripts make an admin through `public.e2e_make_admin` (load `tools/e2e_reset.sql` into the local database
-first, as `tools/e2e.sh` does); on a hosted project set `ADMIN_EMAIL` and `ADMIN_PASSWORD` of an admin you gave the role
-by hand. They never print keys.
+The scripts create users, a host and an event with the admin API, so a run needs the service key. A host now needs approval, and admin functions need a two-factor session:
+locally the scripts approve through `public.e2e_review_host` (load `tools/e2e_reset.sql` into the local database first, as
+`tools/e2e.sh` does); on a hosted project set `ADMIN_TOKEN` to the access token of an admin who has just signed in to the
+back office with the authenticator code (it lasts about an hour). They never print keys.
 Test users are named `e2e-load-*@example.com`; `tools/e2e_reset.sql` sweeps them from a local database. On staging they stay
 (delete them in the dashboard), and `last_seat` leaves one published event titled "Load last seat ..." behind.
 

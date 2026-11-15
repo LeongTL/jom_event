@@ -34,6 +34,20 @@ $$;
 revoke all on function public.e2e_make_admin(uuid) from public, anon, authenticated;
 grant execute on function public.e2e_make_admin(uuid) to service_role;
 
+-- Admin functions need a two-factor session (aal2), which a script cannot sign in with. A journey runs the real function
+-- as the given admin with an aal2 token here instead (service role only, local database only), so its checks, log row
+-- and notifications are the real ones.
+create or replace function public.e2e_review_host(p_admin uuid, p_user_id uuid, p_decision text, p_reason text default null)
+returns void language plpgsql security definer set search_path = '' as $$
+begin
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', p_admin, 'role', 'authenticated', 'aal', 'aal2')::text, true);
+  perform identity.admin_review_host(p_user_id, p_decision, p_reason);
+end
+$$;
+revoke all on function public.e2e_review_host(uuid, uuid, text, text) from public, anon, authenticated;
+grant execute on function public.e2e_review_host(uuid, uuid, text, text) to service_role;
+
 create or replace function public.e2e_set_flag(p_key text, p_value jsonb)
 returns void language sql security definer set search_path = '' as $$
   update app.flags set value = p_value where key = p_key;
