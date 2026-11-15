@@ -430,3 +430,7 @@ verify_jwt = true
 
 [functions.receipt-purge]
 verify_jwt = true
+
+# Public on purpose: link previews and people without an account fetch it. It reads only the two preview functions.
+[functions.share-page]
+verify_jwt = false
