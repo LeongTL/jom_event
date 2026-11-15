@@ -156,6 +156,10 @@ class ProfileScreen extends ConsumerWidget {
           row('Edit username', () => context.push('/edit-username')),
           row('Find people', () => context.push('/people')),
           row('My reviews', () => context.push('/my-reviews')),
+          KeyedSubtree(
+            key: const Key('profile-blocked-users'),
+            child: row('Blocked users', () => context.push('/blocked-users')),
+          ),
           row('Notifications', () => context.push('/notifications')),
           row('Help & support', () => context.push('/help')),
           row('Terms & privacy', () => context.push('/legal')),

@@ -6,6 +6,7 @@ import '../../../core/theme/calm.dart';
 import '../../../shared/widgets/screen_parts.dart';
 import '../../../shared/widgets/skeleton.dart';
 import '../../../shared/share_sheet.dart';
+import '../../safety/presentation/safety_menu.dart';
 import '../../event/domain/share_link.dart';
 import '../data/people_repository.dart';
 import '../domain/person.dart';
@@ -31,17 +32,28 @@ class PersonScreen extends ConsumerWidget {
             title: 'Profile',
             action: person == null
                 ? null
-                : KeyedSubtree(
-                    key: const Key('person-share'),
-                    child: ShareButton(
-                      message: shareMessage(
-                        personShareText(person.name, person.username),
-                        personLink(
-                          ref.watch(shareBaseUrlProvider),
-                          person.username,
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      KeyedSubtree(
+                        key: const Key('person-share'),
+                        child: ShareButton(
+                          message: shareMessage(
+                            personShareText(person.name, person.username),
+                            personLink(
+                              ref.watch(shareBaseUrlProvider),
+                              person.username,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 10),
+                      SafetyMenu.person(
+                        menuKey: const Key('person-menu'),
+                        userId: person.userId,
+                        name: person.name,
+                      ),
+                    ],
                   ),
           ),
           ref
