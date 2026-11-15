@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/supabase_client.dart';
+import '../../auth/data/auth_repository.dart';
 import '../domain/event_form_state.dart';
 import '../domain/host.dart';
 import '../domain/host_status.dart';
@@ -460,9 +461,11 @@ final hostRepositoryProvider = Provider<HostRepository>(
   (ref) => SupabaseHostRepository(ref.watch(supabaseClientProvider)),
 );
 
-final hostStatusProvider = FutureProvider.autoDispose<HostStatus>(
-  (ref) => ref.watch(hostRepositoryProvider).myStatus(),
-);
+// watches the session so signing in as someone else reads their application, not the last person's
+final hostStatusProvider = FutureProvider.autoDispose<HostStatus>((ref) {
+  ref.watch(sessionProvider);
+  return ref.watch(hostRepositoryProvider).myStatus();
+});
 
 final hostMeProvider = FutureProvider.autoDispose<HostProfile?>(
   (ref) => ref.watch(hostRepositoryProvider).me(),

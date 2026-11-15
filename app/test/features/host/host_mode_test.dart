@@ -61,7 +61,10 @@ void main() {
         await t.pumpAndSettle();
         expect(host.applied.single.holder, 'Mei Tan');
         expect(host.applied.single.ssm, isNull);
-        expect(where(router), '/profile'); // waits for an admin: no Host mode yet
+        expect(
+          where(router),
+          '/profile',
+        ); // waits for an admin: no Host mode yet
       },
     );
 

@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/domain/auth_gate.dart';
+import '../../features/host/data/host_repository.dart';
+import '../../features/host/domain/host_status.dart';
+import '../flags/flags_repository.dart';
 import '../../features/auth/presentation/signed_out_tab.dart';
 import '../../features/booking/presentation/tickets_screen.dart';
 import '../../features/chat/presentation/chat_list_screen.dart';
@@ -86,9 +90,33 @@ String? deepLinkRedirect(Uri uri) {
   return path.endsWith('/') ? path.substring(0, path.length - 1) : path;
 }
 
-GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
+/// What the Host mode guard knows: my application's state (null until it has loaded) and the host entrance flag.
+class HostAccess {
+  const HostAccess(this.state, this.entryEnabled);
+  final HostState? state;
+  final bool entryEnabled;
+}
+
+/// Where to send a visitor away from a /host-mode path, or null to let them in. Only an approved host gets into Host
+/// mode; someone who has not applied (or was rejected) may open the apply form; with the entrance off, nobody does.
+/// A state that has not loaded yet is blocked.
+String? hostGuard(String path, HostAccess a) {
+  if (path != '/host-mode' && !path.startsWith('/host-mode/')) return null;
+  if (!a.entryEnabled) return '/explore';
+  if (a.state == HostState.approved) return null;
+  final mayApply = a.state == HostState.none || a.state == HostState.rejected;
+  return path == '/host-mode/apply' && mayApply ? null : '/explore';
+}
+
+GoRouter createRouter({
+  String initialLocation = '/explore',
+  ValueListenable<HostAccess>? access,
+}) => GoRouter(
   initialLocation: initialLocation,
-  redirect: (context, state) => deepLinkRedirect(state.uri),
+  refreshListenable: access,
+  redirect: (context, state) =>
+      deepLinkRedirect(state.uri) ??
+      (access == null ? null : hostGuard(state.uri.path, access.value)),
   onException: (context, state, router) => router.go('/explore'),
   routes: [
     StatefulShellRoute.indexedStack(
@@ -328,4 +356,14 @@ GoRouter createRouter({String initialLocation = '/explore'}) => GoRouter(
   ],
 );
 
-final routerProvider = Provider<GoRouter>((ref) => createRouter());
+final routerProvider = Provider<GoRouter>((ref) {
+  final access = ValueNotifier(const HostAccess(null, true));
+  void sync() => access.value = HostAccess(
+    ref.read(hostStatusProvider).value?.state,
+    ref.read(hostEntryEnabledProvider).value ?? true,
+  );
+  ref.listen(hostStatusProvider, (_, _) => sync(), fireImmediately: true);
+  ref.listen(hostEntryEnabledProvider, (_, _) => sync());
+  ref.onDispose(access.dispose);
+  return createRouter(access: access);
+});

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -46,12 +47,13 @@ Future<GoRouter> pumpApp(
   FakeHost? host,
   FakePeople? people,
   bool hostEntry = true,
+  ValueListenable<HostAccess>? access,
   List<Override> overrides = const [],
 }) async {
   t.view.physicalSize = const Size(800, 2400);
   t.view.devicePixelRatio = 1;
   addTearDown(t.view.reset);
-  final router = createRouter(initialLocation: location);
+  final router = createRouter(initialLocation: location, access: access);
   final start = t.binding.clock.now();
   await t.pumpWidget(
     ProviderScope(
