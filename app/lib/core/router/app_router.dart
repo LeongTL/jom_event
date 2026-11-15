@@ -31,6 +31,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/people/presentation/edit_username_screen.dart';
 import '../../features/people/presentation/find_people_screen.dart';
 import '../../features/people/presentation/follow_list_screen.dart';
+import '../../features/people/presentation/person_by_username_screen.dart';
 import '../../features/people/presentation/person_screen.dart';
 import '../../features/home/presentation/map_screen.dart';
 import '../../features/host/presentation/apply_host_screen.dart';
@@ -167,6 +168,11 @@ GoRouter createRouter({
     GoRoute(
       path: '/event/:id',
       builder: (context, state) => EventScreen(id: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/u/:username',
+      builder: (context, state) =>
+          PersonByUsernameScreen(username: state.pathParameters['username']!),
     ),
     GoRoute(
       path: '/e/:code',

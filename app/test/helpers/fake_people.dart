@@ -58,6 +58,12 @@ class FakePeople implements PeopleRepository {
       people.where((p) => p.userId == id).firstOrNull;
 
   @override
+  Future<String?> idByUsername(String u) async => people
+      .where((p) => p.username.toLowerCase() == u.toLowerCase())
+      .firstOrNull
+      ?.userId;
+
+  @override
   Future<FollowCounts> counts(String id) async => FollowCounts(
     followers: (followersOf[id]?.length ?? 0) + (_iFollow.contains(id) ? 1 : 0),
     following: followingOf[id]?.length ?? 0,
