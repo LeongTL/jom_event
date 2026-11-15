@@ -28,6 +28,7 @@ import '../../features/event/presentation/event_screen.dart';
 import '../../features/event/presentation/saved_screen.dart';
 import '../../features/event/presentation/view_all_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/safety/presentation/blocked_users_screen.dart';
 import '../../features/people/presentation/edit_username_screen.dart';
 import '../../features/people/presentation/find_people_screen.dart';
 import '../../features/people/presentation/follow_list_screen.dart';
@@ -231,6 +232,10 @@ GoRouter createRouter({
     GoRoute(
       path: '/my-reviews',
       builder: (context, state) => const MyReviewsScreen(),
+    ),
+    GoRoute(
+      path: '/blocked-users',
+      builder: (context, state) => const BlockedUsersScreen(),
     ),
     GoRoute(
       path: '/edit-username',

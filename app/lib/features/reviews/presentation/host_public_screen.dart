@@ -1,3 +1,5 @@
+import '../../safety/presentation/safety_menu.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -128,6 +130,15 @@ class _Page extends ConsumerWidget {
                     ),
                   ),
                 ),
+              Positioned(
+                right: username != null ? 70 : 20,
+                top: top,
+                child: SafetyMenu.person(
+                  menuKey: const Key('host-menu'),
+                  userId: hostId,
+                  name: h.name,
+                ),
+              ),
             ],
           ),
         ),

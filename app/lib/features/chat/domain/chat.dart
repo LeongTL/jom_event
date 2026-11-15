@@ -41,8 +41,10 @@ class ThreadInfo {
     required this.iAmHost,
     required this.otherName,
     this.eventId,
+    this.otherId,
   });
   final String id, otherName;
+  final String? otherId; // the other person's user id, for Report / Block
   final bool iAmHost; // the other side is then the guest
   final String? eventId;
 }
@@ -73,6 +75,7 @@ class ChatError implements Exception {
 
   String get message => switch (code) {
     'contact_info_not_allowed' => "Keep the chat in Jom. Phone numbers and social handles can't be shared here.",
+    'blocked' => "You can't message this person.",
     'message_too_long' =>
       'That message is too long. Keep it under 1000 characters.',
     _ => "The message didn't send. Please try again.",

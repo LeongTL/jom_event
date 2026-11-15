@@ -12,6 +12,8 @@ import '../data/chat_repository.dart';
 import '../domain/chat.dart';
 import '../domain/chat_labels.dart';
 import '../../../shared/widgets/skeleton.dart';
+import '../../safety/domain/safety.dart';
+import '../../safety/presentation/safety_menu.dart';
 
 /// One conversation: who it is with, the event it is about, the messages (live) and the box to write in.
 class ChatThreadScreen extends ConsumerStatefulWidget {
@@ -108,6 +110,13 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
                   BookingNav(
                     title: i.otherName,
                     trailing: i.iAmHost ? 'Attendee' : 'Host',
+                    action: i.otherId == null
+                        ? null
+                        : SafetyMenu.person(
+                            menuKey: const Key('chat-menu'),
+                            userId: i.otherId!,
+                            name: i.otherName,
+                          ),
                   ),
                   if (i.eventId != null) _EventCard(eventId: i.eventId!),
                   Container(
@@ -279,48 +288,53 @@ class _Bubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: mine
-          ? CrossAxisAlignment.end
-          : CrossAxisAlignment.start,
-      children: [
-        ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.sizeOf(context).width * .78,
-          ),
-          child: Container(
-            key: Key('bubble-${m.id}'),
-            margin: const EdgeInsets.only(bottom: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: mine ? Calm.acc : Calm.surface,
-              border: mine ? null : Border.all(color: Calm.line),
-              borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(18),
-                topRight: const Radius.circular(18),
-                bottomLeft: Radius.circular(mine ? 18 : 6),
-                bottomRight: Radius.circular(mine ? 6 : 18),
+    return GestureDetector(
+      onLongPress: mine
+          ? null
+          : () => showReportSheet(context, ReportTarget.message, m.id),
+      child: Column(
+        crossAxisAlignment: mine
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.sizeOf(context).width * .78,
+            ),
+            child: Container(
+              key: Key('bubble-${m.id}'),
+              margin: const EdgeInsets.only(bottom: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: mine ? Calm.acc : Calm.surface,
+                border: mine ? null : Border.all(color: Calm.line),
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(18),
+                  topRight: const Radius.circular(18),
+                  bottomLeft: Radius.circular(mine ? 18 : 6),
+                  bottomRight: Radius.circular(mine ? 6 : 18),
+                ),
+              ),
+              child: Text(
+                m.body,
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.35,
+                  color: mine ? Colors.white : Calm.ink,
+                ),
               ),
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 0, 6, 12),
             child: Text(
-              m.body,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.35,
-                color: mine ? Colors.white : Calm.ink,
-              ),
+              clockLabel(m.createdAt),
+              key: Key('time-${m.id}'),
+              style: const TextStyle(fontSize: 10.5, color: Calm.faint),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(6, 0, 6, 12),
-          child: Text(
-            clockLabel(m.createdAt),
-            key: Key('time-${m.id}'),
-            style: const TextStyle(fontSize: 10.5, color: Calm.faint),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -46,6 +46,7 @@ Future<GoRouter> pumpApp(
   FakeEvents? events,
   FakeHost? host,
   FakePeople? people,
+  FakeChat? chat,
   bool hostEntry = true,
   ValueListenable<HostAccess>? access,
   List<Override> overrides = const [],
@@ -70,7 +71,7 @@ Future<GoRouter> pumpApp(
         ),
         flagsRepositoryProvider.overrideWithValue(FakeFlags(hostEntry)),
         peopleRepositoryProvider.overrideWithValue(people ?? FakePeople()),
-        chatRepositoryProvider.overrideWithValue(FakeChat()),
+        chatRepositoryProvider.overrideWithValue(chat ?? FakeChat()),
         bookingRepositoryProvider.overrideWithValue(bookings ?? FakeBookings()),
         nowProvider.overrideWithValue(
           () => clock.add(t.binding.clock.now().difference(start)),

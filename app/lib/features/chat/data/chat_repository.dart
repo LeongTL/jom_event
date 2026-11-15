@@ -70,6 +70,7 @@ class SupabaseChatRepository implements ChatRepository {
       iAmHost: iAmHost,
       otherName: name ?? (iAmHost ? 'Guest' : 'Host'),
       eventId: t['event_id'] as String?,
+      otherId: (iAmHost ? t['attendee_id'] : t['host_id']) as String?,
     );
   }
 

@@ -1,16 +1,16 @@
-// 200 virtual users book the last 5 seats of one event at the same moment: exactly 5 must get a seat, the rest sold_out.
+// 1000 virtual users (VUS=n changes it) book the last 5 seats of one event at the same moment: exactly 5 must get a seat, the rest sold_out.
 import { Counter } from 'k6/metrics';
 import { rpc, newHost, publishEvent, pool, uniqueWord } from './lib.js';
 
 const SEATS = 5;
-const VUS = 200;
+const VUS = Number(__ENV.VUS || 1000);
 const booked = new Counter('booked');
 const soldOut = new Counter('sold_out');
 const other = new Counter('other_errors');
 
 export const options = {
   setupTimeout: '5m',
-  scenarios: { race: { executor: 'per-vu-iterations', vus: VUS, iterations: 1, maxDuration: '2m' } },
+  scenarios: { race: { executor: 'per-vu-iterations', vus: VUS, iterations: 1, maxDuration: '5m' } },
   thresholds: {
     booked: [`count==${SEATS}`],
     sold_out: [`count==${VUS - SEATS}`],

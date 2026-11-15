@@ -63,6 +63,7 @@ class BookingNav extends StatelessWidget {
               trailing!,
               style: const TextStyle(fontSize: 13, color: Calm.mut),
             ),
+          if (trailing != null && action != null) const SizedBox(width: 8),
           ?action,
         ],
       ),

@@ -1,3 +1,8 @@
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
+
+import '../../safety/domain/safety.dart';
+import '../../safety/presentation/safety_menu.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -152,6 +157,11 @@ class _Page extends ConsumerWidget {
                           KeyedSubtree(
                             key: const Key('hero-heart'),
                             child: HeartButton(eventId: e.id),
+                          ),
+                          const SizedBox(width: 10),
+                          SafetyMenu.event(
+                            menuKey: const Key('event-menu'),
+                            eventId: e.id,
                           ),
                         ],
                       ),
@@ -522,9 +532,16 @@ class _Page extends ConsumerWidget {
     if (!await requireAuth(ref, context, AuthReason.chat) || !context.mounted) {
       return;
     }
-    final thread = await ref
-        .read(eventRepositoryProvider)
-        .openThread(d.hostId, d.summary.id);
+    final messenger = ScaffoldMessenger.of(context);
+    final String thread;
+    try {
+      thread = await ref
+          .read(eventRepositoryProvider)
+          .openThread(d.hostId, d.summary.id);
+    } on PostgrestException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(safetyMessage(e.message))));
+      return;
+    }
     if (context.mounted) context.push('/chats/$thread');
   }
 }

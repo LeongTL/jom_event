@@ -20,6 +20,9 @@ class FakePeople implements PeopleRepository {
   final Map<String, List<Person>> followersOf, followingOf;
   final UsernameError? setError;
   final Duration followDelay; // makes a double tap possible in tests
+
+  /// Makes follow fail, as the database does for a blocked person.
+  Object? followError;
   final Set<String> _iFollow;
   final followed = <String>[];
   final unfollowed = <String>[];
@@ -73,6 +76,7 @@ class FakePeople implements PeopleRepository {
   @override
   Future<void> follow(String id) async {
     if (followDelay > Duration.zero) await Future<void>.delayed(followDelay);
+    if (followError != null) throw followError!;
     followed.add(id);
     _iFollow.add(id);
   }
