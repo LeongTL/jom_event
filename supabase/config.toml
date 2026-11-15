@@ -161,7 +161,7 @@ site_url = "http://127.0.0.1:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+additional_redirect_urls = ["https://127.0.0.1:3000", "http://127.0.0.1:3000"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -271,9 +271,10 @@ max_frequency = "5s"
 60123456789 = "123456"
 
 # Configure logged in session timeouts.
-# [auth.sessions]
+# Back office: an admin is signed out after 7 days (hosted: Pro plan only, see docs/release/web-backoffice.md).
+[auth.sessions]
 # Force log out after the specified duration.
-# timebox = "24h"
+timebox = "168h"
 # Force log out if the user has been inactive longer than the specified duration.
 # inactivity_timeout = "8h"
 
@@ -301,9 +302,10 @@ auth_token = "test"
 max_enrolled_factors = 10
 
 # Control MFA via App Authenticator (TOTP)
+# Admins give an authenticator code after their password (the web back office).
 [auth.mfa.totp]
-enroll_enabled = false
-verify_enabled = false
+enroll_enabled = true
+verify_enabled = true
 
 # Configure MFA via Phone Messaging
 [auth.mfa.phone]
