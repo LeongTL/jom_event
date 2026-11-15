@@ -77,6 +77,7 @@ Future<String> publishEvent(
   Duration startsIn = const Duration(hours: 26),
   Duration lasts = const Duration(hours: 2),
   String category = 'make',
+  bool isPrivate = false,
 }) async {
   final start = DateTime.now().toUtc().add(startsIn);
   final id =
@@ -97,12 +98,26 @@ Future<String> publishEvent(
                     'price_sen': priceSen,
                     'cancel_policy': '24h',
                     'accept_bookings': true,
+                    'visibility': isPrivate ? 'private' : 'public',
                   },
                 },
               )
           as String;
   await host.db.schema('events').rpc('publish', params: {'event_id': id});
   return id;
+}
+
+/// The code of the host's event, as the host reads it (what the share link carries).
+Future<String> shareCodeOf(Person host, String eventId) async {
+  final rows =
+      await host.db
+              .schema('events')
+              .rpc(
+                'host_events',
+                params: {'p_status': null, 'p_event_id': eventId},
+              )
+          as List;
+  return (rows.first as Map<String, dynamic>)['share_code'] as String;
 }
 
 /// Pulls an event's start to [startsIn] from now, as the clock would have: paid bookings close an hour before the

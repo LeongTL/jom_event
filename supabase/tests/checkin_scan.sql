@@ -14,15 +14,18 @@ create function pg_temp.ev(id uuid, host uuid, price int) returns void language 
   values (id, host, 'Event ' || left(id::text, 8), 'published', price, 10,
           '2030-01-10 20:00+08', '2030-01-10 22:00+08', '48h', true, 'Bangsar', 'V', 3.129, 101.671)
 $$;
-select pg_temp.ev('e1000000-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 0);
-select pg_temp.ev('e2000000-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000001', 0);
+select pg_temp.ev('e1000000-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 3000);
+select pg_temp.ev('e2000000-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000001', 3000);
 select pg_temp.ev('e3000000-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000001', 3000);
 
--- bob joins e1, carol joins e2, dave joins e1 and cancels, bob holds a paid seat on e3
+-- bob and carol book e1 and e2 and are confirmed, dave books e1 and cancels, bob holds a seat on e3
 select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-000000000002","role":"authenticated"}', true);
 set local role authenticated;
 select set_config('t.bob', (bookings.create_booking('e1000000-0000-0000-0000-000000000001', 2, 'Bob Tan', '60111111111')).id::text, true);
 select set_config('t.bobheld', (bookings.create_booking('e3000000-0000-0000-0000-000000000003', 1, 'Bob Tan', '60111111111')).id::text, true);
+reset role;
+select bookings.mark_confirmed(current_setting('t.bob')::uuid);
+set local role authenticated;
 select set_config('t.bobtoken', bookings.ticket_token(current_setting('t.bob')::uuid), true);
 select set_config('t.heldtoken', bookings.ticket_token(current_setting('t.bobheld')::uuid), true);
 reset role;
@@ -30,6 +33,9 @@ reset role;
 select set_config('request.jwt.claims', '{"sub":"cccccccc-0000-0000-0000-000000000003","role":"authenticated"}', true);
 set local role authenticated;
 select set_config('t.carol', (bookings.create_booking('e2000000-0000-0000-0000-000000000002', 1, 'Carol', '60122222222')).id::text, true);
+reset role;
+select bookings.mark_confirmed(current_setting('t.carol')::uuid);
+set local role authenticated;
 select set_config('t.caroltoken', bookings.ticket_token(current_setting('t.carol')::uuid), true);
 reset role;
 

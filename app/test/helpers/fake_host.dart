@@ -15,6 +15,9 @@ HostEventRow hostEvent(
   int cap = 12,
   DateTime? starts,
   int price = 3000,
+  int? saves,
+  bool isPrivate = false,
+  String? shareCode,
 }) {
   final s = starts ?? clock.add(const Duration(days: 3));
   return HostEventRow(
@@ -30,6 +33,9 @@ HostEventRow hostEvent(
     priceSen: price,
     status: status,
     seatsSold: sold,
+    saves: saves,
+    isPrivate: isPrivate,
+    shareCode: shareCode,
   );
 }
 
@@ -138,6 +144,7 @@ class FakeHost implements HostRepository {
   final saved = <(EventForm, String?)>[];
   final published = <String>[];
   final updated = <(String, String?, String?, int?)>[];
+  final visibilities = <(String, bool)>[];
   final deleted = <String>[];
   final scanned = <String>[];
   var guestCalls = 0;
@@ -191,9 +198,11 @@ class FakeHost implements HostRepository {
     String? title,
     String? description,
     int? capacity,
+    bool? isPrivate,
   }) async {
     if (saveError != null) throw saveError!;
     updated.add((id, title, description, capacity));
+    if (isPrivate != null) visibilities.add((id, isPrivate));
   }
 
   @override

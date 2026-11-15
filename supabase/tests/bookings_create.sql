@@ -25,7 +25,6 @@ select pg_temp.ev('e7000000-0000-0000-0000-000000000007', 3000, 5, '2030-01-10 2
 select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-000000000002","role":"authenticated"}', true);
 set local role authenticated;
 select set_config('t.bob', (bookings.create_booking('e1000000-0000-0000-0000-000000000001', 1, 'Bob', '60111111111')).id::text, true);
-select set_config('t.bobfree', (bookings.create_booking('e2000000-0000-0000-0000-000000000002', 2, 'Bob', '60111111111')).id::text, true);
 select set_config('t.bobnone', (bookings.create_booking('e7000000-0000-0000-0000-000000000007', 1, 'Bob', '60111111111')).id::text, true);
 reset role;
 
@@ -35,10 +34,8 @@ select results_eq(
   'paid_booking_is_held_for_1_hour');
 select is((select cancel_cutoff_at from bookings.bookings where id = current_setting('t.bob')::uuid),
   '2030-01-08 20:00+08'::timestamptz, 'a paid booking copies the host cancellation cutoff (48h before)');
-select results_eq(
-  $$select status, hold_expires_at, amount_sen, cancel_cutoff_at from bookings.bookings where id = current_setting('t.bobfree')::uuid$$,
-  $$values ('confirmed', null::timestamptz, 0, '2030-01-10 20:00+08'::timestamptz)$$,
-  'free_booking_is_confirmed_immediately_with_no_hold (cancel until the start)');
+select throws_ok($$select bookings.create_booking('e2000000-0000-0000-0000-000000000002', 2, 'Bob', '60111111111')$$,
+  'P0001', 'free_event_no_booking', 'a free event is a listing: it cannot be booked');
 select is((select cancel_cutoff_at from bookings.bookings where id = current_setting('t.bobnone')::uuid), null,
   'a no-refund event gives the booking no cutoff');
 select matches((select ticket_code from bookings.bookings where id = current_setting('t.bob')::uuid), '^KLS-[0-9]{5}$',

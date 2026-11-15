@@ -162,6 +162,27 @@ class _Page extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
+                      if (d.isPrivate)
+                        Container(
+                          key: const Key('private-tag'),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Calm.chip,
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                          child: const Text(
+                            'Private event',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: Calm.mut,
+                            ),
+                          ),
+                        ),
                       Text(
                         e.title,
                         style: const TextStyle(
@@ -221,47 +242,47 @@ class _Page extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      CardBox(
-                        key: const Key('going-card'),
-                        child: Row(
-                          children: [
-                            PeopleStack(count: e.going, size: 30),
-                            if (e.going > 0) const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${e.going} going',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
+                      if (d.isBookable)
+                        CardBox(
+                          key: const Key('going-card'),
+                          child: Row(
+                            children: [
+                              PeopleStack(count: e.going, size: 30),
+                              if (e.going > 0) const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${e.going} going',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    d.isBookable
-                                        ? '${e.spotsLeft} ${e.spotsLeft == 1 ? 'spot' : 'spots'} left'
-                                        : 'Open to everyone',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Calm.mut,
+                                    Text(
+                                      '${e.spotsLeft} ${e.spotsLeft == 1 ? 'spot' : 'spots'} left',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Calm.mut,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      _Policy(
-                        key: const Key('policy-card'),
-                        good: refundable,
-                        title: policyTitle(d.cancelPolicy, free: free),
-                        sub: free
-                            ? 'You can cancel any time.'
-                            : refundable
-                            ? 'Refunds take 3 to 7 working days.'
-                            : 'Your spot is final once you book.',
-                      ),
+                      if (d.isBookable)
+                        _Policy(
+                          key: const Key('policy-card'),
+                          good: refundable,
+                          title: policyTitle(d.cancelPolicy, free: free),
+                          sub: free
+                              ? 'You can cancel any time.'
+                              : refundable
+                              ? 'Refunds take 3 to 7 working days.'
+                              : 'Your spot is final once you book.',
+                        ),
                       if ((d.description ?? '').isNotEmpty)
                         Container(
                           width: double.infinity,
@@ -437,11 +458,16 @@ class _Page extends ConsumerWidget {
               const SizedBox(width: 20),
               Expanded(
                 child: KeyedSubtree(
-                  key: const Key('join'),
-                  child: JomButton(
-                    label: free ? 'Join for free' : 'Book a spot',
-                    onPressed: () => _join(context, ref),
-                  ),
+                  key: Key(d.isBookable ? 'join' : 'directions-cta'),
+                  child: d.isBookable
+                      ? JomButton(
+                          label: 'Book a spot',
+                          onPressed: () => _join(context, ref),
+                        )
+                      : JomButton(
+                          label: 'Get directions',
+                          onPressed: () => _directions(ref),
+                        ),
                 ),
               ),
             ],

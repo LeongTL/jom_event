@@ -176,6 +176,27 @@ void main() {
       },
     );
 
+    testWidgets('a free event card says how many saved it, not joined', (
+      t,
+    ) async {
+      await pumpApp(
+        t,
+        location: '/host-mode/events',
+        host: FakeHost(
+          profile: hostMe(),
+          events: [hostEvent('f1', sold: 0, price: 0, saves: 4)],
+        ),
+      );
+      expect(
+        find.descendant(
+          of: key('host-event-f1'),
+          matching: find.text('4 saves'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('0 / 12 joined'), findsNothing);
+    });
+
     testWidgets(
       'new_event_button_sits_above_the_tab_bar_and_does_not_hide_the_last_card',
       (t) async {

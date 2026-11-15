@@ -145,7 +145,9 @@ class _Row extends StatelessWidget {
         : '${dayLabel(e.startsAt!, now)} · ${timeLabel(e.startsAt!)}';
     final (pill, tone) = switch (e.status) {
       'published' => (
-        '${e.seatsSold} / ${e.capacity} ${(e.priceSen ?? 0) == 0 ? 'joined' : 'paid'}',
+        (e.priceSen ?? 0) == 0 || !e.acceptBookings
+            ? '${e.saves ?? 0} saves'
+            : '${e.seatsSold} / ${e.capacity} paid',
         e.seatsSold >= (e.capacity ?? 1),
       ),
       'draft' => ('Draft', false),

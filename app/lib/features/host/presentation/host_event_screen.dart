@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/clock.dart';
@@ -8,6 +9,7 @@ import '../../../shared/widgets/category_art.dart';
 import '../../../shared/widgets/jom_button.dart';
 import '../../../shared/widgets/screen_parts.dart';
 import '../../event/domain/event_labels.dart';
+import '../../event/domain/share_link.dart';
 import '../data/host_repository.dart';
 import '../domain/host.dart';
 import 'complete_sheet.dart';
@@ -58,6 +60,8 @@ class _Body extends ConsumerWidget {
     final over = e.endsAt != null && !now.isBefore(e.endsAt!);
     final started = e.startsAt != null && !now.isBefore(e.startsAt!);
     final free = (e.priceSen ?? 0) == 0;
+    // a free event, or one that takes no bookings, is a listing: guests Save it, there is nothing to scan or count
+    final listing = free || !e.acceptBookings;
     final noShows = guests.where((g) => !g.checkedIn).length;
     return Stack(
       children: [
@@ -106,7 +110,9 @@ class _Body extends ConsumerWidget {
                         Calm.ok,
                       ),
                       _Pill(
-                        '${e.seatsSold} / $cap ${free ? 'joined' : 'paid'}',
+                        listing
+                            ? '${e.saves ?? 0} saves'
+                            : '${e.seatsSold} / $cap paid',
                         Calm.chip,
                         Calm.mut,
                       ),
@@ -128,85 +134,95 @@ class _Body extends ConsumerWidget {
                       style: const TextStyle(color: Calm.mut, height: 1.4),
                     ),
                   const SizedBox(height: 14),
-                  PendingReceiptsCard(eventId: e.id),
-                  FillBar((e.seatsSold / cap).clamp(0, 1).toDouble()),
-                  const SizedBox(height: 6),
-                  Text(
-                    e.seatsSold >= cap
-                        ? 'Full'
-                        : '${cap - e.seatsSold} spots left',
-                    style: const TextStyle(color: Calm.mut, fontSize: 13),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: StatTile(
-                          const Key('tile-joined'),
-                          '${e.seatsSold}',
-                          'joined',
-                          compact: true,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: StatTile(
-                          const Key('tile-checked'),
-                          '$checked',
-                          'checked in',
-                          compact: true,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: StatTile(
-                          const Key('tile-gross'),
-                          rm(earnings?.gross ?? 0),
-                          'gross',
-                          compact: true,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      if (!isEnded) ...[
+                  if (listing)
+                    StatTile(
+                      const Key('tile-saves'),
+                      '${e.saves ?? 0}',
+                      'saves',
+                      compact: true,
+                    )
+                  else ...[
+                    PendingReceiptsCard(eventId: e.id),
+                    FillBar((e.seatsSold / cap).clamp(0, 1).toDouble()),
+                    const SizedBox(height: 6),
+                    Text(
+                      e.seatsSold >= cap
+                          ? 'Full'
+                          : '${cap - e.seatsSold} spots left',
+                      style: const TextStyle(color: Calm.mut, fontSize: 13),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
                         Expanded(
-                          child: KeyedSubtree(
-                            key: const Key('scan-button'),
-                            child: JomButton(
-                              label: 'Scan tickets',
-                              onPressed: () => context.push(
-                                '/host-mode/events/${e.id}/scan',
-                              ),
-                            ),
+                          child: StatTile(
+                            const Key('tile-joined'),
+                            '${e.seatsSold}',
+                            'joined',
+                            compact: true,
                           ),
                         ),
                         const SizedBox(width: 10),
+                        Expanded(
+                          child: StatTile(
+                            const Key('tile-checked'),
+                            '$checked',
+                            'checked in',
+                            compact: true,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: StatTile(
+                            const Key('tile-gross'),
+                            rm(earnings?.gross ?? 0),
+                            'gross',
+                            compact: true,
+                          ),
+                        ),
                       ],
-                      Expanded(
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        if (!isEnded) ...[
+                          Expanded(
+                            child: KeyedSubtree(
+                              key: const Key('scan-button'),
+                              child: JomButton(
+                                label: 'Scan tickets',
+                                onPressed: () => context.push(
+                                  '/host-mode/events/${e.id}/scan',
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        Expanded(
+                          child: JomButton(
+                            label: 'Guest list',
+                            primary: false,
+                            onPressed: () => context.push(
+                              '/host-mode/events/${e.id}/guests',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (!isEnded) ...[
+                      const SizedBox(height: 10),
+                      KeyedSubtree(
+                        key: const Key('assign-seat-button'),
                         child: JomButton(
-                          label: 'Guest list',
+                          label: 'Assign a seat',
                           primary: false,
-                          onPressed: () =>
-                              context.push('/host-mode/events/${e.id}/guests'),
+                          onPressed: () => context.push(
+                            '/host-mode/assign-seat?eventId=${e.id}',
+                          ),
                         ),
                       ),
                     ],
-                  ),
-                  if (!isEnded) ...[
-                    const SizedBox(height: 10),
-                    KeyedSubtree(
-                      key: const Key('assign-seat-button'),
-                      child: JomButton(
-                        label: 'Assign a seat',
-                        primary: false,
-                        onPressed: () => context.push(
-                          '/host-mode/assign-seat?eventId=${e.id}',
-                        ),
-                      ),
-                    ),
                   ],
                   const SizedBox(height: 14),
                   CardBox(
@@ -246,17 +262,61 @@ class _Body extends ConsumerWidget {
                           'Price',
                           free ? 'Free' : '${rm(e.priceSen!)} per person',
                         ),
-                        MoneyLine('Refunds', _refund(e.cancelPolicy)),
-                        KeyedSubtree(
-                          key: const Key('payout-line'),
-                          child: MoneyLine(
-                            'Payout',
-                            '${rm(earnings?.receives ?? 0)} · 3 days after',
+                        if (!listing) ...[
+                          MoneyLine('Refunds', _refund(e.cancelPolicy)),
+                          KeyedSubtree(
+                            key: const Key('payout-line'),
+                            child: MoneyLine(
+                              'Payout',
+                              '${rm(earnings?.receives ?? 0)} · 3 days after',
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
+                  if (!isEnded && e.shareCode != null)
+                    CardBox(
+                      key: const Key('share-card'),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  e.isPrivate
+                                      ? 'Share link (private event)'
+                                      : 'Share link',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  shareLink(e.shareCode!),
+                                  style: const TextStyle(
+                                    color: Calm.mut,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            key: const Key('copy-share-link'),
+                            icon: const Icon(Icons.copy, size: 18),
+                            onPressed: () {
+                              Clipboard.setData(
+                                ClipboardData(text: shareLink(e.shareCode!)),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Link copied')),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                   CardBox(
                     onTap: () => context.go('/host-mode/chats'),
                     child: const Row(
