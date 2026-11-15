@@ -51,6 +51,7 @@ EventDetail detailOf(
   bool ended = false,
   String? host = 'Mei Studio',
   bool isPrivate = false,
+  String? shareCode,
 }) => EventDetail(
   summary: s,
   hostId: 'h1',
@@ -67,6 +68,7 @@ EventDetail detailOf(
   isEnded: ended,
   hostEventCount: 38,
   isPrivate: isPrivate,
+  shareCode: shareCode,
 );
 
 class FakeEvents implements EventRepository {

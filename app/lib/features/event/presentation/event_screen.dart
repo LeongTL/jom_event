@@ -6,6 +6,7 @@ import '../../../core/clock.dart';
 import '../../../core/launcher.dart';
 import '../../../core/money.dart';
 import '../../../core/theme/calm.dart';
+import '../../../shared/share_sheet.dart';
 import '../../../shared/widgets/category_art.dart';
 import '../../../shared/widgets/jom_button.dart';
 import '../../../shared/widgets/people_stack.dart';
@@ -16,6 +17,7 @@ import '../../auth/domain/auth_gate.dart';
 import '../data/event_repository.dart';
 import '../domain/event_detail.dart';
 import '../domain/event_labels.dart';
+import '../domain/share_link.dart';
 import 'event_cards.dart';
 
 /// One event, free or paid, in one layout (the Calm prototype's detail screen). Read-only for visitors: only the
@@ -130,9 +132,28 @@ class _Page extends ConsumerWidget {
                     Positioned(
                       right: 20,
                       top: MediaQuery.paddingOf(context).top + 5,
-                      child: KeyedSubtree(
-                        key: const Key('hero-heart'),
-                        child: HeartButton(eventId: e.id),
+                      child: Row(
+                        children: [
+                          if (d.shareCode != null) ...[
+                            KeyedSubtree(
+                              key: const Key('hero-share'),
+                              child: ShareButton(
+                                message: shareMessage(
+                                  eventShareText(e.title, e.startsAt, e.area),
+                                  eventLink(
+                                    ref.watch(shareBaseUrlProvider),
+                                    d.shareCode!,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                          ],
+                          KeyedSubtree(
+                            key: const Key('hero-heart'),
+                            child: HeartButton(eventId: e.id),
+                          ),
+                        ],
                       ),
                     ),
                   ],

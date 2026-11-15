@@ -10,8 +10,12 @@ class BookingNav extends StatelessWidget {
     required this.title,
     this.back = true,
     this.trailing,
+    this.action,
   });
   final String title;
+
+  /// A button at the right end, such as Share.
+  final Widget? action;
   final bool back;
   final String?
   trailing; // a small muted label at the right ("Host", "Attendee")
@@ -59,6 +63,7 @@ class BookingNav extends StatelessWidget {
               trailing!,
               style: const TextStyle(fontSize: 13, color: Calm.mut),
             ),
+          ?action,
         ],
       ),
     );

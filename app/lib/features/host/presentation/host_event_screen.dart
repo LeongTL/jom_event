@@ -9,6 +9,7 @@ import '../../../shared/widgets/category_art.dart';
 import '../../../shared/widgets/jom_button.dart';
 import '../../../shared/widgets/screen_parts.dart';
 import '../../event/domain/event_labels.dart';
+import '../../../shared/share_sheet.dart';
 import '../../event/domain/share_link.dart';
 import '../data/host_repository.dart';
 import '../domain/host.dart';
@@ -293,7 +294,10 @@ class _Body extends ConsumerWidget {
                                   ),
                                 ),
                                 Text(
-                                  shareLink(e.shareCode!),
+                                  eventLink(
+                                    ref.watch(shareBaseUrlProvider),
+                                    e.shareCode!,
+                                  ),
                                   style: const TextStyle(
                                     color: Calm.mut,
                                     fontSize: 13,
@@ -307,7 +311,12 @@ class _Body extends ConsumerWidget {
                             icon: const Icon(Icons.copy, size: 18),
                             onPressed: () {
                               Clipboard.setData(
-                                ClipboardData(text: shareLink(e.shareCode!)),
+                                ClipboardData(
+                                  text: eventLink(
+                                    ref.watch(shareBaseUrlProvider),
+                                    e.shareCode!,
+                                  ),
+                                ),
                               );
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Link copied')),

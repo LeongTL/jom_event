@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'app.dart';
 import 'core/config/app_config.dart';
 import 'core/supabase_client.dart';
+import 'shared/share_sheet.dart';
 
 /// [overrides] let the end-to-end tests swap native pieces (the photo picker); `flutter run` passes none.
 Future<void> main({List<Override> overrides = const []}) async {
@@ -16,6 +17,7 @@ Future<void> main({List<Override> overrides = const []}) async {
       'SUPABASE_URL': const String.fromEnvironment('SUPABASE_URL'),
       'SUPABASE_ANON_KEY': const String.fromEnvironment('SUPABASE_ANON_KEY'),
       'MAP_TILE_URL': const String.fromEnvironment('MAP_TILE_URL'),
+      'SHARE_BASE_URL': const String.fromEnvironment('SHARE_BASE_URL'),
       'PAYMENT_MODE': const String.fromEnvironment('PAYMENT_MODE'),
     });
     await initSupabase(config);
@@ -24,6 +26,7 @@ Future<void> main({List<Override> overrides = const []}) async {
         overrides: [
           appConfigProvider.overrideWithValue(config),
           paymentModeProvider.overrideWithValue(config.paymentMode),
+          shareBaseUrlProvider.overrideWithValue(config.shareBaseUrl),
           ...overrides,
         ],
         child: const JomApp(),

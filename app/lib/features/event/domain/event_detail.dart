@@ -21,6 +21,7 @@ class EventDetail {
     required this.isEnded,
     required this.hostEventCount,
     this.isPrivate = false,
+    this.shareCode,
   });
 
   final EventSummary summary;
@@ -34,6 +35,7 @@ class EventDetail {
   final bool isBookable; // takes bookings and costs money: the paid page; otherwise the free page
   final bool isEnded;
   final int hostEventCount; // public events the host has run
+  final String? shareCode; // what the share link carries
   final bool isPrivate; // hidden from every list; opened with the host's link
 
   factory EventDetail.fromJson(Map<String, dynamic> j) => EventDetail(
@@ -55,5 +57,6 @@ class EventDetail {
     isEnded: j['is_ended'] as bool,
     hostEventCount: (j['host_event_count'] as num).toInt(),
     isPrivate: j['visibility'] == 'private',
+    shareCode: j['share_code'] as String?,
   );
 }
