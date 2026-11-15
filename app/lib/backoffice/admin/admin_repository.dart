@@ -128,7 +128,7 @@ final pendingApplicationsProvider =
 
 /// Plain words for what the database refuses.
 String adminMessage(Object e) {
-  final m = e is PostgrestException ? e.message : '';
+  final m = e is PostgrestException ? e.message : '$e';
   return switch (m) {
     'mfa_required' =>
       'Your session needs the two-factor code. Sign out and sign in again.',

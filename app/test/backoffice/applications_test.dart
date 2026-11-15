@@ -87,6 +87,7 @@ void main() {
     await t.tap(key('app-reject-send'));
     await t.pumpAndSettle();
     expect(w.admin.reviews, isEmpty);
+    expect(find.text('Give a reason first.'), findsOneWidget);
     await t.enterText(key('app-reject-reason'), '  Photos missing  ');
     await t.tap(key('app-reject-send'));
     await t.pumpAndSettle();
