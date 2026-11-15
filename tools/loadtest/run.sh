@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Runs one k6 script against the local Supabase (default) or a hosted one.
-#   tools/loadtest/run.sh last_seat|feed|chat            local, keys read from `supabase status`
+#   tools/loadtest/run.sh last_seat|feed|chat|search_people|submit_receipt            local, keys read from `supabase status`
 #   TARGET=staging SERVICE_ROLE_KEY=... tools/loadtest/run.sh feed    URL and anon key from app/env/staging.json
 # Never prints keys.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-script=${1:?usage: tools/loadtest/run.sh last_seat|feed|chat}
+script=${1:?usage: tools/loadtest/run.sh last_seat|feed|chat|search_people|submit_receipt}
 if [ "${TARGET:-local}" = staging ]; then
   : "${SERVICE_ROLE_KEY:?set SERVICE_ROLE_KEY for the staging project}"
   export SUPABASE_URL=$(python3 -c "import json; print(json.load(open('app/env/staging.json'))['SUPABASE_URL'])")

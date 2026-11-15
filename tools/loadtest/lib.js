@@ -30,12 +30,33 @@ export function newUser(tag) {
   return { id: login.json('user.id'), token: login.json('access_token') };
 }
 
+// An admin approves the hosts the scripts create (host registration needs approval). With ADMIN_EMAIL and
+// ADMIN_PASSWORD it signs in an admin you gave the role by hand (the hosted project); without them it makes one
+// through public.e2e_make_admin, which exists only on a local database after tools/e2e_reset.sql.
+let admin;
+function adminUser() {
+  if (admin) return admin;
+  if (__ENV.ADMIN_EMAIL) {
+    const login = http.post(`${URL}/auth/v1/token?grant_type=password`,
+      JSON.stringify({ email: __ENV.ADMIN_EMAIL, password: __ENV.ADMIN_PASSWORD }), { headers: { ...JSON_HEADERS, apikey: ANON } });
+    if (login.status !== 200) throw new Error(`admin sign in: ${login.status} ${login.body}`);
+    admin = { id: login.json('user.id'), token: login.json('access_token') };
+  } else {
+    admin = newUser('admin');
+    const made = rpc('public', 'e2e_make_admin', SERVICE, { p_user_id: admin.id });
+    if (made.status >= 300) throw new Error(`e2e_make_admin: ${made.status} ${made.body} (run tools/e2e_reset.sql on a local database or set ADMIN_EMAIL and ADMIN_PASSWORD)`);
+  }
+  return admin;
+}
+
 export function newHost(name) {
   const host = newUser('host');
   const r = rpc('identity', 'apply_host', host.token, {
     host_name: name, area: 'Bangsar', bio: null, account_holder: name, bank: 'Maybank', account_number: '1234564821',
   });
   if (r.status >= 300) throw new Error(`apply_host: ${r.status} ${r.body}`);
+  const ok = rpc('identity', 'admin_review_host', adminUser().token, { p_user_id: host.id, p_decision: 'approve', p_reason: null });
+  if (ok.status >= 300) throw new Error(`admin_review_host: ${ok.status} ${ok.body}`);
   return host;
 }
 
