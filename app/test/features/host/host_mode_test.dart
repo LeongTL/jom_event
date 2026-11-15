@@ -45,7 +45,7 @@ void main() {
       (t) async {
         final host = FakeHost(profile: null);
         final router = await pumpApp(t, location: '/profile', host: host);
-        await t.tap(key('host-mode-card'));
+        await t.tap(key('host-card-none'));
         await t.pumpAndSettle();
         expect(where(router), '/host-mode/apply');
         expect(find.text('Business registration (optional)'), findsOneWidget);
@@ -61,13 +61,13 @@ void main() {
         await t.pumpAndSettle();
         expect(host.applied.single.holder, 'Mei Tan');
         expect(host.applied.single.ssm, isNull);
-        expect(where(router), '/host-mode/home');
+        expect(where(router), '/profile'); // waits for an admin: no Host mode yet
       },
     );
 
     testWidgets('a_host_goes_straight_to_the_dashboard', (t) async {
       final router = await pumpApp(t, location: '/profile');
-      await t.tap(key('host-mode-card'));
+      await t.tap(key('host-card-approved'));
       await t.pumpAndSettle();
       expect(where(router), '/host-mode/home');
     });

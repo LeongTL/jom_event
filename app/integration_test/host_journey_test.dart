@@ -26,7 +26,7 @@ void main() {
     // sign in from the Profile tab, then become a host
     await openTab(t, 'Profile');
     await signInWithPhone(t);
-    await t.tap(key('host-mode-card'));
+    await t.tap(key('host-card-approved'));
     await see(t, key('apply-name'));
     await t.enterText(key('apply-name'), 'E2E Studio');
     await t.tap(key('apply-area-Bangsar'));

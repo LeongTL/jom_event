@@ -81,8 +81,9 @@ class _ApplyFormState extends ConsumerState<_ApplyForm> {
             ),
           );
       ref.invalidate(hostMeProvider);
+      ref.invalidate(hostStatusProvider);
       ref.invalidate(hostDashboardProvider);
-      go.go(widget.initial == null ? '/host-mode/home' : '/host-mode/profile');
+      go.go(widget.initial == null ? '/profile' : '/host-mode/profile');
     } on HostError catch (e) {
       if (!mounted) return;
       setState(() {

@@ -6,7 +6,7 @@ import '../../../core/theme/calm.dart';
 import '../../../shared/widgets/screen_parts.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/domain/phone_number.dart';
-import '../../host/data/host_repository.dart';
+import 'host_card.dart';
 import '../../people/data/people_repository.dart';
 
 /// Who I am and the places to go from here. Signed-out visitors never see it (the tab shows the sign-in prompt).
@@ -159,58 +159,7 @@ class ProfileScreen extends ConsumerWidget {
           row('Notifications', () => context.push('/notifications')),
           row('Help & support', () => context.push('/help')),
           row('Terms & privacy', () => context.push('/legal')),
-          const SizedBox(height: 6),
-          GestureDetector(
-            key: const Key('host-mode-card'),
-            onTap: () async {
-              final go = GoRouter.of(context);
-              go.go(
-                await ref.read(hostRepositoryProvider).me() == null
-                    ? '/host-mode/apply'
-                    : '/host-mode/home',
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Calm.acc,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Switch to Host mode',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          'Run your own events',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    '→',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
+          const HostCard(),
           row('Sign out', () async {
             final go = GoRouter.of(context);
             await ref.read(authRepositoryProvider).signOut();
