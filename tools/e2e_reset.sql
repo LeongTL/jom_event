@@ -24,3 +24,22 @@ returns void language sql security definer set search_path = '' as $$
 $$;
 revoke all on function public.e2e_start_event_in(uuid, int) from public, anon, authenticated;
 grant execute on function public.e2e_start_event_in(uuid, int) to service_role;
+
+-- Test scaffolding, never a migration: the app can never make an admin or flip a flag, so a journey does it here
+-- (service role only). e2e_reset above removes the admin with the e2e-* user it belongs to.
+create or replace function public.e2e_make_admin(p_user_id uuid)
+returns void language sql security definer set search_path = '' as $$
+  insert into identity.admins (user_id) values (p_user_id) on conflict do nothing;
+$$;
+revoke all on function public.e2e_make_admin(uuid) from public, anon, authenticated;
+grant execute on function public.e2e_make_admin(uuid) to service_role;
+
+create or replace function public.e2e_set_flag(p_key text, p_value jsonb)
+returns void language sql security definer set search_path = '' as $$
+  update app.flags set value = p_value where key = p_key;
+$$;
+revoke all on function public.e2e_set_flag(text, jsonb) from public, anon, authenticated;
+grant execute on function public.e2e_set_flag(text, jsonb) to service_role;
+
+-- a journey that switched the entrance off must not leave it off
+select public.e2e_set_flag('host_entry_enabled', 'true');
