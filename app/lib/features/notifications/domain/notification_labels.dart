@@ -18,6 +18,9 @@ IconData notifIcon(String type) =>
       'receipt_accepted': Icons.check_circle_outline,
       'receipt_requested': Icons.upload_file_outlined,
       'seat_assigned': Icons.event_seat_outlined,
+      'host_approved': Icons.verified_outlined,
+      'host_rejected': Icons.report_gmailerrorred_outlined,
+      'host_suspended': Icons.pause_circle_outline,
     }[type] ??
     Icons.notifications_none;
 
@@ -36,6 +39,10 @@ String notifWhen(DateTime at, DateTime now) {
 /// Where tapping the notice goes, or null when there is nothing to open. A payout is recognised by its type:
 /// the database files it under its event.
 String? notifRoute(AppNotification n) {
+  if (n.type == 'host_approved') return '/host-mode/home';
+  if (n.type == 'host_rejected' || n.type == 'host_suspended') {
+    return '/profile';
+  }
   final id = n.refId;
   if (n.type == 'payout' || n.refType == 'payout') return '/host-mode/payouts';
   if (id == null) return null;

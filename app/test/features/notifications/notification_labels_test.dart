@@ -56,6 +56,18 @@ void main() {
     });
   });
 
+  group('host application notices', () {
+    test('the decision has an icon and opens where it matters', () {
+      for (final t in ['host_approved', 'host_rejected', 'host_suspended']) {
+        expect(notifIcon(t), isNot(Icons.notifications_none), reason: t);
+      }
+      // the database files these under no event or booking
+      expect(notifRoute(n('host_approved')), '/host-mode/home');
+      expect(notifRoute(n('host_rejected')), '/profile');
+      expect(notifRoute(n('host_suspended')), '/profile');
+    });
+  });
+
   group('notifWhen', () {
     test(
       'says how long ago for today, then Yesterday, the weekday, the date',
