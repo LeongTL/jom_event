@@ -43,6 +43,9 @@ class FakeAuthRepository implements AuthRepository {
   Object? googleError;
   Object? sendError;
 
+  /// Signs in as [s] without a phone code (the back office's password and refresh paths).
+  void signInAs(Session s) => _set(s);
+
   void _set(Session? s) {
     _current = s;
     _changes.add(s);
