@@ -15,7 +15,7 @@ Mock payments and the test phone login are on here. Neither may ever exist on pr
 | Demo data: 20 hosts, 87 events | `supabase db query --linked -f supabase/seed.sql` (by hand, once; never a migration, never on prod) |
 | API schemas, test phone login | `supabase config push` from a minimal config holding only those settings (see below) |
 
-Settings pushed: exposed API schemas `public`, `graphql_public`, `identity`, `events`, `bookings`, `payments`, `reviews`, `chat`;
+Settings pushed: exposed API schemas `public`, `graphql_public`, `identity`, `events`, `bookings`, `payments`, `reviews`, `chat`, `app`;
 phone sign-up on, a dummy Twilio entry (no real SMS can be sent), and the test number `+60123456789` = `123456`.
 
 Do not run a plain `supabase config push` from the repo: it sends the whole local auth section and would switch off
@@ -24,12 +24,54 @@ email confirmation and MFA on staging. Push only the settings you mean to change
 ```toml
 project_id = "jom_stg_push"
 [api]
-schemas = ["public", "graphql_public", "identity", "events", "bookings", "payments", "reviews", "chat"]
+schemas = ["public", "graphql_public", "identity", "events", "bookings", "payments", "reviews", "chat", "app"]
 ```
 ```bash
 supabase config diff --workdir <dir containing supabase/config.toml> --project-ref habundtbjgzkidwcaogw
 supabase config push --workdir <dir> --project-ref habundtbjgzkidwcaogw
 ```
+
+## Hosts: approve by hand, and the host entrance flag
+
+Until the web admin exists, an admin approves hosts in the Supabase SQL editor. People apply from Profile (Register as
+Event owner); the application waits as `pending`, and the host cannot create events until it is approved.
+
+1. Give someone the admin role, once. This is only ever done by hand; the app can never do it. Use the person's user id
+   from Authentication > Users. Several admins are fine, all with the same rights.
+
+   ```sql
+   insert into identity.admins (user_id) values ('<admin user id>');
+   ```
+
+2. See who is waiting, and read an application (name, area, bio, business number, payout and payment details). The two
+   functions check the caller is an admin, so first sign the SQL editor in as that admin:
+
+   ```sql
+   select set_config('request.jwt.claims', '{"sub":"<admin user id>","role":"authenticated"}', true);
+   select * from identity.pending_hosts();
+   select * from identity.host_application('<host user id>');
+   ```
+
+3. Decide. `approve`, `reject` (needs a reason the applicant sees), `suspend` (needs a reason) and `unsuspend`. Run it in the
+   same statement batch as step 2 so it knows which admin you are. The host gets a notification, and the decision, the admin
+   and the time are written to `identity.admin_actions`:
+
+   ```sql
+   select identity.admin_review_host('<host user id>', 'approve', null);
+   select identity.admin_review_host('<host user id>', 'reject', 'Please add a real photo');
+   ```
+
+   Who decided what: `select * from identity.admin_actions order by created_at desc;`
+
+The host entrance can be switched off for the whole app (the Register / Switch to Host mode card disappears and `/host-mode`
+links go to Explore). The app reads it at start and when it comes back to the foreground:
+
+```sql
+update app.flags set value = 'false' where key = 'host_entry_enabled';   -- off; 'true' turns it back on
+```
+
+The hosted project must have `app` in its exposed API schemas (see the settings above) or the flag cannot be read; a flag the
+app cannot read counts as on.
 
 ## Receipts
 
