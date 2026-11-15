@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jom/backoffice/access/access.dart';
+import 'package:jom/backoffice/admin/admin_repository.dart';
 import 'package:jom/backoffice/app.dart';
 import 'package:jom/backoffice/auth/backoffice_auth.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
@@ -74,7 +75,9 @@ class BoWorld {
     HostState host = HostState.none,
     String? factorId,
     Session? signedIn,
-  }) : auth = FakeAuthRepository(initial: signedIn),
+    FakeAdmin? admin,
+  }) : admin = admin ?? FakeAdmin(),
+       auth = FakeAuthRepository(initial: signedIn),
        access = FakeAccess(isAdmin: isAdmin, aal2: aal2),
        hosts = FakeHost()..status = HostStatus(host) {
     boAuth = FakeBackOfficeAuth(auth, access, factorId: factorId);
@@ -82,6 +85,7 @@ class BoWorld {
   final FakeAuthRepository auth;
   final FakeAccess access;
   final FakeHost hosts;
+  final FakeAdmin admin;
   late final FakeBackOfficeAuth boAuth;
 
   List<Override> get overrides => [
@@ -89,6 +93,7 @@ class BoWorld {
     accessRepositoryProvider.overrideWithValue(access),
     backOfficeAuthProvider.overrideWithValue(boAuth),
     hostRepositoryProvider.overrideWithValue(hosts),
+    adminRepositoryProvider.overrideWithValue(admin),
   ];
 }
 
@@ -110,4 +115,30 @@ Future<void> pumpBackOffice(
     ),
   );
   await t.pumpAndSettle();
+}
+
+class FakeAdmin implements AdminRepository {
+  FakeAdmin({List<PendingApplication>? pending, Map<String, Application>? full})
+    : pending = pending ?? [],
+      full = full ?? {};
+  final List<PendingApplication> pending;
+  final Map<String, Application> full;
+  final reviews = <(String, String, String?)>[];
+  Object? reviewError;
+
+  @override
+  Future<List<PendingApplication>> pendingHosts() async => [...pending];
+
+  @override
+  Future<Application> application(String userId) async => full[userId]!;
+
+  @override
+  Future<void> review(String userId, String decision, {String? reason}) async {
+    reviews.add((userId, decision, reason));
+    if (reviewError != null) throw reviewError!;
+    pending.removeWhere((p) => p.userId == userId);
+  }
+
+  @override
+  Future<String?> qrUrl(String path) async => 'http://localhost/qr.png';
 }
