@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:jom/features/host/data/host_repository.dart';
 import 'package:jom/features/host/domain/event_form_state.dart';
 import 'package:jom/features/host/domain/host.dart';
+import 'package:jom/features/host/domain/host_status.dart';
 import 'package:jom/features/host/domain/receipt.dart';
 import 'package:jom/features/host/domain/scan_controller.dart';
 
@@ -64,10 +65,21 @@ class FakeHost implements HostRepository {
     this.payoutsView = const Payouts(upcomingSen: 0, paidSen: 0, rows: []),
     this.scanReplies = const [],
     List<PendingReceipt>? receipts,
+    this.status,
   }) : receiptRows = receipts ?? [],
        guestRows = guestRows ?? [],
        rows = events ?? [];
   HostProfile? profile;
+
+  /// What the server says about my application; a host profile with no status is an approved host.
+  HostStatus? status;
+
+  @override
+  Future<HostStatus> myStatus() async =>
+      status ??
+      (profile == null
+          ? HostStatus.none
+          : const HostStatus(HostState.approved));
   final List<PendingReceipt> receiptRows;
   final accepted = <String>[];
   final asked = <(String, String)>[];

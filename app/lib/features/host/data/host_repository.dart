@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/supabase_client.dart';
 import '../domain/event_form_state.dart';
 import '../domain/host.dart';
+import '../domain/host_status.dart';
 import '../domain/receipt.dart';
 import '../domain/scan_controller.dart';
 
@@ -13,6 +14,9 @@ import '../domain/scan_controller.dart';
 abstract class HostRepository {
   /// My host profile, or null when I have not applied yet.
   Future<HostProfile?> me();
+
+  /// My application's state; none when I have not applied or am signed out.
+  Future<HostStatus> myStatus();
   Future<void> apply(HostApplication a);
   Future<HostDashboard> dashboard();
 
@@ -90,6 +94,11 @@ class SupabaseHostRepository implements HostRepository {
       throw HostError(e.message);
     }
   }
+
+  @override
+  Future<HostStatus> myStatus() async => HostStatus.fromRows(
+    await _db.schema('identity').rpc('my_host_status') as List,
+  );
 
   @override
   Future<HostProfile?> me() async {
@@ -449,6 +458,10 @@ class SupabaseHostRepository implements HostRepository {
 
 final hostRepositoryProvider = Provider<HostRepository>(
   (ref) => SupabaseHostRepository(ref.watch(supabaseClientProvider)),
+);
+
+final hostStatusProvider = FutureProvider.autoDispose<HostStatus>(
+  (ref) => ref.watch(hostRepositoryProvider).myStatus(),
 );
 
 final hostMeProvider = FutureProvider.autoDispose<HostProfile?>(
