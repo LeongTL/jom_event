@@ -83,17 +83,24 @@ Future<Person> admin() async {
   return _admin = a;
 }
 
-/// An admin's decision on [userId]'s application: approve | reject | suspend | unsuspend.
+/// An admin's decision on [userId]'s application: approve | reject | suspend | unsuspend. Admin functions need a two-factor
+/// session, which a script cannot have, so the real function runs as that admin with an aal2 token (see tools/e2e_reset.sql).
 Future<void> reviewHost(
   String userId,
   String decision, {
   String? reason,
-}) async => (await admin()).db
-    .schema('identity')
-    .rpc(
-      'admin_review_host',
-      params: {'p_user_id': userId, 'p_decision': decision, 'p_reason': reason},
-    );
+}) async {
+  final a = await admin();
+  await SupabaseClient(_url, _service).rpc(
+    'e2e_review_host',
+    params: {
+      'p_admin': a.id,
+      'p_user_id': userId,
+      'p_decision': decision,
+      'p_reason': reason,
+    },
+  );
+}
 
 /// Switches the host entrance flag, as editing app.flags by hand would.
 Future<void> setHostEntry(bool on) => SupabaseClient(
