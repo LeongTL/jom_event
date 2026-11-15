@@ -20,8 +20,10 @@ import 'package:jom/features/booking/domain/ticket.dart';
 import 'package:jom/features/event/data/event_repository.dart';
 import 'package:jom/features/home/data/home_repository.dart';
 import 'package:jom/features/notifications/domain/bell_provider.dart';
+import 'package:jom/features/safety/domain/safety.dart';
 import 'package:jom/shared/models/event_summary.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_bookings.dart';
@@ -54,6 +56,7 @@ Future<void> pumpApp(
       'gateway', // the older tests below were written for the gateway flow
   Uint8List? picked,
   void Function(FakeBookings)? setup,
+  Object? openThreadError,
 }) async {
   // wider than a phone on purpose: the test font's letters are so wide that tab names would wrap
   t.view.physicalSize = const Size(800, 1700);
@@ -99,7 +102,7 @@ Future<void> pumpApp(
               'e2': detailOf(free, bookable: false, policy: 'none'),
               'e3': detailOf(today),
             },
-          ),
+          )..openThreadError = openThreadError,
         ),
         bookingRepositoryProvider.overrideWithValue(bookings),
         paymentGatewayClientProvider.overrideWithValue(gateway),
@@ -575,6 +578,19 @@ void main() {
       await t.tap(key('ticket-late'));
       await t.pumpAndSettle();
       expect(key('pay-screen'), findsOneWidget);
+    });
+
+    testWidgets('ticket_chat_with_a_blocked_host_says_why', (t) async {
+      await pumpApp(
+        t,
+        location: '/tickets',
+        upcoming: [bk('x1', status: 'expired', event: 'e1', starts: soon)],
+        openThreadError: const PostgrestException(message: 'blocked'),
+      );
+      await t.ensureVisible(key('ticket-chat'));
+      await t.tap(key('ticket-chat'));
+      await t.pumpAndSettle();
+      expect(find.text(safetyMessage('blocked')), findsOneWidget);
     });
 
     testWidgets('cooldown_error_shows_minutes_left', (t) async {

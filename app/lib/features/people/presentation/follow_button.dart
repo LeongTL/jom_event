@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import '../../../shared/widgets/jom_button.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/domain/auth_gate.dart';
+import '../../safety/domain/safety.dart';
 import '../data/people_repository.dart';
 
 /// Follow / Following. Signed-out visitors get the sign-in sheet first. Hidden on my own page.
@@ -33,6 +35,16 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
           ? await repo.unfollow(widget.userId)
           : await repo.follow(widget.userId);
       ref.invalidate(counts);
+    } on PostgrestException catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            e.message == 'blocked'
+                ? safetyMessage('blocked')
+                : 'Could not update. Try again.',
+          ),
+        ),
+      );
     } catch (_) {
       messenger.showSnackBar(
         const SnackBar(content: Text('Could not update. Try again.')),

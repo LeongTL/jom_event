@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import '../../../core/money.dart';
 import '../../../core/theme/calm.dart';
@@ -9,6 +10,7 @@ import '../../../shared/widgets/jom_button.dart';
 import '../../../shared/widgets/verified_badge.dart';
 import '../../event/data/event_repository.dart';
 import '../../event/domain/event_labels.dart';
+import '../../safety/domain/safety.dart';
 import '../domain/ticket.dart';
 import 'dashed_line.dart';
 import 'ticket_screen.dart' show ticketTokenProvider;
@@ -370,10 +372,15 @@ class _Body extends ConsumerWidget {
     final d = await ref.read(eventDetailProvider(id).future);
     final hostId = d?.hostId;
     if (hostId == null || !context.mounted) return;
-    final thread = await ref
-        .read(eventRepositoryProvider)
-        .openThread(hostId, id);
-    if (context.mounted) context.push('/chats/$thread');
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final thread = await ref
+          .read(eventRepositoryProvider)
+          .openThread(hostId, id);
+      if (context.mounted) context.push('/chats/$thread');
+    } on PostgrestException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(safetyMessage(e.message))));
+    }
   }
 
   @override

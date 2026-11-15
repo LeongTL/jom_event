@@ -12,8 +12,14 @@ class FakeSafety implements SafetyRepository {
   final reports = <(ReportTarget, String, ReportReason, String?)>[];
   Object? reportError;
 
+  /// Lets a test hide the person elsewhere, as the database does once a block exists.
+  void Function(String userId)? onBlock;
+
   @override
-  Future<void> block(String userId) async => blocks.add(userId);
+  Future<void> block(String userId) async {
+    blocks.add(userId);
+    onBlock?.call(userId);
+  }
 
   @override
   Future<void> unblock(String userId) async {

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/calm.dart';
 import '../../../shared/widgets/screen_parts.dart';
+import '../../safety/data/safety_repository.dart';
 import '../data/people_repository.dart';
 import '../domain/person.dart';
 import 'person_row.dart';
@@ -34,9 +35,10 @@ class _FindPeopleScreenState extends ConsumerState<FindPeopleScreen> {
     _error = error;
   });
 
-  void _changed(String text) {
+  void _changed(String text) => _search(text.trim());
+
+  void _search(String q) {
     _pause?.cancel();
-    final q = text.trim();
     _query = q;
     if (q.length < 2) {
       return _set(null, null);
@@ -54,7 +56,15 @@ class _FindPeopleScreenState extends ConsumerState<FindPeopleScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) {
+    // A block or unblock changes who can be found, so ask again for what is on screen.
+    ref.listen(blockedUsersProvider, (prev, next) {
+      if (next is AsyncData && _query.length >= 2) _search(_query);
+    });
+    return _scaffold();
+  }
+
+  Widget _scaffold() => Scaffold(
     key: const Key('find-people-screen'),
     backgroundColor: Calm.bg,
     body: ListView(

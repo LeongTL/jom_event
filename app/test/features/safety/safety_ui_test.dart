@@ -22,6 +22,7 @@ const _guest = Person(
 List<Never> get _none => const [];
 
 void main() {
+  _minors();
   testWidgets('person_menu_offers_report_and_block', (t) async {
     final safety = FakeSafety();
     await pumpApp(
@@ -229,5 +230,66 @@ void main() {
     await t.pumpAndSettle();
     expect(find.text(safetyMessage('blocked')), findsOneWidget);
     expect(where(router), '/event/e1');
+  });
+}
+
+void _minors() {
+  testWidgets('following_a_blocked_person_says_why', (t) async {
+    final people = FakePeople(people: [_guest])
+      ..followError = const PostgrestException(message: 'blocked');
+    await pumpApp(t, location: '/people/g1', people: people);
+    await t.tap(key('follow-button'));
+    await t.pumpAndSettle();
+    expect(find.text(safetyMessage('blocked')), findsOneWidget);
+  });
+
+  testWidgets('search_drops_a_person_once_i_block_them', (t) async {
+    final people = FakePeople(people: [_guest]);
+    final safety = FakeSafety()
+      ..onBlock = (id) => people.people.removeWhere((p) => p.userId == id);
+    await pumpApp(
+      t,
+      location: '/people',
+      people: people,
+      overrides: [safetyRepositoryProvider.overrideWithValue(safety)],
+    );
+    await t.enterText(key('people-search'), 'bob');
+    await t.pump(const Duration(milliseconds: 400));
+    await t.pumpAndSettle();
+    await t.tap(find.text('Bob Lim'));
+    await t.pumpAndSettle();
+    await t.tap(key('person-menu'));
+    await t.pumpAndSettle();
+    await t.tap(key('menu-block'));
+    await t.pumpAndSettle();
+    await t.tap(key('block-confirm'));
+    await t.pump(const Duration(milliseconds: 400));
+    await t.pumpAndSettle();
+    expect(key('find-people-screen'), findsOneWidget);
+    expect(find.text('Bob Lim'), findsNothing);
+    expect(find.text('No one found'), findsOneWidget);
+  });
+
+  testWidgets('chat_header_label_does_not_touch_the_menu_button', (t) async {
+    final chat = FakeChat(
+      infos: {
+        't1': const ThreadInfo(
+          id: 't1',
+          iAmHost: false,
+          otherName: 'Mei Studio',
+          otherId: 'h1',
+        ),
+      },
+      messages: {'t1': []},
+    );
+    await pumpApp(
+      t,
+      location: '/chats/t1',
+      chat: chat,
+      overrides: [safetyRepositoryProvider.overrideWithValue(FakeSafety())],
+    );
+    final label = t.getTopRight(find.text('Host')).dx;
+    final button = t.getTopLeft(key('chat-menu')).dx;
+    expect(button - label, greaterThanOrEqualTo(8));
   });
 }
