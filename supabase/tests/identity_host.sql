@@ -12,9 +12,9 @@ do $$ begin
 end $$;
 reset role;
 
-select is((select is_host from identity.profiles where user_id = 'aaaaaaaa-0000-0000-0000-000000000001'), true,
-  'apply_host_sets_is_host');
-select is(identity.is_host('aaaaaaaa-0000-0000-0000-000000000001'), true, 'is_host_is_true_for_an_applied_host');
+select is((select is_host from identity.profiles where user_id = 'aaaaaaaa-0000-0000-0000-000000000001'), false,
+  'apply_host_does_not_set_is_host');
+select is(identity.is_host('aaaaaaaa-0000-0000-0000-000000000001'), false, 'is_host_is_false_for_an_applicant');
 select is(identity.is_host('bbbbbbbb-0000-0000-0000-000000000002'), false, 'is_host_is_false_for_everyone_else');
 select results_eq(
   $$select host_name, area, bio, ssm_number from identity.hosts where user_id = 'aaaaaaaa-0000-0000-0000-000000000001'$$,

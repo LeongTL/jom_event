@@ -9,6 +9,10 @@ insert into auth.users (id, email) values
 select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-0000-0000-000000000001","role":"authenticated"}', true);
 set local role authenticated;
 do $$ begin perform identity.apply_host('Mei Studio', 'Bangsar', 'Pottery', 'Mei Ling', 'Maybank', '1122334455'); end $$;
+reset role;
+update identity.profiles set is_host = true where user_id = 'aaaaaaaa-0000-0000-0000-000000000001';
+update identity.hosts set status = 'approved' where user_id = 'aaaaaaaa-0000-0000-0000-000000000001';
+set local role authenticated;
 
 -- qr only
 select lives_ok($$select identity.save_payment_details(null, null, null, 'aaaaaaaa-0000-0000-0000-000000000001/qr.jpg')$$, 'qr_only_is_accepted');
