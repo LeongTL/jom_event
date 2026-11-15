@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -5,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jom/app.dart';
 import 'package:jom/core/clock.dart';
+import 'package:jom/core/flags/flags_repository.dart';
 import 'package:jom/core/location.dart';
 import 'package:jom/core/router/app_router.dart';
 import 'package:jom/features/auth/data/auth_repository.dart';
@@ -44,12 +46,14 @@ Future<GoRouter> pumpApp(
   FakeEvents? events,
   FakeHost? host,
   FakePeople? people,
+  bool hostEntry = true,
+  ValueListenable<HostAccess>? access,
   List<Override> overrides = const [],
 }) async {
   t.view.physicalSize = const Size(800, 2400);
   t.view.devicePixelRatio = 1;
   addTearDown(t.view.reset);
-  final router = createRouter(initialLocation: location);
+  final router = createRouter(initialLocation: location, access: access);
   final start = t.binding.clock.now();
   await t.pumpWidget(
     ProviderScope(
@@ -64,6 +68,7 @@ Future<GoRouter> pumpApp(
         hostRepositoryProvider.overrideWithValue(
           host ?? FakeHost(profile: hostMe()),
         ),
+        flagsRepositoryProvider.overrideWithValue(FakeFlags(hostEntry)),
         peopleRepositoryProvider.overrideWithValue(people ?? FakePeople()),
         chatRepositoryProvider.overrideWithValue(FakeChat()),
         bookingRepositoryProvider.overrideWithValue(bookings ?? FakeBookings()),
@@ -80,4 +85,12 @@ Future<GoRouter> pumpApp(
   );
   await t.pumpAndSettle();
   return router;
+}
+
+class FakeFlags implements FlagsRepository {
+  FakeFlags(this.hostEntry);
+  final bool hostEntry;
+
+  @override
+  Future<bool> hostEntryEnabled() async => hostEntry;
 }

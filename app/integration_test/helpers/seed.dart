@@ -50,6 +50,7 @@ Future<Person> newPerson() async {
   return Person(db, s.user!.id);
 }
 
+/// Someone who applied as an Event owner and has been approved by an admin, the way it happens for real.
 Future<Person> newHost(String name) async {
   final p = await newPerson();
   await p.db
@@ -65,7 +66,47 @@ Future<Person> newHost(String name) async {
           'account_number': '1234564821',
         },
       );
+  await reviewHost(p.id, 'approve');
   return p;
+}
+
+Person? _admin;
+
+/// An admin with their own session: the role is given here by hand, as it is in the real database.
+Future<Person> admin() async {
+  if (_admin != null) return _admin!;
+  final a = await newPerson();
+  await SupabaseClient(
+    _url,
+    _service,
+  ).rpc('e2e_make_admin', params: {'p_user_id': a.id});
+  return _admin = a;
+}
+
+/// An admin's decision on [userId]'s application: approve | reject | suspend | unsuspend.
+Future<void> reviewHost(
+  String userId,
+  String decision, {
+  String? reason,
+}) async => (await admin()).db
+    .schema('identity')
+    .rpc(
+      'admin_review_host',
+      params: {'p_user_id': userId, 'p_decision': decision, 'p_reason': reason},
+    );
+
+/// Switches the host entrance flag, as editing app.flags by hand would.
+Future<void> setHostEntry(bool on) => SupabaseClient(
+  _url,
+  _service,
+).rpc('e2e_set_flag', params: {'p_key': 'host_entry_enabled', 'p_value': on});
+
+/// The app coming back to the foreground: it rereads the host entrance flag and my application then.
+Future<void> resumeApp(WidgetTester t) async {
+  WidgetsBinding.instance.handleAppLifecycleStateChanged(
+    AppLifecycleState.resumed,
+  );
+  await settle(t, const Duration(seconds: 2));
 }
 
 /// Creates and publishes an event for [host]; returns its id.

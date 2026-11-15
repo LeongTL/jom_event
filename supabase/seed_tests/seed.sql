@@ -3,10 +3,11 @@
 --   supabase db reset && supabase test db supabase/seed_tests
 -- The seed's times are relative to when it was loaded, so the Night and Weekend checks take the clock into account.
 begin;
-select plan(19);
+select plan(20);
 
 select is((select count(*)::int from events.events), 87, 'seed_has_87_events');
 select is((select count(*)::int from identity.hosts), 20, 'seed_has_20_hosts');
+select is((select count(*)::int from identity.hosts where status = 'approved'), 20, 'every seed host is approved');
 select is((select count(*)::int from events.areas), 6, 'seed_has_6_areas');
 select is((select count(*)::int from identity.profiles where is_host), 20, 'every seed host has a host profile');
 select is((select count(*)::int from identity.host_payout_accounts), 20, 'every seed host has a payout account');

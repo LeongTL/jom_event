@@ -43,10 +43,11 @@ begin
             jsonb_build_object('full_name', hosts[h]))
     on conflict (id) do nothing;
     update identity.profiles set is_host = true where user_id = uid;
-    insert into identity.hosts (user_id, host_name, area, bio, verified_at)
+    insert into identity.hosts (user_id, host_name, area, bio, verified_at, status)
     values (uid, hosts[h], areas[1 + (h * 5) % 6],
             'Hosting small, friendly sessions around the city. Everyone is welcome.',
-            case when h % 3 <> 0 then now() end)       -- two in three are verified
+            case when h % 3 <> 0 then now() end,       -- two in three are verified
+            'approved')
     on conflict (user_id) do nothing;
     insert into identity.host_payout_accounts (user_id, account_holder, bank, account_number)
     values (uid, hosts[h], 'Maybank', '0000000000')

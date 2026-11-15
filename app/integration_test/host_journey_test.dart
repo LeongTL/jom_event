@@ -26,7 +26,7 @@ void main() {
     // sign in from the Profile tab, then become a host
     await openTab(t, 'Profile');
     await signInWithPhone(t);
-    await t.tap(key('host-mode-card'));
+    await t.tap(key('host-card-none'));
     await see(t, key('apply-name'));
     await t.enterText(key('apply-name'), 'E2E Studio');
     await t.tap(key('apply-area-Bangsar'));
@@ -40,6 +40,10 @@ void main() {
     await t.enterText(key('apply-number'), '1234564821');
     await t.pump();
     await t.tap(key('apply-submit'));
+    await see(t, key('host-card-pending'));
+    await reviewHost(me().id, 'approve');
+    await resumeApp(t);
+    await t.tap(key('host-card-approved'));
     await see(t, key('host-home'));
 
     // create and publish an event with the form
