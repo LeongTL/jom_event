@@ -67,10 +67,10 @@ void main() {
         host,
         title: soon,
         priceSen: 3000,
-        startsIn: const Duration(seconds: 25),
-        lasts: const Duration(seconds: 5),
+        startsIn: const Duration(hours: 2),
       );
       final booking = await bookAndPay(me(), soonId);
+      await startEventIn(soonId, const Duration(seconds: 25));
       await checkIn(host, soonId, await ticketToken(me(), booking));
       await Future<void>.delayed(const Duration(seconds: 32));
       await host.db
