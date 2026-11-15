@@ -104,3 +104,9 @@ Differences and gaps:
 ### Task 8: CI web build (own commit), summary
 
 - [ ] Add a `flutter build web -t lib/main_web.dart` step to the `app` job of `ci.yml` after `flutter test` (no change to the Flutter pin). Commit alone. Final self-review. Summary table.
+
+## Rulings made while building
+
+- Ruling: an admin at `aal1` always goes to the code screen, even if they are also an approved host (Task 3 text said they could reach the host shell). Why: one rule is simpler and an admin account should never skip the second factor. Cost if wrong: an admin-host must give the code to reach the host placeholder.
+- Ruling: no URL routes (go_router) in the back office yet; the person's role picks the screen and an application opens as a pushed page. Why: one list and one detail page; routes add nothing until step 2 has more pages. Cost if wrong: no deep link to one application; the browser back button leaves the app.
+- Ruling: `.metadata` was not edited to list the web platform. Why: it is tool bookkeeping and `flutter create` had already generated `app/web`. Cost if wrong: `flutter upgrade` may not migrate web files.
